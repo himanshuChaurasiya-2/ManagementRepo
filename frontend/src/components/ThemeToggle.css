@@ -1,0 +1,121 @@
+/* ==========================================================================
+   THEME TOGGLE BUTTON STYLES
+   ========================================================================== */
+
+.theme-toggle-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: var(--bg-card, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.12));
+  color: var(--text-primary, #ffffff);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  backdrop-filter: var(--glass-blur-sm, blur(14px));
+  -webkit-backdrop-filter: var(--glass-blur-sm, blur(14px));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  outline: none;
+}
+
+.theme-toggle-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--glass-border-hover, rgba(255, 255, 255, 0.2));
+  background: var(--bg-card-hover, rgba(255, 255, 255, 0.12));
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15), var(--shadow-glow, 0 0 15px rgba(99, 102, 241, 0.2));
+}
+
+.theme-toggle-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.theme-toggle-btn:focus-visible {
+  box-shadow: 0 0 0 2px var(--accent-indigo, #6366f1);
+}
+
+/* Icon container with micro-rotation animation */
+.theme-toggle-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.theme-toggle-btn:hover .theme-toggle-icon-wrap {
+  transform: rotate(18deg) scale(1.1);
+}
+
+/* Sun Icon (Light Mode) */
+.theme-icon-sun {
+  color: #f59e0b;
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.6));
+  animation: sunSpin 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Moon Icon (Dark Mode) */
+.theme-icon-moon {
+  color: #818cf8;
+  filter: drop-shadow(0 0 6px rgba(129, 140, 248, 0.6));
+  animation: moonTilt 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes sunSpin {
+  0% {
+    transform: rotate(-90deg) scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: rotate(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes moonTilt {
+  0% {
+    transform: rotate(45deg) scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: rotate(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Text label */
+.theme-toggle-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  display: inline-block;
+}
+
+/* Compact circular variant */
+.theme-toggle-btn.compact {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 12px;
+}
+
+.theme-toggle-btn.compact .theme-toggle-label {
+  display: none;
+}
+
+/* Floating variant for login/public pages */
+.theme-toggle-floating {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  z-index: 1000;
+}

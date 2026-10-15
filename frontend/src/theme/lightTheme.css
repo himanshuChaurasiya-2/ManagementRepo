@@ -1,0 +1,3365 @@
+/* ==========================================================================
+   ULTRA-COMPREHENSIVE LIGHT MODE DESIGN SYSTEM FOR SALES & ADMIN DASHBOARD
+   Guarantees 100% text visibility, high contrast & sleek modern aesthetics
+   across every single admin and sales screen.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. ROOT VARIABLES FOR LIGHT MODE
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"],
+body.light-mode {
+  --bg-shell: #f1f5f9;
+  --bg-sidebar: rgba(255, 255, 255, 0.88);
+  --bg-canvas: rgba(255, 255, 255, 0.82);
+  --bg-card: rgba(255, 255, 255, 0.92);
+  --bg-card-hover: #ffffff;
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-dark: #020617;
+  --text-sidebar-inactive: #475569;
+
+  --glass-border: rgba(15, 23, 42, 0.09);
+  --glass-border-hover: rgba(15, 23, 42, 0.18);
+  --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
+  --shadow-card: 0 12px 28px -6px rgba(15, 23, 42, 0.07);
+  --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.12);
+
+  /* Calendar Variables */
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --card-bg: rgba(255, 255, 255, 0.92);
+  --text-main: #0f172a;
+  --border-color: rgba(15, 23, 42, 0.09);
+}
+
+/* Global Body Background in Light Mode */
+body.light-mode,
+[data-theme="light"] body {
+  background-color: #f1f5f9 !important;
+  background-image: 
+    radial-gradient(at 15% 15%, rgba(224, 231, 255, 0.75) 0px, transparent 50%),
+    radial-gradient(at 85% 10%, rgba(243, 232, 255, 0.7) 0px, transparent 48%),
+    radial-gradient(at 50% 50%, rgba(241, 245, 249, 0.85) 0px, transparent 65%),
+    radial-gradient(at 85% 85%, rgba(219, 234, 254, 0.65) 0px, transparent 50%),
+    radial-gradient(at 15% 80%, rgba(254, 240, 138, 0.25) 0px, transparent 48%) !important;
+  color: #0f172a !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. UNIVERSAL TYPOGRAPHY OVERRIDES (Fixes Inverted/White Text Everywhere)
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] h6,
+body.light-mode h1,
+body.light-mode h2,
+body.light-mode h3,
+body.light-mode h4,
+body.light-mode h5,
+body.light-mode h6 {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] p,
+body.light-mode p {
+  color: #475569 !important;
+}
+
+[data-theme="light"] strong,
+[data-theme="light"] b,
+body.light-mode strong,
+body.light-mode b {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] small,
+body.light-mode small {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .dashboard-loading,
+body.light-mode .dashboard-loading,
+[data-theme="light"] .company-loading,
+body.light-mode .company-loading,
+[data-theme="light"] .tasks-loading,
+body.light-mode .tasks-loading,
+[data-theme="light"] .company-calendar-loading,
+body.light-mode .company-calendar-loading {
+  color: #64748b !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. APP SHELL, CANVAS & TOPBAR
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"] .app-shell,
+body.light-mode .app-shell {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .app-canvas,
+body.light-mode .app-canvas {
+  background: var(--bg-canvas) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.07), inset 0 1px 0 0 rgba(255, 255, 255, 0.95) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .app-topbar-title,
+body.light-mode .app-topbar-title {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .app-notif-btn,
+body.light-mode .app-notif-btn {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .app-notif-btn:hover,
+body.light-mode .app-notif-btn:hover {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.2) !important;
+}
+
+[data-theme="light"] .app-notif-dot,
+body.light-mode .app-notif-dot {
+  border: 2px solid #ffffff !important;
+}
+
+[data-theme="light"] .app-user-profile,
+body.light-mode .app-user-profile {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .app-user-profile:hover,
+body.light-mode .app-user-profile:hover {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.2) !important;
+}
+
+[data-theme="light"] .app-user-name,
+body.light-mode .app-user-name {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .app-user-role,
+body.light-mode .app-user-role {
+  color: #64748b !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. SIDEBARS (ADMIN & SALES)
+   -------------------------------------------------------------------------- */
+
+.app-sidebar-logo-img,
+.app-sidebar-logo img,
+.app-sidebar-logo-icon img {
+  height: 36px;
+  width: auto;
+  max-width: 90px;
+  object-fit: contain;
+  opacity: 1 !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+[data-theme="light"] .app-sidebar-logo-icon,
+body.light-mode .app-sidebar-logo-icon,
+[data-theme="light"] .app-sidebar-logo-img,
+body.light-mode .app-sidebar-logo-img,
+[data-theme="light"] .app-sidebar-logo img,
+body.light-mode .app-sidebar-logo img {
+  content: url("/images/logo-dark.png");
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+   
+
+[data-theme="light"] .app-sidebar,
+body.light-mode .app-sidebar,
+[data-theme="light"] .sales-sidebar,
+body.light-mode .sales-sidebar {
+  background: var(--bg-sidebar) !important;
+  border-right: 1px solid var(--glass-border) !important;
+  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.04) !important;
+  color: var(--text-sidebar-inactive) !important;
+}
+
+[data-theme="light"] .app-sidebar-logo,
+body.light-mode .app-sidebar-logo,
+[data-theme="light"] .sales-sidebar-brand,
+body.light-mode .sales-sidebar-brand {
+  color: #0f172a !important;
+  border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .app-sidebar-logo span,
+body.light-mode .app-sidebar-logo span,
+[data-theme="light"] .sales-sidebar-brand h2,
+body.light-mode .sales-sidebar-brand h2 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .sales-sidebar-brand span,
+body.light-mode .sales-sidebar-brand span {
+  color: #64748b !important;
+}
+
+
+
+[data-theme="light"] .sidebar-section-heading,
+body.light-mode .sidebar-section-heading,
+[data-theme="light"] .sales-nav-title,
+body.light-mode .sales-nav-title {
+  color: rgba(15, 23, 42, 0.45) !important;
+}
+
+[data-theme="light"] .app-nav-item,
+body.light-mode .app-nav-item,
+[data-theme="light"] .sales-nav-link,
+body.light-mode .sales-nav-link {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .app-nav-item:hover:not(.active):not(.disabled),
+body.light-mode .app-nav-item:hover:not(.active):not(.disabled),
+[data-theme="light"] .sales-nav-link:hover:not(.active):not(.disabled),
+body.light-mode .sales-nav-link:hover:not(.active):not(.disabled) {
+  background: rgba(15, 23, 42, 0.05) !important;
+  border-color: rgba(15, 23, 42, 0.06) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .app-nav-item.active,
+body.light-mode .app-nav-item.active,
+[data-theme="light"] .sales-nav-link.active,
+body.light-mode .sales-nav-link.active {
+  background: #ffffff !important;
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  color: #4338ca !important;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.1), inset 0 1px 0 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+[data-theme="light"] .app-nav-item.active .nav-icon,
+body.light-mode .app-nav-item.active .nav-icon {
+  color: #4338ca !important;
+}
+
+[data-theme="light"] .nav-soon-pill,
+body.light-mode .nav-soon-pill,
+[data-theme="light"] .sales-nav-link small,
+body.light-mode .sales-nav-link small {
+  background: rgba(15, 23, 42, 0.06) !important;
+  color: #64748b !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .app-sidebar-bottom,
+body.light-mode .app-sidebar-bottom,
+[data-theme="light"] .sales-sidebar-bottom,
+body.light-mode .sales-sidebar-bottom {
+  border-top: 1px solid var(--glass-border) !important;
+}
+
+[data-theme="light"] .app-sidebar-bottom-btn,
+body.light-mode .app-sidebar-bottom-btn {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .app-sidebar-bottom-btn:hover,
+body.light-mode .app-sidebar-bottom-btn:hover {
+  background: rgba(15, 23, 42, 0.05) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .sales-user-card,
+body.light-mode .sales-user-card {
+  background: rgba(241, 245, 249, 0.8) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .sales-user-info strong,
+body.light-mode .sales-user-info strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .sales-user-info span,
+body.light-mode .sales-user-info span {
+  color: #64748b !important;
+}
+
+/* --------------------------------------------------------------------------
+   5. ADMIN DASHBOARD PAGE
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"] .admin-dashboard,
+body.light-mode .admin-dashboard {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .dashboard-header h1,
+body.light-mode .dashboard-header h1 {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .dashboard-header p,
+body.light-mode .dashboard-header p {
+  color: #64748b !important;
+}
+
+/* Stat Cards in Admin Dashboard */
+[data-theme="light"] .stat-card,
+body.light-mode .stat-card {
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+[data-theme="light"] .stat-card:hover,
+body.light-mode .stat-card:hover {
+  box-shadow: 0 18px 36px -6px rgba(15, 23, 42, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+}
+
+[data-theme="light"] .stat-card span,
+body.light-mode .stat-card span {
+  color: #475569 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .stat-card strong,
+body.light-mode .stat-card strong {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+/* 5 KPI Cards in Light Mode */
+[data-theme="light"] .stat-users,
+body.light-mode .stat-users {
+  background: linear-gradient(135deg, rgba(243, 232, 255, 0.8) 0%, rgba(238, 242, 255, 0.7) 100%), #ffffff !important;
+  border: 1px solid rgba(168, 85, 247, 0.3) !important;
+}
+[data-theme="light"] .stat-users .stat-icon-wrapper,
+body.light-mode .stat-users .stat-icon-wrapper {
+  background: rgba(168, 85, 247, 0.15) !important;
+  border: 1px solid rgba(168, 85, 247, 0.3) !important;
+  color: #7e22ce !important;
+}
+
+[data-theme="light"] .stat-tasks,
+body.light-mode .stat-tasks {
+  background: linear-gradient(135deg, rgba(254, 252, 232, 0.85) 0%, rgba(254, 243, 199, 0.75) 100%), #ffffff !important;
+  border: 1px solid rgba(234, 179, 8, 0.3) !important;
+}
+[data-theme="light"] .stat-tasks .stat-icon-wrapper,
+body.light-mode .stat-tasks .stat-icon-wrapper {
+  background: rgba(234, 179, 8, 0.15) !important;
+  border: 1px solid rgba(234, 179, 8, 0.3) !important;
+  color: #b45309 !important;
+}
+
+[data-theme="light"] .stat-pending,
+body.light-mode .stat-pending {
+  background: linear-gradient(135deg, rgba(255, 247, 237, 0.85) 0%, rgba(254, 215, 170, 0.7) 100%), #ffffff !important;
+  border: 1px solid rgba(249, 115, 22, 0.3) !important;
+}
+[data-theme="light"] .stat-pending .stat-icon-wrapper,
+body.light-mode .stat-pending .stat-icon-wrapper {
+  background: rgba(249, 115, 22, 0.15) !important;
+  border: 1px solid rgba(249, 115, 22, 0.3) !important;
+  color: #c2410c !important;
+}
+
+[data-theme="light"] .stat-progress,
+body.light-mode .stat-progress {
+  background: linear-gradient(135deg, rgba(240, 249, 255, 0.85) 0%, rgba(186, 230, 253, 0.7) 100%), #ffffff !important;
+  border: 1px solid rgba(14, 165, 233, 0.3) !important;
+}
+[data-theme="light"] .stat-progress .stat-icon-wrapper,
+body.light-mode .stat-progress .stat-icon-wrapper {
+  background: rgba(14, 165, 233, 0.15) !important;
+  border: 1px solid rgba(14, 165, 233, 0.3) !important;
+  color: #0369a1 !important;
+}
+
+[data-theme="light"] .stat-completed,
+body.light-mode .stat-completed {
+  background: linear-gradient(135deg, rgba(240, 253, 244, 0.85) 0%, rgba(187, 247, 208, 0.7) 100%), #ffffff !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+}
+[data-theme="light"] .stat-completed .stat-icon-wrapper,
+body.light-mode .stat-completed .stat-icon-wrapper {
+  background: rgba(34, 197, 94, 0.15) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  color: #15803d !important;
+}
+
+/* Sections & Panels */
+[data-theme="light"] .section,
+body.light-mode .section {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+[data-theme="light"] .section-header,
+body.light-mode .section-header {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .section-header h2,
+body.light-mode .section-header h2 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .section-subtitle,
+body.light-mode .section-subtitle {
+  color: #64748b !important;
+}
+
+/* Kanban Columns in Dashboard */
+[data-theme="light"] .task-column,
+body.light-mode .task-column {
+  background: rgba(248, 250, 252, 0.85) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+}
+
+[data-theme="light"] .task-column-header,
+body.light-mode .task-column-header {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.07) !important;
+}
+
+[data-theme="light"] .task-column-header h3,
+body.light-mode .task-column-header h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .column-count,
+body.light-mode .column-count {
+  background: rgba(15, 23, 42, 0.06) !important;
+  color: #334155 !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .empty-column-card,
+body.light-mode .empty-column-card {
+  border: 1px dashed rgba(15, 23, 42, 0.15) !important;
+  background: rgba(15, 23, 42, 0.02) !important;
+}
+
+[data-theme="light"] .empty-text,
+body.light-mode .empty-text {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .task-preview,
+body.light-mode .task-preview {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04) !important;
+}
+
+[data-theme="light"] .task-preview:hover,
+body.light-mode .task-preview:hover {
+  border-color: rgba(15, 23, 42, 0.16) !important;
+  background: #ffffff !important;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .task-preview-info strong,
+body.light-mode .task-preview-info strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .task-preview-assignee,
+body.light-mode .task-preview-assignee {
+  color: #64748b !important;
+}
+
+/* --------------------------------------------------------------------------
+   6. ADMIN TASKS PAGE (AdminTasks.tsx)
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"] .admin-tasks,
+body.light-mode .admin-tasks {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .tasks-header h1,
+body.light-mode .tasks-header h1 {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .tasks-header p,
+body.light-mode .tasks-header p {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .tasks-card,
+body.light-mode .tasks-card {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+[data-theme="light"] .tasks-card-header,
+body.light-mode .tasks-card-header {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .tasks-card-header h2,
+body.light-mode .tasks-card-header h2 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .tasks-count-pill,
+body.light-mode .tasks-count-pill {
+  background: rgba(15, 23, 42, 0.06) !important;
+  color: #334155 !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Filter Capsule Bar */
+[data-theme="light"] .tasks-filter-bar,
+body.light-mode .tasks-filter-bar {
+  background: rgba(15, 23, 42, 0.02) !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .tasks-filter-label,
+body.light-mode .tasks-filter-label {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .task-filter-capsule,
+body.light-mode .task-filter-capsule {
+  background: rgba(15, 23, 42, 0.04) !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .task-filter-capsule:hover,
+body.light-mode .task-filter-capsule:hover {
+  background: rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .task-filter-capsule.all.active,
+body.light-mode .task-filter-capsule.all.active {
+  background: #ffffff !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  color: #4338ca !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15) !important;
+}
+
+[data-theme="light"] .task-filter-capsule.low.active,
+body.light-mode .task-filter-capsule.low.active {
+  background: rgba(2, 132, 199, 0.12) !important;
+  border-color: rgba(2, 132, 199, 0.35) !important;
+  color: #0369a1 !important;
+}
+
+[data-theme="light"] .task-filter-capsule.medium.active,
+body.light-mode .task-filter-capsule.medium.active {
+  background: rgba(217, 119, 6, 0.12) !important;
+  border-color: rgba(217, 119, 6, 0.35) !important;
+  color: #b45309 !important;
+}
+
+[data-theme="light"] .task-filter-capsule.high.active,
+body.light-mode .task-filter-capsule.high.active {
+  background: rgba(220, 38, 38, 0.12) !important;
+  border-color: rgba(220, 38, 38, 0.35) !important;
+  color: #b91c1c !important;
+}
+
+/* Tasks Table Cells */
+[data-theme="light"] .task-title,
+body.light-mode .task-title,
+[data-theme="light"] .task-title-cell strong,
+body.light-mode .task-title-cell strong,
+[data-theme="light"] .task-title-text,
+body.light-mode .task-title-text {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .task-description,
+body.light-mode .task-description,
+[data-theme="light"] .task-desc-sub,
+body.light-mode .task-desc-sub {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .company-tag,
+body.light-mode .company-tag,
+[data-theme="light"] .task-company-badge,
+body.light-mode .task-company-badge {
+  background: rgba(15, 23, 42, 0.06) !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .assignee-name,
+body.light-mode .assignee-name,
+[data-theme="light"] .assignee-cell,
+body.light-mode .assignee-cell,
+[data-theme="light"] .task-assignee-cell strong,
+body.light-mode .task-assignee-cell strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .due-date-text,
+body.light-mode .due-date-text,
+[data-theme="light"] .task-user-email,
+body.light-mode .task-user-email,
+[data-theme="light"] .task-assigner-cell,
+body.light-mode .task-assigner-cell {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .task-number-cell,
+body.light-mode .task-number-cell {
+  color: #64748b !important;
+}
+
+/* Priority Badges in Light Mode */
+[data-theme="light"] .priority-badge.low,
+body.light-mode .priority-badge.low {
+  background: rgba(2, 132, 199, 0.1) !important;
+  border: 1px solid rgba(2, 132, 199, 0.3) !important;
+  color: #0369a1 !important;
+  box-shadow: none !important;
+}
+
+[data-theme="light"] .priority-badge.medium,
+body.light-mode .priority-badge.medium {
+  background: rgba(217, 119, 6, 0.1) !important;
+  border: 1px solid rgba(217, 119, 6, 0.3) !important;
+  color: #b45309 !important;
+  box-shadow: none !important;
+}
+
+[data-theme="light"] .priority-badge.high,
+body.light-mode .priority-badge.high {
+  background: rgba(220, 38, 38, 0.1) !important;
+  border: 1px solid rgba(220, 38, 38, 0.3) !important;
+  color: #b91c1c !important;
+  box-shadow: none !important;
+}
+
+/* Status Badges in Light Mode */
+[data-theme="light"] .status-badge.pending,
+body.light-mode .status-badge.pending {
+  background: rgba(234, 88, 12, 0.1) !important;
+  border: 1px solid rgba(234, 88, 12, 0.3) !important;
+  color: #c2410c !important;
+  box-shadow: none !important;
+}
+
+[data-theme="light"] .status-badge.in-progress,
+body.light-mode .status-badge.in-progress {
+  background: rgba(2, 132, 199, 0.1) !important;
+  border: 1px solid rgba(2, 132, 199, 0.3) !important;
+  color: #0369a1 !important;
+  box-shadow: none !important;
+}
+
+[data-theme="light"] .status-badge.completed,
+body.light-mode .status-badge.completed {
+  background: rgba(22, 163, 74, 0.1) !important;
+  border: 1px solid rgba(22, 163, 74, 0.3) !important;
+  color: #15803d !important;
+  box-shadow: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   7. USERS PAGE (Users.tsx)
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"] .users-page,
+body.light-mode .users-page {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .user-stat-card,
+body.light-mode .user-stat-card {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .user-stat-title,
+body.light-mode .user-stat-title {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .user-stat-number,
+body.light-mode .user-stat-number {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .users-table-card,
+body.light-mode .users-table-card {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .users-table-header h2,
+body.light-mode .users-table-header h2 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .users-table-subtitle,
+body.light-mode .users-table-subtitle {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .user-name,
+body.light-mode .user-name {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .user-position-text,
+body.light-mode .user-position-text {
+  color: #6366f1 !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .user-created,
+body.light-mode .user-created {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .user-email-text,
+body.light-mode .user-email-text,
+[data-theme="light"] .users-table td,
+body.light-mode .users-table td {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .users-empty h5,
+body.light-mode .users-empty h5 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .users-empty p,
+body.light-mode .users-empty p {
+  color: #64748b !important;
+}
+
+/* User Actions */
+[data-theme="light"] .reset-btn,
+body.light-mode .reset-btn {
+  background: rgba(15, 23, 42, 0.05) !important;
+  color: #334155 !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+[data-theme="light"] .reset-btn:hover,
+body.light-mode .reset-btn:hover {
+  background: rgba(15, 23, 42, 0.1) !important;
+  color: #0f172a !important;
+}
+
+/* --------------------------------------------------------------------------
+   8. COMPANIES & TASKS PAGES (pages.css)
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"] .company-page,
+body.light-mode .company-page {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .company-header h1,
+body.light-mode .company-header h1 {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .company-header p,
+body.light-mode .company-header p {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .company-stat-card,
+body.light-mode .company-stat-card {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .company-stat-card span,
+body.light-mode .company-stat-card span {
+  color: #64748b !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .company-stat-card strong,
+body.light-mode .company-stat-card strong {
+  color: #0f172a !important;
+}
+
+/* KPI Numbers in pages.css */
+[data-theme="light"] .active-number,
+body.light-mode .active-number {
+  color: #16a34a !important;
+}
+
+[data-theme="light"] .inactive-number,
+body.light-mode .inactive-number {
+  color: #dc2626 !important;
+}
+
+[data-theme="light"] .pending-number,
+body.light-mode .pending-number {
+  color: #ea580c !important;
+}
+
+[data-theme="light"] .progress-number,
+body.light-mode .progress-number {
+  color: #0284c7 !important;
+}
+
+[data-theme="light"] .total-number,
+body.light-mode .total-number {
+  color: #6366f1 !important;
+}
+
+/* Company Table Card */
+[data-theme="light"] .company-table-card,
+body.light-mode .company-table-card {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .company-table-header h3,
+body.light-mode .company-table-header h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .company-search,
+body.light-mode .company-search {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.15) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .company-search::placeholder,
+body.light-mode .company-search::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .company-table th,
+body.light-mode .company-table th {
+  background: rgba(241, 245, 249, 0.8) !important;
+  color: #475569 !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .company-table td,
+body.light-mode .company-table td {
+  color: #0f172a !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .company-table strong,
+body.light-mode .company-table strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .company-empty h3,
+body.light-mode .company-empty h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .company-empty p,
+body.light-mode .company-empty p {
+  color: #64748b !important;
+}
+
+/* Tasks Dropdown and Filters in pages.css */
+[data-theme="light"] .task-filter-select,
+body.light-mode .task-filter-select {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.16) !important;
+  color: #0f172a !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%230f172a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+}
+
+[data-theme="light"] .task-result-count,
+body.light-mode .task-result-count {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .task-status-select,
+body.light-mode .task-status-select {
+  border-color: rgba(15, 23, 42, 0.16) !important;
+}
+
+/* --------------------------------------------------------------------------
+   9. SALES DASHBOARD (SalesDashboard.css)
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"] .sales-dashboard,
+body.light-mode .sales-dashboard {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .sales-dashboard-header h1,
+body.light-mode .sales-dashboard-header h1 {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .sales-dashboard-header p,
+body.light-mode .sales-dashboard-header p {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .sales-stat-card,
+body.light-mode .sales-stat-card {
+  background: linear-gradient(135deg, rgba(238, 242, 255, 0.85) 0%, rgba(255, 255, 255, 0.95) 100%) !important;
+  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+[data-theme="light"] .sales-stat-card span,
+body.light-mode .sales-stat-card span {
+  color: #475569 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .sales-stat-card strong,
+body.light-mode .sales-stat-card strong {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .sales-section-header h2,
+body.light-mode .sales-section-header h2 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .sales-section-header p,
+body.light-mode .sales-section-header p {
+  color: #64748b !important;
+}
+
+/* Quick Access Cards */
+[data-theme="light"] .sales-quick-card,
+body.light-mode .sales-quick-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .sales-quick-card:not(.disabled):hover,
+body.light-mode .sales-quick-card:not(.disabled):hover {
+  background: #ffffff !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+  box-shadow: 0 16px 36px -6px rgba(99, 102, 241, 0.15) !important;
+}
+
+[data-theme="light"] .sales-quick-card h3,
+body.light-mode .sales-quick-card h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .sales-quick-card p,
+body.light-mode .sales-quick-card p {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .sales-coming,
+body.light-mode .sales-coming {
+  background: rgba(15, 23, 42, 0.06) !important;
+  color: #64748b !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .sales-view-all,
+body.light-mode .sales-view-all {
+  background: rgba(15, 23, 42, 0.05) !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  color: #4338ca !important;
+}
+
+[data-theme="light"] .sales-view-all:hover,
+body.light-mode .sales-view-all:hover {
+  background: rgba(99, 102, 241, 0.1) !important;
+  color: #3730a3 !important;
+}
+
+/* Recent Clients Card */
+[data-theme="light"] .sales-recent-card,
+body.light-mode .sales-recent-card {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .sales-company-info strong,
+body.light-mode .sales-company-info strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .sales-company-info span,
+body.light-mode .sales-company-info span {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .sales-date,
+body.light-mode .sales-date {
+  color: #64748b !important;
+  background: rgba(15, 23, 42, 0.04) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+/* --------------------------------------------------------------------------
+   10. LEADS PAGES (AdminLeads.tsx & Lead.tsx)
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"] .lead-page,
+body.light-mode .lead-page {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-page-header h1,
+body.light-mode .lead-page-header h1,
+[data-theme="light"] .lead-header h1,
+body.light-mode .lead-header h1 {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .lead-page-header p,
+body.light-mode .lead-page-header p,
+[data-theme="light"] .lead-header p,
+body.light-mode .lead-header p {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-breadcrumb,
+body.light-mode .lead-breadcrumb {
+  color: #64748b !important;
+}
+
+/* Lead Import Card */
+[data-theme="light"] .lead-import-card,
+body.light-mode .lead-import-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .lead-import-info h3,
+body.light-mode .lead-import-info h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-import-info p,
+body.light-mode .lead-import-info p {
+  color: #64748b !important;
+}
+
+/* Lead Stat Cards */
+[data-theme="light"] .lead-stat-card,
+body.light-mode .lead-stat-card {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .lead-stat-label,
+body.light-mode .lead-stat-label {
+  color: #64748b !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-stat-value,
+body.light-mode .lead-stat-value {
+  color: #0f172a !important;
+}
+
+/* Lead Table Card */
+[data-theme="light"] .lead-table-card,
+body.light-mode .lead-table-card {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .lead-filter-bar,
+body.light-mode .lead-filter-bar {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .lead-search,
+body.light-mode .lead-search {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.15) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-search input,
+body.light-mode .lead-search input {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-search input::placeholder,
+body.light-mode .lead-search input::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .lead-filter-select,
+body.light-mode .lead-filter-select {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.15) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-filter-select option,
+body.light-mode .lead-filter-select option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-table-header strong,
+body.light-mode .lead-table-header strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-table th,
+body.light-mode .lead-table th {
+  background: rgba(241, 245, 249, 0.8) !important;
+  color: #475569 !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .lead-table td,
+body.light-mode .lead-table td {
+  color: #0f172a !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .lead-table strong,
+body.light-mode .lead-table strong {
+  color: #0f172a !important;
+}
+
+/* Lead Table User / Uploader Cell */
+[data-theme="light"] .lead-uploader-clickable,
+body.light-mode .lead-uploader-clickable {
+  background: rgba(15, 23, 42, 0.04) !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+}
+
+[data-theme="light"] .lead-uploader-clickable:hover,
+body.light-mode .lead-uploader-clickable:hover {
+  background: rgba(99, 102, 241, 0.1) !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+[data-theme="light"] .lead-uploader-name,
+body.light-mode .lead-uploader-name {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-uploader-sub,
+body.light-mode .lead-uploader-sub {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-uploader-avatar-mini,
+body.light-mode .lead-uploader-avatar-mini {
+  box-shadow: 0 2px 5px rgba(99, 102, 241, 0.25) !important;
+}
+
+/* Sales Team Lead Breakdown Section */
+[data-theme="light"] .lead-users-section,
+body.light-mode .lead-users-section {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .lead-users-heading-wrap h3,
+body.light-mode .lead-users-heading-wrap h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-users-title-group p,
+body.light-mode .lead-users-title-group p {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-users-count-tag,
+body.light-mode .lead-users-count-tag {
+  background: rgba(15, 23, 42, 0.06) !important;
+  color: #334155 !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .lead-users-search input,
+body.light-mode .lead-users-search input {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.16) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-users-search input::placeholder,
+body.light-mode .lead-users-search input::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .lead-users-search svg,
+body.light-mode .lead-users-search svg {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-users-search-clear,
+body.light-mode .lead-users-search-clear {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-users-reset-btn,
+body.light-mode .lead-users-reset-btn {
+  background: rgba(99, 102, 241, 0.1) !important;
+  border: 1px solid rgba(99, 102, 241, 0.25) !important;
+  color: #4338ca !important;
+}
+
+[data-theme="light"] .lead-users-reset-btn:hover,
+body.light-mode .lead-users-reset-btn:hover {
+  background: rgba(99, 102, 241, 0.18) !important;
+  color: #312e81 !important;
+}
+
+/* User Card in Light Mode */
+[data-theme="light"] .lead-user-card,
+body.light-mode .lead-user-card {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.09) !important;
+  box-shadow: 0 4px 14px -3px rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .lead-user-card:hover,
+body.light-mode .lead-user-card:hover {
+  background: #ffffff !important;
+  border-color: rgba(99, 102, 241, 0.35) !important;
+  box-shadow: 0 10px 24px -4px rgba(99, 102, 241, 0.14) !important;
+}
+
+[data-theme="light"] .lead-user-card.active,
+body.light-mode .lead-user-card.active {
+  border-color: #6366f1 !important;
+  background: rgba(238, 242, 255, 0.85) !important;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25), 0 10px 25px -4px rgba(99, 102, 241, 0.15) !important;
+}
+
+[data-theme="light"] .lead-user-card.all-card,
+body.light-mode .lead-user-card.all-card {
+  background: linear-gradient(135deg, rgba(243, 232, 255, 0.5) 0%, #ffffff 100%) !important;
+  border-color: rgba(168, 85, 247, 0.25) !important;
+}
+
+[data-theme="light"] .lead-user-card.all-card.active,
+body.light-mode .lead-user-card.all-card.active {
+  background: rgba(243, 232, 255, 0.85) !important;
+  border-color: #a855f7 !important;
+  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.25), 0 10px 25px -4px rgba(168, 85, 247, 0.15) !important;
+}
+
+[data-theme="light"] .lead-user-card-name,
+body.light-mode .lead-user-card-name {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-user-card-email,
+body.light-mode .lead-user-card-email {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-user-total-number,
+body.light-mode .lead-user-total-number {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-user-total-label,
+body.light-mode .lead-user-total-label {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .lead-user-cta-text,
+body.light-mode .lead-user-cta-text {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-user-active-indicator,
+body.light-mode .lead-user-active-indicator {
+  color: #4f46e5 !important;
+}
+
+/* User Filter Banner */
+[data-theme="light"] .lead-active-user-banner,
+body.light-mode .lead-active-user-banner {
+  background: rgba(238, 242, 255, 0.9) !important;
+  border: 1.5px solid rgba(99, 102, 241, 0.3) !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.08) !important;
+}
+
+[data-theme="light"] .lead-active-user-text strong,
+body.light-mode .lead-active-user-text strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-active-user-text span,
+body.light-mode .lead-active-user-text span {
+  color: #4338ca !important;
+}
+
+[data-theme="light"] .lead-active-user-clear-btn,
+body.light-mode .lead-active-user-clear-btn {
+  background: #ffffff !important;
+  border: 1px solid rgba(99, 102, 241, 0.25) !important;
+  color: #4338ca !important;
+}
+
+[data-theme="light"] .lead-active-user-clear-btn:hover,
+body.light-mode .lead-active-user-clear-btn:hover {
+  background: rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Lead Kanban in Sales Lead */
+[data-theme="light"] .lead-kanban-column,
+body.light-mode .lead-kanban-column {
+  background: rgba(248, 250, 252, 0.85) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .lead-column-title,
+body.light-mode .lead-column-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-count-badge,
+body.light-mode .lead-count-badge {
+  background: rgba(15, 23, 42, 0.06) !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .lead-card,
+body.light-mode .lead-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+}
+
+[data-theme="light"] .lead-card:hover,
+body.light-mode .lead-card:hover {
+  border-color: rgba(99, 102, 241, 0.3) !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .lead-card-title,
+body.light-mode .lead-card-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-card-company,
+body.light-mode .lead-card-company {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .lead-card-contact,
+body.light-mode .lead-card-contact {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-card-value,
+body.light-mode .lead-card-value {
+  color: #0f172a !important;
+}
+
+/* ==========================================================================
+   SALES USER PANEL LEADS PAGE (LIGHT MODE)
+   ========================================================================== */
+
+/* Page container & Header */
+[data-theme="light"] .lead-page,
+body.light-mode .lead-page {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-header h1,
+body.light-mode .lead-header h1 {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .lead-header p,
+body.light-mode .lead-header p {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .lead-history-btn,
+body.light-mode .lead-history-btn,
+[data-theme="light"] .lead-refresh-btn,
+body.light-mode .lead-refresh-btn {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.16) !important;
+  color: #334155 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .lead-history-btn:hover:not(:disabled),
+body.light-mode .lead-history-btn:hover:not(:disabled),
+[data-theme="light"] .lead-refresh-btn:hover:not(:disabled),
+body.light-mode .lead-refresh-btn:hover:not(:disabled) {
+  background: #f8fafc !important;
+  border-color: rgba(15, 23, 42, 0.28) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-history-btn svg,
+body.light-mode .lead-history-btn svg,
+[data-theme="light"] .lead-refresh-btn svg,
+body.light-mode .lead-refresh-btn svg {
+  stroke: #4f46e5 !important;
+}
+
+[data-theme="light"] .lead-history-btn:disabled,
+body.light-mode .lead-history-btn:disabled,
+[data-theme="light"] .lead-refresh-btn:disabled,
+body.light-mode .lead-refresh-btn:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  background: #f1f5f9 !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+}
+
+[data-theme="light"] .lead-refresh-btn:disabled svg,
+body.light-mode .lead-refresh-btn:disabled svg {
+  stroke: #94a3b8 !important;
+}
+
+/* Summary Cards (Metrics) */
+[data-theme="light"] .lead-summary-card,
+body.light-mode .lead-summary-card {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .lead-summary-card:hover,
+body.light-mode .lead-summary-card:hover {
+  border-color: rgba(99, 102, 241, 0.35) !important;
+  box-shadow: 0 12px 30px -4px rgba(99, 102, 241, 0.12) !important;
+}
+
+[data-theme="light"] .lead-summary-card span,
+body.light-mode .lead-summary-card span {
+  color: #64748b !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-summary-card strong,
+body.light-mode .lead-summary-card strong {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+/* Filter Card & Search Controls */
+[data-theme="light"] .lead-filter-card,
+body.light-mode .lead-filter-card {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .lead-search,
+body.light-mode .lead-search,
+[data-theme="light"] .lead-filter-select,
+body.light-mode .lead-filter-select {
+  background: #f8fafc !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.14) !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .lead-search::placeholder,
+body.light-mode .lead-search::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .lead-search:focus,
+body.light-mode .lead-search:focus,
+[data-theme="light"] .lead-filter-select:focus,
+body.light-mode .lead-filter-select:focus {
+  background: #ffffff !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
+}
+
+[data-theme="light"] .lead-filter-select option,
+body.light-mode .lead-filter-select option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-clear-btn,
+body.light-mode .lead-clear-btn {
+  background: #f1f5f9 !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.14) !important;
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-clear-btn:hover,
+body.light-mode .lead-clear-btn:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* Batch Action Bar */
+[data-theme="light"] .lead-batch-bar,
+body.light-mode .lead-batch-bar {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.12) !important;
+}
+
+[data-theme="light"] .lead-batch-info span:not(.lead-batch-badge),
+body.light-mode .lead-batch-info span:not(.lead-batch-badge) {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-batch-cancel-btn,
+body.light-mode .lead-batch-cancel-btn {
+  background: #f8fafc !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.16) !important;
+  color: #475569 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-batch-cancel-btn:hover,
+body.light-mode .lead-batch-cancel-btn:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+/* Leads Table Card */
+[data-theme="light"] .lead-table-card,
+body.light-mode .lead-table-card {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .lead-table th,
+body.light-mode .lead-table th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  font-weight: 700 !important;
+  border-bottom: 1.5px solid rgba(15, 23, 42, 0.09) !important;
+}
+
+[data-theme="light"] .lead-table td,
+body.light-mode .lead-table td {
+  color: #334155 !important;
+  font-weight: 500 !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .lead-table tbody tr:hover,
+body.light-mode .lead-table tbody tr:hover {
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .lead-table tbody tr.row-selected,
+body.light-mode .lead-table tbody tr.row-selected {
+  background: #eef2ff !important;
+}
+
+[data-theme="light"] .lead-table tbody tr.row-selected:hover,
+body.light-mode .lead-table tbody tr.row-selected:hover {
+  background: #e0e7ff !important;
+}
+
+[data-theme="light"] .lead-name-cell strong,
+body.light-mode .lead-name-cell strong {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+}
+
+/* Status Select Dropdowns */
+[data-theme="light"] .lead-status-select,
+body.light-mode .lead-status-select,
+[data-theme="light"] .lead-substatus-select,
+body.light-mode .lead-substatus-select {
+  background-color: #f8fafc !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.16) !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-status-select:focus,
+body.light-mode .lead-status-select:focus,
+[data-theme="light"] .lead-substatus-select:focus,
+body.light-mode .lead-substatus-select:focus {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
+  background-color: #ffffff !important;
+}
+
+[data-theme="light"] .lead-status-select option,
+body.light-mode .lead-status-select option,
+[data-theme="light"] .lead-substatus-select option,
+body.light-mode .lead-substatus-select option {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* Status Pill Accent Styles in Light Mode */
+[data-theme="light"] .lead-status-select.status-interested,
+body.light-mode .lead-status-select.status-interested {
+  background: #f0fdf4 !important;
+  border-color: #86efac !important;
+  color: #15803d !important;
+}
+
+[data-theme="light"] .lead-status-select.status-not-interested,
+body.light-mode .lead-status-select.status-not-interested {
+  background: #fef2f2 !important;
+  border-color: #fca5a5 !important;
+  color: #b91c1c !important;
+}
+
+[data-theme="light"] .lead-status-select.status-no-contact,
+body.light-mode .lead-status-select.status-no-contact {
+  background: #fff7ed !important;
+  border-color: #fdba74 !important;
+  color: #c2410c !important;
+}
+
+[data-theme="light"] .lead-status-select.status-follow-up,
+body.light-mode .lead-status-select.status-follow-up {
+  background: #f0f9ff !important;
+  border-color: #7dd3fc !important;
+  color: #0369a1 !important;
+}
+
+[data-theme="light"] .lead-status-select.status-junk,
+body.light-mode .lead-status-select.status-junk {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .lead-no-substatus,
+body.light-mode .lead-no-substatus {
+  color: #94a3b8 !important;
+}
+
+/* Table Footer & Empty / Loading States */
+[data-theme="light"] .lead-table-footer,
+body.light-mode .lead-table-footer {
+  color: #475569 !important;
+  font-weight: 500 !important;
+}
+
+[data-theme="light"] .lead-table-footer strong,
+body.light-mode .lead-table-footer strong {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-empty h3,
+body.light-mode .lead-empty h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-empty p,
+body.light-mode .lead-empty p,
+[data-theme="light"] .lead-loading p,
+body.light-mode .lead-loading p {
+  color: #475569 !important;
+}
+
+/* Deletion History Modal in Light Mode */
+[data-theme="light"] .lead-history-card,
+body.light-mode .lead-history-card {
+  background: #f8fafc !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.1) !important;
+}
+
+[data-theme="light"] .lead-history-card:hover,
+body.light-mode .lead-history-card:hover {
+  background: #f1f5f9 !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+[data-theme="light"] .lead-history-user strong,
+body.light-mode .lead-history-user strong {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-history-user .lead-user-email,
+body.light-mode .lead-history-user .lead-user-email {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-history-time,
+body.light-mode .lead-history-time {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .lead-history-details,
+body.light-mode .lead-history-details {
+  background: #ffffff !important;
+  border-top: 1.5px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .lead-history-details-title,
+body.light-mode .lead-history-details-title {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-history-table th,
+body.light-mode .lead-history-table th {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  font-weight: 700 !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .lead-history-table td,
+body.light-mode .lead-history-table td {
+  color: #334155 !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .lead-history-table strong,
+body.light-mode .lead-history-table strong {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-history-empty h4,
+body.light-mode .lead-history-empty h4 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-history-empty p,
+body.light-mode .lead-history-empty p {
+  color: #475569 !important;
+}
+
+/* ==========================================================================
+   LEAD NOTES BUTTON & MODAL (LIGHT MODE)
+   ========================================================================== */
+
+[data-theme="light"] .lead-add-note-btn,
+body.light-mode .lead-add-note-btn {
+  background: #f8fafc !important;
+  border: 1.5px dashed #cbd5e1 !important;
+  color: #334155 !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  padding: 5px 12px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  white-space: nowrap !important;
+}
+
+[data-theme="light"] .lead-add-note-btn svg,
+body.light-mode .lead-add-note-btn svg {
+  stroke: #4f46e5 !important;
+}
+
+[data-theme="light"] .lead-add-note-btn span,
+body.light-mode .lead-add-note-btn span {
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-add-note-btn:hover,
+body.light-mode .lead-add-note-btn:hover {
+  background: #eef2ff !important;
+  border-color: #6366f1 !important;
+  border-style: solid !important;
+  color: #4338ca !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 8px rgba(99, 102, 241, 0.18) !important;
+}
+
+[data-theme="light"] .lead-add-note-btn:hover span,
+body.light-mode .lead-add-note-btn:hover span {
+  color: #4338ca !important;
+}
+
+[data-theme="light"] .lead-note-badge,
+body.light-mode .lead-note-badge {
+  background: #eef2ff !important;
+  border: 1.5px solid #c7d2fe !important;
+  color: #3730a3 !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgba(99, 102, 241, 0.08) !important;
+}
+
+[data-theme="light"] .lead-note-badge:hover,
+body.light-mode .lead-note-badge:hover {
+  background: #e0e7ff !important;
+  border-color: #818cf8 !important;
+  color: #1e1b4b !important;
+  box-shadow: 0 3px 8px rgba(99, 102, 241, 0.18) !important;
+}
+
+[data-theme="light"] .lead-note-snippet,
+body.light-mode .lead-note-snippet {
+  color: #3730a3 !important;
+  font-weight: 600 !important;
+}
+
+/* Notes Modal Box in Light Mode */
+[data-theme="light"] .lead-notes-modal-box,
+body.light-mode .lead-notes-modal-box {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.25) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-notes-icon-wrapper,
+body.light-mode .lead-notes-icon-wrapper {
+  background: #eef2ff !important;
+  border: 1.5px solid #c7d2fe !important;
+  color: #4f46e5 !important;
+}
+
+[data-theme="light"] .lead-notes-badge-tag,
+body.light-mode .lead-notes-badge-tag {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .lead-notes-context-bar,
+body.light-mode .lead-notes-context-bar {
+  background: #f8fafc !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .lead-notes-context-item .label,
+body.light-mode .lead-notes-context-item .label {
+  color: #64748b !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-notes-context-item strong,
+body.light-mode .lead-notes-context-item strong {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-notes-editor-label,
+body.light-mode .lead-notes-editor-label {
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-timestamp-btn,
+body.light-mode .lead-timestamp-btn {
+  background: #eef2ff !important;
+  border: 1.5px solid #c7d2fe !important;
+  color: #4338ca !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-timestamp-btn:hover,
+body.light-mode .lead-timestamp-btn:hover {
+  background: #e0e7ff !important;
+  border-color: #818cf8 !important;
+  color: #1e1b4b !important;
+}
+
+[data-theme="light"] .lead-clear-note-text-btn,
+body.light-mode .lead-clear-note-text-btn {
+  color: #64748b !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .lead-clear-note-text-btn:hover,
+body.light-mode .lead-clear-note-text-btn:hover {
+  color: #dc2626 !important;
+}
+
+[data-theme="light"] .lead-notes-textarea,
+body.light-mode .lead-notes-textarea {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.18) !important;
+  color: #0f172a !important;
+  box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+  font-weight: 500 !important;
+}
+
+[data-theme="light"] .lead-notes-textarea:focus,
+body.light-mode .lead-notes-textarea:focus {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+  background: #ffffff !important;
+}
+
+[data-theme="light"] .lead-notes-char-count,
+body.light-mode .lead-notes-char-count {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-deleted-notes-preview,
+body.light-mode .lead-deleted-notes-preview {
+  color: #334155 !important;
+}
+
+/* ==========================================================================
+   LEAD CREATED DATE, ROW ACTIONS & DELETE MODALS (LIGHT MODE)
+   ========================================================================== */
+
+/* Created Date in Leads Table */
+[data-theme="light"] .lead-date,
+body.light-mode .lead-date {
+  color: #334155 !important;
+  font-weight: 600 !important;
+  font-size: 12.5px !important;
+  white-space: nowrap !important;
+}
+
+/* Action Delete Buttons in Leads Table */
+[data-theme="light"] .admin-lead-row-delete-btn,
+body.light-mode .admin-lead-row-delete-btn,
+[data-theme="light"] .lead-row-delete-btn,
+body.light-mode .lead-row-delete-btn {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.14) !important;
+  color: #475569 !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  padding: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+[data-theme="light"] .admin-lead-row-delete-btn svg,
+body.light-mode .admin-lead-row-delete-btn svg,
+[data-theme="light"] .lead-row-delete-btn svg,
+body.light-mode .lead-row-delete-btn svg {
+  stroke: currentColor !important;
+}
+
+[data-theme="light"] .admin-lead-row-delete-btn:hover,
+body.light-mode .admin-lead-row-delete-btn:hover,
+[data-theme="light"] .lead-row-delete-btn:hover,
+body.light-mode .lead-row-delete-btn:hover {
+  background: #fee2e2 !important;
+  border-color: #f87171 !important;
+  color: #dc2626 !important;
+  transform: scale(1.08) !important;
+}
+
+/* Batch Delete Buttons in Leads Table */
+[data-theme="light"] .admin-lead-batch-delete-btn,
+body.light-mode .admin-lead-batch-delete-btn,
+[data-theme="light"] .lead-batch-delete-btn,
+body.light-mode .lead-batch-delete-btn {
+  background: #fee2e2 !important;
+  border: 1.5px solid #fca5a5 !important;
+  color: #b91c1c !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .admin-lead-batch-delete-btn:hover,
+body.light-mode .admin-lead-batch-delete-btn:hover,
+[data-theme="light"] .lead-batch-delete-btn:hover,
+body.light-mode .lead-batch-delete-btn:hover {
+  background: #fecaca !important;
+  border-color: #ef4444 !important;
+  color: #991b1b !important;
+}
+
+/* Delete Confirmation Modal in Light Mode */
+[data-theme="light"] .lead-modal-header.danger,
+body.light-mode .lead-modal-header.danger {
+  background: #fef2f2 !important;
+  border-bottom: 1.5px solid #fecaca !important;
+}
+
+[data-theme="light"] .lead-modal-header.danger h3,
+body.light-mode .lead-modal-header.danger h3 {
+  color: #991b1b !important;
+}
+
+[data-theme="light"] .lead-modal-header.danger p,
+body.light-mode .lead-modal-header.danger p {
+  color: #b91c1c !important;
+}
+
+[data-theme="light"] .lead-modal-icon-danger,
+body.light-mode .lead-modal-icon-danger {
+  background: #fee2e2 !important;
+  border: 1.5px solid #fca5a5 !important;
+  color: #dc2626 !important;
+}
+
+[data-theme="light"] .lead-modal-desc,
+body.light-mode .lead-modal-desc {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .lead-modal-desc strong,
+body.light-mode .lead-modal-desc strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-delete-preview-list,
+body.light-mode .lead-delete-preview-list {
+  background: #f8fafc !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .lead-preview-item,
+body.light-mode .lead-preview-item {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .lead-preview-name,
+body.light-mode .lead-preview-name {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-preview-phone,
+body.light-mode .lead-preview-phone {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .lead-preview-company,
+body.light-mode .lead-preview-company {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-preview-more,
+body.light-mode .lead-preview-more {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-modal-btn.cancel,
+body.light-mode .lead-modal-btn.cancel {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.16) !important;
+  color: #334155 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-modal-btn.cancel:hover,
+body.light-mode .lead-modal-btn.cancel:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: rgba(15, 23, 42, 0.25) !important;
+}
+
+[data-theme="light"] .lead-modal-btn.confirm-delete,
+body.light-mode .lead-modal-btn.confirm-delete {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .lead-modal-btn.confirm-delete:hover,
+body.light-mode .lead-modal-btn.confirm-delete:hover {
+  background: #dc2626 !important;
+}
+
+/* --------------------------------------------------------------------------
+   11. DATA TABLES EVERYWHERE
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"] table,
+body.light-mode table,
+[data-theme="light"] .table,
+body.light-mode .table,
+[data-theme="light"] .custom-table,
+body.light-mode .custom-table,
+[data-theme="light"] .admin-table,
+body.light-mode .admin-table {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] table thead th,
+body.light-mode table thead th,
+[data-theme="light"] .table thead th,
+body.light-mode .table thead th,
+[data-theme="light"] .admin-table th,
+body.light-mode .admin-table th {
+  background: rgba(241, 245, 249, 0.8) !important;
+  color: #475569 !important;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] table tbody tr,
+body.light-mode table tbody tr,
+[data-theme="light"] .table tbody tr,
+body.light-mode .table tbody tr,
+[data-theme="light"] .admin-table tbody tr,
+body.light-mode .admin-table tbody tr {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] table tbody tr:hover,
+body.light-mode table tbody tr:hover,
+[data-theme="light"] .table tbody tr:hover,
+body.light-mode .table tbody tr:hover,
+[data-theme="light"] .admin-table tbody tr:hover,
+body.light-mode .admin-table tbody tr:hover {
+  background: rgba(241, 245, 249, 0.6) !important;
+}
+
+[data-theme="light"] table tbody td,
+body.light-mode table tbody td,
+[data-theme="light"] .table tbody td,
+body.light-mode .table tbody td,
+[data-theme="light"] .admin-table td,
+body.light-mode .admin-table td {
+  color: #0f172a !important;
+}
+
+/* --------------------------------------------------------------------------
+   12. FORM INPUTS, SELECTS, LABELS & SEARCH BOXES EVERYWHERE
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"] input[type="text"],
+body.light-mode input[type="text"],
+[data-theme="light"] input[type="email"],
+body.light-mode input[type="email"],
+[data-theme="light"] input[type="password"],
+body.light-mode input[type="password"],
+[data-theme="light"] input[type="date"],
+body.light-mode input[type="date"],
+[data-theme="light"] input[type="number"],
+body.light-mode input[type="number"],
+[data-theme="light"] input[type="search"],
+body.light-mode input[type="search"],
+[data-theme="light"] select,
+body.light-mode select,
+[data-theme="light"] textarea,
+body.light-mode textarea,
+[data-theme="light"] .form-control,
+body.light-mode .form-control,
+[data-theme="light"] .modal-form-control,
+body.light-mode .modal-form-control,
+[data-theme="light"] .user-form-input,
+body.light-mode .user-form-input {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.16) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] select option,
+body.light-mode select option,
+[data-theme="light"] .modal-form-control option,
+body.light-mode .modal-form-control option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] input::placeholder,
+body.light-mode input::placeholder,
+[data-theme="light"] textarea::placeholder,
+body.light-mode textarea::placeholder,
+[data-theme="light"] .modal-form-control::placeholder,
+body.light-mode .modal-form-control::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] input:focus,
+body.light-mode input:focus,
+[data-theme="light"] select:focus,
+body.light-mode select:focus,
+[data-theme="light"] textarea:focus,
+body.light-mode textarea:focus,
+[data-theme="light"] .modal-form-control:focus,
+body.light-mode .modal-form-control:focus,
+[data-theme="light"] .user-form-input:focus,
+body.light-mode .user-form-input:focus {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+  outline: none !important;
+}
+
+[data-theme="light"] label,
+body.light-mode label,
+[data-theme="light"] .form-label,
+body.light-mode .form-label,
+[data-theme="light"] .modal-form-label,
+body.light-mode .modal-form-label,
+[data-theme="light"] .user-form-label,
+body.light-mode .user-form-label,
+[data-theme="light"] .form-field label,
+body.light-mode .form-field label {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+/* --------------------------------------------------------------------------
+   13. MODALS & DIALOGS EVERYWHERE (USER, TASK, COMPANY, LEAD)
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"] .modal-content,
+body.light-mode .modal-content,
+[data-theme="light"] .task-modal-dialog,
+body.light-mode .task-modal-dialog,
+[data-theme="light"] .user-modal,
+body.light-mode .user-modal,
+[data-theme="light"] .company-modal,
+body.light-mode .company-modal,
+[data-theme="light"] .lead-modal-box,
+body.light-mode .lead-modal-box,
+[data-theme="light"] .reminder-modal .modal-content,
+body.light-mode .reminder-modal .modal-content,
+[data-theme="light"] .reminder-view-modal .modal-content,
+body.light-mode .reminder-view-modal .modal-content {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.22) !important;
+}
+
+[data-theme="light"] .modal-header,
+body.light-mode .modal-header,
+[data-theme="light"] .task-modal-header,
+body.light-mode .task-modal-header,
+[data-theme="light"] .user-modal-header,
+body.light-mode .user-modal-header,
+[data-theme="light"] .company-modal-header,
+body.light-mode .company-modal-header,
+[data-theme="light"] .lead-modal-header,
+body.light-mode .lead-modal-header,
+[data-theme="light"] .reminder-view-modal .modal-header,
+body.light-mode .reminder-view-modal .modal-header {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .modal-title,
+body.light-mode .modal-title,
+[data-theme="light"] .modal-header h2,
+body.light-mode .modal-header h2,
+[data-theme="light"] .modal-header h3,
+body.light-mode .modal-header h3,
+[data-theme="light"] .task-modal-header h3,
+body.light-mode .task-modal-header h3,
+[data-theme="light"] .user-modal-header h5,
+body.light-mode .user-modal-header h5,
+[data-theme="light"] .company-modal-header h2,
+body.light-mode .company-modal-header h2,
+[data-theme="light"] .lead-modal-header h3,
+body.light-mode .lead-modal-header h3,
+[data-theme="light"] .reminder-view-header-title h4,
+body.light-mode .reminder-view-header-title h4,
+[data-theme="light"] .reminder-view-title,
+body.light-mode .reminder-view-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .modal-body,
+body.light-mode .modal-body,
+[data-theme="light"] .task-modal-body,
+body.light-mode .task-modal-body,
+[data-theme="light"] .user-modal-body,
+body.light-mode .user-modal-body,
+[data-theme="light"] .lead-modal-body,
+body.light-mode .lead-modal-body,
+[data-theme="light"] .lead-modal-desc,
+body.light-mode .lead-modal-desc,
+[data-theme="light"] .reminder-view-modal .modal-body,
+body.light-mode .reminder-view-modal .modal-body {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .modal-footer,
+body.light-mode .modal-footer,
+[data-theme="light"] .task-modal-footer,
+body.light-mode .task-modal-footer,
+[data-theme="light"] .user-modal-footer,
+body.light-mode .user-modal-footer,
+[data-theme="light"] .company-modal-footer,
+body.light-mode .company-modal-footer,
+[data-theme="light"] .lead-modal-footer,
+body.light-mode .lead-modal-footer {
+  border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .company-close-btn,
+body.light-mode .company-close-btn,
+[data-theme="light"] .lead-modal-close-btn,
+body.light-mode .lead-modal-close-btn,
+[data-theme="light"] .user-modal-close-btn,
+body.light-mode .user-modal-close-btn,
+[data-theme="light"] .task-modal-close-btn,
+body.light-mode .task-modal-close-btn,
+[data-theme="light"] .task-modal-header .btn-close,
+body.light-mode .task-modal-header .btn-close {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.16) !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .company-close-btn:hover,
+body.light-mode .company-close-btn:hover,
+[data-theme="light"] .lead-modal-close-btn:hover,
+body.light-mode .lead-modal-close-btn:hover,
+[data-theme="light"] .user-modal-close-btn:hover,
+body.light-mode .user-modal-close-btn:hover,
+[data-theme="light"] .task-modal-close-btn:hover,
+body.light-mode .task-modal-close-btn:hover,
+[data-theme="light"] .task-modal-header .btn-close:hover,
+body.light-mode .task-modal-header .btn-close:hover {
+  background: #fee2e2 !important;
+  border-color: #f87171 !important;
+  color: #dc2626 !important;
+  transform: rotate(90deg) !important;
+}
+
+[data-theme="light"] .company-close-btn svg,
+body.light-mode .company-close-btn svg,
+[data-theme="light"] .user-modal-close-btn svg,
+body.light-mode .user-modal-close-btn svg,
+[data-theme="light"] .task-modal-close-btn svg,
+body.light-mode .task-modal-close-btn svg,
+[data-theme="light"] .task-modal-header .btn-close svg,
+body.light-mode .task-modal-header .btn-close svg {
+  stroke: currentColor !important;
+}
+
+[data-theme="light"] .cancel-btn,
+body.light-mode .cancel-btn,
+[data-theme="light"] .company-cancel-btn,
+body.light-mode .company-cancel-btn,
+[data-theme="light"] .btn-modal-cancel,
+body.light-mode .btn-modal-cancel,
+[data-theme="light"] .user-modal-cancel-btn,
+body.light-mode .user-modal-cancel-btn {
+  background: #ffffff !important;
+  color: #334155 !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.18) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+
+[data-theme="light"] .cancel-btn:hover,
+body.light-mode .cancel-btn:hover,
+[data-theme="light"] .company-cancel-btn:hover,
+body.light-mode .company-cancel-btn:hover,
+[data-theme="light"] .btn-modal-cancel:hover,
+body.light-mode .btn-modal-cancel:hover,
+[data-theme="light"] .user-modal-cancel-btn:hover,
+body.light-mode .user-modal-cancel-btn:hover {
+  background: #f1f5f9 !important;
+  border-color: rgba(15, 23, 42, 0.28) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .user-modal-submit-btn,
+body.light-mode .user-modal-submit-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+  border: 1px solid #4338ca !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3) !important;
+}
+
+[data-theme="light"] .user-modal-submit-btn:hover:not(:disabled),
+body.light-mode .user-modal-submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%) !important;
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Modal Priority/Status Capsules */
+[data-theme="light"] .modal-capsule-btn,
+body.light-mode .modal-capsule-btn {
+  background: rgba(15, 23, 42, 0.04) !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .modal-capsule-btn.low.active,
+body.light-mode .modal-capsule-btn.low.active {
+  background: rgba(2, 132, 199, 0.12) !important;
+  border-color: rgba(2, 132, 199, 0.4) !important;
+  color: #0369a1 !important;
+}
+
+[data-theme="light"] .modal-capsule-btn.medium.active,
+body.light-mode .modal-capsule-btn.medium.active {
+  background: rgba(217, 119, 6, 0.12) !important;
+  border-color: rgba(217, 119, 6, 0.4) !important;
+  color: #b45309 !important;
+}
+
+[data-theme="light"] .modal-capsule-btn.high.active,
+body.light-mode .modal-capsule-btn.high.active {
+  background: rgba(220, 38, 38, 0.12) !important;
+  border-color: rgba(220, 38, 38, 0.4) !important;
+  color: #b91c1c !important;
+}
+
+/* --------------------------------------------------------------------------
+   14. COMPANY CALENDAR, MY CALENDAR & REMINDER DETAILS (LIGHT MODE)
+   -------------------------------------------------------------------------- */
+
+/* Page containers */
+[data-theme="light"] .company-calendar-page,
+body.light-mode .company-calendar-page,
+[data-theme="light"] .calendar-page,
+body.light-mode .calendar-page,
+[data-theme="light"] .my-calendar-page,
+body.light-mode .my-calendar-page {
+  color: #0f172a !important;
+}
+
+/* Headers */
+[data-theme="light"] .company-calendar-header h1,
+body.light-mode .company-calendar-header h1,
+[data-theme="light"] .calendar-header h1,
+body.light-mode .calendar-header h1,
+[data-theme="light"] .calendar-header h2,
+body.light-mode .calendar-header h2 {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+[data-theme="light"] .company-calendar-header p,
+body.light-mode .company-calendar-header p,
+[data-theme="light"] .calendar-header p,
+body.light-mode .calendar-header p {
+  color: #64748b !important;
+}
+
+/* Calendar Card Container */
+[data-theme="light"] .company-calendar-card,
+body.light-mode .company-calendar-card,
+[data-theme="light"] .calendar-card,
+body.light-mode .calendar-card {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
+  box-shadow: 0 12px 30px -6px rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .calendar-loading,
+body.light-mode .calendar-loading,
+[data-theme="light"] .company-calendar-loading,
+body.light-mode .company-calendar-loading {
+  color: #64748b !important;
+}
+
+/* FullCalendar Toolbar & Controls */
+[data-theme="light"] .fc .fc-toolbar-title,
+body.light-mode .fc .fc-toolbar-title {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .fc .fc-button,
+body.light-mode .fc .fc-button {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.16) !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .fc .fc-button:hover,
+body.light-mode .fc .fc-button:hover {
+  background: rgba(15, 23, 42, 0.05) !important;
+  border-color: rgba(15, 23, 42, 0.25) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .fc .fc-button-primary:not(:disabled).fc-button-active,
+body.light-mode .fc .fc-button-primary:not(:disabled).fc-button-active,
+[data-theme="light"] .fc .fc-button-primary:not(:disabled):active,
+body.light-mode .fc .fc-button-primary:not(:disabled):active {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
+  border-color: #4f46e5 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35) !important;
+}
+
+/* Grid Borders & Day Headers */
+[data-theme="light"] .fc-theme-standard td,
+body.light-mode .fc-theme-standard td,
+[data-theme="light"] .fc-theme-standard th,
+body.light-mode .fc-theme-standard th,
+[data-theme="light"] .fc-theme-standard .fc-scrollgrid,
+body.light-mode .fc-theme-standard .fc-scrollgrid {
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .fc-theme-standard th,
+body.light-mode .fc-theme-standard th,
+[data-theme="light"] .fc-col-header-cell,
+body.light-mode .fc-col-header-cell {
+  background: rgba(241, 245, 249, 0.75) !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .fc-col-header-cell-cushion,
+body.light-mode .fc-col-header-cell-cushion {
+  color: #475569 !important;
+  font-weight: 700 !important;
+}
+
+/* Day Numbers */
+[data-theme="light"] .fc .fc-daygrid-day-number,
+body.light-mode .fc .fc-daygrid-day-number {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .fc .fc-daygrid-day:hover .fc-daygrid-day-number,
+body.light-mode .fc .fc-daygrid-day:hover .fc-daygrid-day-number {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .fc .fc-day-today,
+body.light-mode .fc .fc-day-today {
+  background-color: rgba(99, 102, 241, 0.06) !important;
+}
+
+[data-theme="light"] .fc .fc-day-today .fc-daygrid-day-number,
+body.light-mode .fc .fc-day-today .fc-daygrid-day-number {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+/* Event Chips & Typography */
+[data-theme="light"] .fc-event-time,
+body.light-mode .fc-event-time {
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .fc-event-title,
+body.light-mode .fc-event-title {
+  font-weight: 600 !important;
+}
+
+/* ==========================================================================
+   CALENDAR EVENT / REMINDER DETAILS VIEW MODAL (.reminder-view-modal)
+   ========================================================================== */
+
+/* ==========================================================================
+   CALENDAR EVENT / REMINDER DETAILS VIEW MODAL (.reminder-view-modal)
+   ========================================================================== */
+
+[data-theme="light"] .modal.reminder-view-modal .modal-content,
+body.light-mode .modal.reminder-view-modal .modal-content,
+[data-theme="light"] .reminder-view-modal .modal-content,
+body.light-mode .reminder-view-modal .modal-content {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.22) !important;
+}
+
+[data-theme="light"] .reminder-view-modal .modal-header,
+body.light-mode .reminder-view-modal .modal-header {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: #ffffff !important;
+  padding: 18px 24px !important;
+}
+
+[data-theme="light"] .reminder-view-header-title h4,
+body.light-mode .reminder-view-header-title h4 {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-size: 17px !important;
+}
+
+[data-theme="light"] .reminder-view-header-title svg,
+body.light-mode .reminder-view-header-title svg {
+  stroke: #4f46e5 !important;
+}
+
+[data-theme="light"] .reminder-view-modal .btn-close,
+body.light-mode .reminder-view-modal .btn-close,
+[data-theme="light"] .reminder-view-modal .modal-header .btn-close,
+body.light-mode .reminder-view-modal .modal-header .btn-close {
+  background-color: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.16) !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 1 !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 9px !important;
+  filter: none !important;
+  padding: 0 !important;
+}
+
+[data-theme="light"] .reminder-view-modal .btn-close::before,
+body.light-mode .reminder-view-modal .btn-close::before,
+[data-theme="light"] .reminder-view-modal .modal-header .btn-close::before,
+body.light-mode .reminder-view-modal .modal-header .btn-close::before {
+  content: "✕" !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  line-height: 1 !important;
+}
+
+[data-theme="light"] .reminder-view-modal .btn-close:hover,
+body.light-mode .reminder-view-modal .btn-close:hover,
+[data-theme="light"] .reminder-view-modal .modal-header .btn-close:hover,
+body.light-mode .reminder-view-modal .modal-header .btn-close:hover {
+  background-color: #fee2e2 !important;
+  border-color: #f87171 !important;
+  color: #dc2626 !important;
+  transform: rotate(90deg) !important;
+}
+
+[data-theme="light"] .reminder-view-modal .btn-close:hover::before,
+body.light-mode .reminder-view-modal .btn-close:hover::before,
+[data-theme="light"] .reminder-view-modal .modal-header .btn-close:hover::before,
+body.light-mode .reminder-view-modal .modal-header .btn-close:hover::before {
+  color: #dc2626 !important;
+}
+
+[data-theme="light"] .reminder-view-modal .modal-body,
+body.light-mode .reminder-view-modal .modal-body {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  padding: 22px 24px !important;
+}
+
+/* Hero Section */
+[data-theme="light"] .reminder-view-company-badge,
+body.light-mode .reminder-view-company-badge {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+  border: 1.5px solid #bae6fd !important;
+  font-weight: 700 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 5px 12px !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+}
+
+[data-theme="light"] .reminder-view-company-badge span,
+body.light-mode .reminder-view-company-badge span {
+  color: #0369a1 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .reminder-view-company-badge svg,
+body.light-mode .reminder-view-company-badge svg {
+  stroke: #0284c7 !important;
+}
+
+[data-theme="light"] .reminder-view-title,
+body.light-mode .reminder-view-title {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+  font-size: 20px !important;
+  margin: 0 0 10px !important;
+}
+
+/* Priority Badges in Light Mode */
+[data-theme="light"] .badge-priority,
+body.light-mode .badge-priority {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  padding: 5px 12px !important;
+  border-radius: 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+[data-theme="light"] .badge-priority-low,
+body.light-mode .badge-priority-low {
+  background-color: #ecfdf5 !important;
+  color: #047857 !important;
+  border: 1.5px solid #a7f3d0 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .badge-priority-medium,
+body.light-mode .badge-priority-medium {
+  background-color: #fffbeb !important;
+  color: #b45309 !important;
+  border: 1.5px solid #fde68a !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .badge-priority-high,
+body.light-mode .badge-priority-high {
+  background-color: #fef2f2 !important;
+  color: #b91c1c !important;
+  border: 1.5px solid #fecaca !important;
+  font-weight: 700 !important;
+}
+
+/* Status Badges in Light Mode */
+[data-theme="light"] .badge-status,
+body.light-mode .badge-status {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  padding: 5px 12px !important;
+  border-radius: 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+[data-theme="light"] .badge-status-completed,
+body.light-mode .badge-status-completed {
+  background-color: #f0fdf4 !important;
+  color: #15803d !important;
+  border: 1.5px solid #bbf7d0 !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .badge-status-pending,
+body.light-mode .badge-status-pending {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1.5px solid #cbd5e1 !important;
+  font-weight: 700 !important;
+}
+
+/* Info Grid & Cards */
+[data-theme="light"] .reminder-view-grid,
+body.light-mode .reminder-view-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 12px !important;
+  margin-bottom: 18px !important;
+}
+
+[data-theme="light"] .reminder-view-card,
+body.light-mode .reminder-view-card {
+  background: #f8fafc !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.09) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  border-radius: 14px !important;
+  padding: 12px 14px !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  transition: all 0.15s ease !important;
+}
+
+[data-theme="light"] .reminder-view-card:hover,
+body.light-mode .reminder-view-card:hover {
+  background: #ffffff !important;
+  border-color: rgba(99, 102, 241, 0.35) !important;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08) !important;
+}
+
+[data-theme="light"] .reminder-view-card-icon,
+body.light-mode .reminder-view-card-icon {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(99, 102, 241, 0.2) !important;
+  color: #4f46e5 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 9px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+[data-theme="light"] .reminder-view-card-icon svg,
+body.light-mode .reminder-view-card-icon svg {
+  stroke: #4f46e5 !important;
+}
+
+[data-theme="light"] .reminder-view-card-content,
+body.light-mode .reminder-view-card-content {
+  color: #0f172a !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+}
+
+[data-theme="light"] .reminder-view-card-label,
+body.light-mode .reminder-view-card-label {
+  color: #64748b !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  margin-bottom: 2px !important;
+}
+
+[data-theme="light"] .reminder-view-card-value,
+body.light-mode .reminder-view-card-value {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  word-break: break-word !important;
+}
+
+/* Description & Meeting Agenda Section */
+[data-theme="light"] .reminder-view-desc-section,
+body.light-mode .reminder-view-desc-section {
+  background: #f8fafc !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.09) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
+}
+
+[data-theme="light"] .reminder-view-desc-header,
+body.light-mode .reminder-view-desc-header,
+[data-theme="light"] .reminder-view-desc-header span,
+body.light-mode .reminder-view-desc-header span {
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+}
+
+[data-theme="light"] .reminder-view-desc-header svg,
+body.light-mode .reminder-view-desc-header svg {
+  stroke: #475569 !important;
+}
+
+[data-theme="light"] .reminder-view-desc-content,
+body.light-mode .reminder-view-desc-content {
+  color: #0f172a !important;
+  font-weight: 500 !important;
+  font-size: 13.5px !important;
+  line-height: 1.6 !important;
+}
+
+[data-theme="light"] .reminder-view-desc-empty,
+body.light-mode .reminder-view-desc-empty {
+  color: #64748b !important;
+  font-style: italic !important;
+  font-size: 13px !important;
+}
+
+/* Footer & Buttons */
+[data-theme="light"] .reminder-view-modal .modal-footer,
+body.light-mode .reminder-view-modal .modal-footer {
+  border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: #f8fafc !important;
+  padding: 16px 24px !important;
+}
+
+[data-theme="light"] .btn-light-custom,
+body.light-mode .btn-light-custom {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.16) !important;
+  color: #334155 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+
+[data-theme="light"] .btn-light-custom:hover,
+body.light-mode .btn-light-custom:hover {
+  background: #f1f5f9 !important;
+  border-color: rgba(15, 23, 42, 0.25) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .reminder-btn-edit,
+body.light-mode .reminder-btn-edit {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3) !important;
+}
+
+[data-theme="light"] .btn-danger-custom,
+body.light-mode .btn-danger-custom {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+
+/* ==========================================================================
+   ADD / EDIT REMINDER MODALS (.company-reminder-modal & .reminder-modal)
+   ========================================================================== */
+
+[data-theme="light"] .company-reminder-modal .modal-content,
+body.light-mode .company-reminder-modal .modal-content,
+[data-theme="light"] .reminder-modal .modal-content,
+body.light-mode .reminder-modal .modal-content {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.22) !important;
+}
+
+[data-theme="light"] .company-reminder-modal .modal-header,
+body.light-mode .company-reminder-modal .modal-header,
+[data-theme="light"] .reminder-modal .modal-header,
+body.light-mode .reminder-modal .modal-header {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: #ffffff !important;
+}
+
+[data-theme="light"] .company-reminder-modal .modal-title,
+body.light-mode .company-reminder-modal .modal-title,
+[data-theme="light"] .reminder-modal .modal-title,
+body.light-mode .reminder-modal .modal-title {
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+[data-theme="light"] .company-reminder-modal .form-label,
+body.light-mode .company-reminder-modal .form-label,
+[data-theme="light"] .reminder-modal .form-label,
+body.light-mode .reminder-modal .form-label {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .company-reminder-modal .form-control,
+body.light-mode .company-reminder-modal .form-control,
+[data-theme="light"] .reminder-modal .form-control,
+body.light-mode .reminder-modal .form-control {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.18) !important;
+  color: #0f172a !important;
+  color-scheme: light !important;
+}
+
+[data-theme="light"] .company-reminder-modal .form-select,
+body.light-mode .company-reminder-modal .form-select,
+[data-theme="light"] .reminder-modal .form-select,
+body.light-mode .reminder-modal .form-select,
+[data-theme="light"] .company-reminder-select,
+body.light-mode .company-reminder-select {
+  background-color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%230f172a' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 14px center !important;
+  background-size: 16px 12px !important;
+  padding-right: 40px !important;
+  border: 1px solid rgba(15, 23, 42, 0.18) !important;
+  color: #0f172a !important;
+  color-scheme: light !important;
+}
+
+[data-theme="light"] .company-reminder-modal .form-select option,
+body.light-mode .company-reminder-modal .form-select option,
+[data-theme="light"] .reminder-modal .form-select option,
+body.light-mode .reminder-modal .form-select option,
+[data-theme="light"] .company-reminder-select option,
+body.light-mode .company-reminder-select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .company-reminder-modal .form-control:focus,
+body.light-mode .company-reminder-modal .form-control:focus,
+[data-theme="light"] .company-reminder-modal .form-select:focus,
+body.light-mode .company-reminder-modal .form-select:focus,
+[data-theme="light"] .reminder-modal .form-control:focus,
+body.light-mode .reminder-modal .form-control:focus,
+[data-theme="light"] .reminder-modal .form-select:focus,
+body.light-mode .reminder-modal .form-select:focus {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+}
+
+[data-theme="light"] .company-reminder-modal .modal-footer,
+body.light-mode .company-reminder-modal .modal-footer,
+[data-theme="light"] .reminder-modal .modal-footer,
+body.light-mode .reminder-modal .modal-footer {
+  border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+  background: #f8fafc !important;
+}
+
+/* Close / Cross Button in Reminder Modals (Light Mode) */
+[data-theme="light"] .reminder-modal .btn-close,
+body.light-mode .reminder-modal .btn-close,
+[data-theme="light"] .company-reminder-modal .btn-close,
+body.light-mode .company-reminder-modal .btn-close {
+  background: #ffffff !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.16) !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+  opacity: 1 !important;
+}
+
+[data-theme="light"] .reminder-modal .btn-close:hover,
+body.light-mode .reminder-modal .btn-close:hover,
+[data-theme="light"] .company-reminder-modal .btn-close:hover,
+body.light-mode .company-reminder-modal .btn-close:hover {
+  background: #fee2e2 !important;
+  border-color: #f87171 !important;
+  color: #dc2626 !important;
+  transform: rotate(90deg) !important;
+}
+
+/* Footer Close / Cancel Button in Reminder Modals (Light Mode) */
+[data-theme="light"] .reminder-modal .btn-light,
+body.light-mode .reminder-modal .btn-light,
+[data-theme="light"] .reminder-modal .reminder-cancel-btn,
+body.light-mode .reminder-modal .reminder-cancel-btn,
+[data-theme="light"] .company-reminder-modal .btn-light,
+body.light-mode .company-reminder-modal .btn-light,
+[data-theme="light"] .company-reminder-modal .btn-light-custom,
+body.light-mode .company-reminder-modal .btn-light-custom {
+  background: #ffffff !important;
+  color: #334155 !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.18) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  opacity: 1 !important;
+}
+
+[data-theme="light"] .reminder-modal .btn-light:hover,
+body.light-mode .reminder-modal .btn-light:hover,
+[data-theme="light"] .reminder-modal .reminder-cancel-btn:hover,
+body.light-mode .reminder-modal .reminder-cancel-btn:hover,
+[data-theme="light"] .company-reminder-modal .btn-light:hover,
+body.light-mode .company-reminder-modal .btn-light:hover,
+[data-theme="light"] .company-reminder-modal .btn-light-custom:hover,
+body.light-mode .company-reminder-modal .btn-light-custom:hover {
+  background: #f1f5f9 !important;
+  border-color: rgba(15, 23, 42, 0.28) !important;
+  color: #0f172a !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Website Link in Company Tables */
+[data-theme="light"] .company-table a,
+body.light-mode .company-table a,
+[data-theme="light"] .companies-table a,
+body.light-mode .companies-table a {
+  color: #4338ca !important;
+  background: #eef2ff !important;
+  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+}
+
+[data-theme="light"] .company-table a:hover,
+body.light-mode .company-table a:hover,
+[data-theme="light"] .companies-table a:hover,
+body.light-mode .companies-table a:hover {
+  color: #312e81 !important;
+  background: #e0e7ff !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+}
+
+/* --------------------------------------------------------------------------
+   15. NOTIFICATIONS & TOASTS (ADMIN & SALES)
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"] .reminder-card,
+body.light-mode .reminder-card {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 20px 45px -8px rgba(15, 23, 42, 0.18) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .reminder-card strong,
+body.light-mode .reminder-card strong,
+[data-theme="light"] .reminder-card-title,
+body.light-mode .reminder-card-title,
+[data-theme="light"] .reminder-card h4,
+body.light-mode .reminder-card h4 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .reminder-card p,
+body.light-mode .reminder-card p,
+[data-theme="light"] .reminder-card-description,
+body.light-mode .reminder-card-description,
+[data-theme="light"] .reminder-card span,
+body.light-mode .reminder-card span {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .reminder-card-time,
+body.light-mode .reminder-card-time {
+  background: rgba(15, 23, 42, 0.05) !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .reminder-card-close,
+body.light-mode .reminder-card-close {
+  background: rgba(15, 23, 42, 0.05) !important;
+  border: 1px solid rgba(15, 23, 42, 0.09) !important;
+  color: #64748b !important;
+}
+
+[data-theme="light"] .reminder-card-close:hover,
+body.light-mode .reminder-card-close:hover {
+  background: rgba(15, 23, 42, 0.1) !important;
+  color: #0f172a !important;
+}
+
+/* Sales Task Notification Toast */
+[data-theme="light"] .task-notification,
+body.light-mode .task-notification {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 20px 45px -8px rgba(15, 23, 42, 0.18) !important;
+}
+
+[data-theme="light"] .task-notification-content strong,
+body.light-mode .task-notification-content strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .task-notification-content p,
+body.light-mode .task-notification-content p {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .task-notification-task,
+body.light-mode .task-notification-task {
+  background: rgba(15, 23, 42, 0.05) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .task-notification-close,
+body.light-mode .task-notification-close {
+  background: rgba(15, 23, 42, 0.06) !important;
+  color: #64748b !important;
+}
+
+[data-theme="light"] .task-notification-close:hover,
+body.light-mode .task-notification-close:hover {
+  background: rgba(15, 23, 42, 0.1) !important;
+  color: #0f172a !important;
+}
+
+/* Dropdown Notifications */
+[data-theme="light"] .sales-notification-dropdown,
+body.light-mode .sales-notification-dropdown,
+[data-theme="light"] .admin-notification-dropdown,
+body.light-mode .admin-notification-dropdown {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 20px 45px -8px rgba(15, 23, 42, 0.18) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .sales-notification-header,
+body.light-mode .sales-notification-header,
+[data-theme="light"] .admin-notif-header,
+body.light-mode .admin-notif-header {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .sales-notification-header strong,
+body.light-mode .sales-notification-header strong,
+[data-theme="light"] .notif-header-title,
+body.light-mode .notif-header-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .notif-count-pill,
+body.light-mode .notif-count-pill {
+  background: rgba(15, 23, 42, 0.06) !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .sales-notification-item,
+body.light-mode .sales-notification-item,
+[data-theme="light"] .admin-notif-item,
+body.light-mode .admin-notif-item {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .sales-notification-item:hover,
+body.light-mode .sales-notification-item:hover,
+[data-theme="light"] .admin-notif-item:hover,
+body.light-mode .admin-notif-item:hover {
+  background: rgba(241, 245, 249, 0.7) !important;
+}
+
+[data-theme="light"] .sales-notification-content strong,
+body.light-mode .sales-notification-content strong,
+[data-theme="light"] .notif-item-title,
+body.light-mode .notif-item-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .sales-notification-content p,
+body.light-mode .sales-notification-content p,
+[data-theme="light"] .notif-item-msg,
+body.light-mode .notif-item-msg {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .sales-notification-content small,
+body.light-mode .sales-notification-content small,
+[data-theme="light"] .notif-time,
+body.light-mode .notif-time {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .notif-assignee-tag,
+body.light-mode .notif-assignee-tag {
+  background: rgba(15, 23, 42, 0.06) !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .admin-notif-empty p,
+body.light-mode .admin-notif-empty p,
+[data-theme="light"] .sales-no-notifications strong,
+body.light-mode .sales-no-notifications strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .admin-notif-empty span,
+body.light-mode .admin-notif-empty span,
+[data-theme="light"] .sales-no-notifications span,
+body.light-mode .sales-no-notifications span {
+  color: #64748b !important;
+}
+
+/* Admin Realtime Toast */
+[data-theme="light"] .admin-realtime-toast,
+body.light-mode .admin-realtime-toast {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(34, 197, 94, 0.35) !important;
+  box-shadow: 0 20px 45px -8px rgba(15, 23, 42, 0.18) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .toast-title,
+body.light-mode .toast-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .toast-message,
+body.light-mode .toast-message {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .toast-company-pill,
+body.light-mode .toast-company-pill {
+  background: rgba(15, 23, 42, 0.05) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+}
+
+/* --------------------------------------------------------------------------
+   16. BOOTSTRAP UTILITIES OVERRIDE IN LIGHT MODE
+   -------------------------------------------------------------------------- */
+
+[data-theme="light"] .text-muted,
+body.light-mode .text-muted {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .text-white,
+body.light-mode .text-white:not(.btn):not(.badge):not(.nav-link.active) {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .text-light,
+body.light-mode .text-light {
+  color: #475569 !important;
+}
+
+/* Smooth transitions */
+html,
+body,
+.app-shell,
+.app-sidebar,
+.app-canvas,
+.stat-card,
+.section,
+.task-column,
+.sales-stat-card,
+.company-stat-card,
+.user-stat-card,
+.lead-stat-card {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+
+[data-theme="light"],
+body.light-mode {
+  --text-primary: #111827;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --text-sidebar-inactive: #475569;
+
+  --bg-sidebar: rgba(255, 255, 255, 0.75);
+  --bg-canvas: rgba(255, 255, 255, 0.65);
+
+  --glass-border: rgba(15, 23, 42, 0.10);
+  --glass-border-hover: rgba(15, 23, 42, 0.18);
+}

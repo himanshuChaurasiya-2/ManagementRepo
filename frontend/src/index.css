@@ -1,0 +1,490 @@
+/* ==========================================================================
+   GLOBAL GLASSMORPHIC DESIGN SYSTEM (MATCHING REFERENCE IMAGE)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import './theme/lightTheme.css';
+
+:root,
+[data-theme="dark"],
+body.dark-mode {
+  /* Ambient Dark Glass Theme */
+  --bg-shell: #0e1117;
+  --bg-sidebar: rgba(16, 20, 29, 0.72);
+  --bg-canvas: rgba(20, 26, 38, 0.65);
+  --bg-card: rgba(255, 255, 255, 0.05);
+  --bg-card-hover: rgba(255, 255, 255, 0.085);
+  
+  /* Text */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-dark: #0f172a;
+  --text-sidebar-inactive: #94a3b8;
+  
+  /* Glass Borders & Highlights */
+  --glass-border: rgba(255, 255, 255, 0.09);
+  --glass-border-hover: rgba(255, 255, 255, 0.18);
+  --glass-highlight: inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+  --glass-blur: blur(24px) saturate(180%);
+  --glass-blur-sm: blur(14px) saturate(160%);
+  
+  /* Vibrant Reference Colors */
+  --color-yellow: #fde047;
+  --color-orange: #fb923c;
+  --color-purple: #c084fc;
+  --color-lime: #a3e635;
+  --color-cyan: #67e8f9;
+  
+  /* Accents */
+  --accent-green: #22c55e;
+  --accent-blue: #38bdf8;
+  --accent-indigo: #6366f1;
+  --accent-red: #f87171;
+  
+  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --border-radius-canvas: 28px;
+  --border-radius-card: 22px;
+  --border-radius-pill: 9999px;
+  --shadow-card: 0 16px 36px -8px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.15);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  background-color: var(--bg-shell);
+  background-image: 
+    radial-gradient(at 15% 15%, rgba(56, 70, 98, 0.4) 0px, transparent 50%),
+    radial-gradient(at 85% 10%, rgba(88, 54, 120, 0.3) 0px, transparent 48%),
+    radial-gradient(at 50% 50%, rgba(20, 26, 40, 0.6) 0px, transparent 65%),
+    radial-gradient(at 85% 85%, rgba(35, 55, 85, 0.35) 0px, transparent 50%),
+    radial-gradient(at 15% 80%, rgba(60, 40, 90, 0.25) 0px, transparent 48%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  background: transparent;
+}
+
+/* ==========================================================================
+   APP SHELL LAYOUT (FROSTED GLASS CONTAINER)
+   ========================================================================== */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: transparent;
+  width: 100%;
+  position: relative;
+}
+
+/* ==========================================================================
+   SIDEBAR (FROSTED DARK GLASS)
+   ========================================================================== */
+
+.app-sidebar {
+  width: 250px;
+  min-width: 250px;
+  background: var(--bg-sidebar);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-right: 1px solid var(--glass-border);
+  color: var(--text-sidebar-inactive);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  padding: 26px 18px 22px;
+  box-sizing: border-box;
+  z-index: 50;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
+}
+
+.app-sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 10px 24px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.app-sidebar-logo:hover {
+  opacity: 0.9;
+}
+
+.app-sidebar-logo-img,
+.app-sidebar-logo img {
+  height: 36px;
+  width: auto;
+  max-width: 90px;
+  object-fit: contain;
+  display: block;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+.app-sidebar-logo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+.app-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+}
+
+.app-sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+.app-sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+
+.sidebar-section-heading {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 14px 12px 6px;
+}
+
+.sidebar-section-heading:first-of-type {
+  padding-top: 0;
+}
+
+.app-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+}
+
+.app-nav-item:hover:not(.active):not(.disabled) {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.08);
+  transform: translateX(2px);
+}
+
+.app-nav-item.active {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), var(--glass-highlight);
+}
+
+.app-nav-item.active .nav-icon {
+  color: #ffffff;
+}
+
+.app-nav-item.disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.app-nav-item .nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+.nav-soon-pill {
+  margin-left: auto;
+  font-size: 9.5px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  padding: 2px 7px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.app-sidebar-bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 18px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.app-sidebar-bottom-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.65);
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.app-sidebar-bottom-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.08);
+  transform: translateX(2px);
+}
+
+.app-sidebar-bottom-btn .nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+}
+
+/* ==========================================================================
+   MAIN WRAPPER (TOPBAR + CANVAS)
+   ========================================================================== */
+
+.app-main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px 24px 24px 16px;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+/* Topbar on Glass Shell */
+.app-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 20px 8px;
+  position: relative;
+  z-index: 1000;
+}
+
+.app-topbar-title {
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.025em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Topbar Right (Bell + Profile) */
+.app-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  z-index: 1001;
+}
+
+.app-notif-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: var(--glass-blur-sm);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.app-notif-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.app-notif-dot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #38bdf8;
+  border: 2px solid #0e1117;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+}
+
+.app-user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 6px 14px 6px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius-pill);
+  backdrop-filter: var(--glass-blur-sm);
+  -webkit-backdrop-filter: var(--glass-blur-sm);
+  transition: all 0.2s ease;
+}
+
+.app-user-profile:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.app-user-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.app-user-name {
+  color: #ffffff;
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.app-user-role {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.app-user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   MAIN FROSTED GLASS CANVAS CONTAINER
+   ========================================================================== */
+
+.app-canvas {
+  background: var(--bg-canvas);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), var(--glass-highlight);
+  border-radius: var(--border-radius-canvas);
+  padding: 28px 32px;
+  min-height: calc(100vh - 100px);
+  box-sizing: border-box;
+  width: 100%;
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
+
+@media (max-width: 850px) {
+  .app-shell {
+    flex-direction: column;
+  }
+  .app-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    border-right: none;
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .app-main-wrapper {
+    padding: 12px 16px;
+  }
+  .app-topbar {
+    padding: 8px 10px 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .app-canvas {
+    padding: 20px 16px;
+    border-radius: 20px;
+  }
+}
+
+
+
+
+/* ==========================================================================
+   GLOBAL FORM SELECT DROPDOWN (DARK MODE FALLBACK)
+   ========================================================================== */
+
+select {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #141a28;
+  color: #ffffff;
+}
+

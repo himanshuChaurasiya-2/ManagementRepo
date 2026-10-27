@@ -2,7 +2,12 @@ import { NavLink, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 
-const Sidebar = () => {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onClose?: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onClose }) => {
   const { user, logout } = useAuth();
   const { theme } = useTheme();
   const navigate = useNavigate();
@@ -17,16 +22,29 @@ const Sidebar = () => {
   }
 
   return (
-    <aside className="app-sidebar">
-      {/* BRAND LOGO */}
-      <Link to="/admin/dashboard" className="app-sidebar-logo">
-        <img
-          src={theme === "light" ? "/images/logo-dark.png" : "/images/logo.png"}
-          alt="Admin Portal Logo"
-          className="app-sidebar-logo-img"
-        />
-        <span>Admin Portal</span>
-      </Link>
+    <aside className={`app-sidebar ${mobileOpen ? "mobile-open" : ""}`}>
+      {/* BRAND LOGO + MOBILE CLOSE BUTTON */}
+      <div className="app-sidebar-brand-row">
+        <Link to="/admin/dashboard" className="app-sidebar-logo" onClick={onClose}>
+          <img
+            src={theme === "light" ? "/images/logo-dark.png" : "/images/logo.png"}
+            alt="Admin Portal Logo"
+            className="app-sidebar-logo-img"
+          />
+          <span>Admin Portal</span>
+        </Link>
+
+        {/* Mobile Close Button (visible only when mobile drawer is open) */}
+        <button
+          type="button"
+          className="mobile-sidebar-close-btn"
+          onClick={onClose}
+          aria-label="Close navigation"
+          title="Close menu"
+        >
+          ✕
+        </button>
+      </div>
 
       {/* NAVIGATION LINKS */}
       <nav className="app-sidebar-nav">
@@ -36,6 +54,7 @@ const Sidebar = () => {
         <NavLink
           to="/admin/dashboard"
           end
+          onClick={onClose}
           className={({ isActive }) =>
             `app-nav-item ${isActive ? "active" : ""}`
           }
@@ -64,6 +83,7 @@ const Sidebar = () => {
         <NavLink
           to="/admin/tasks"
           end
+          onClick={onClose}
           className={({ isActive }) =>
             `app-nav-item ${isActive ? "active" : ""}`
           }
@@ -91,6 +111,7 @@ const Sidebar = () => {
         <NavLink
           to="/admin/users"
           end
+          onClick={onClose}
           className={({ isActive }) =>
             `app-nav-item ${isActive ? "active" : ""}`
           }
@@ -119,6 +140,7 @@ const Sidebar = () => {
         <NavLink
           to="/companies"
           end
+          onClick={onClose}
           className={({ isActive }) =>
             `app-nav-item ${isActive ? "active" : ""}`
           }
@@ -147,45 +169,45 @@ const Sidebar = () => {
           <span>Companies</span>
         </NavLink>
 
-     
+        <div className="sidebar-section-heading">
+          LEAD MANAGEMENT
+        </div>
 
-<div className="sidebar-section-heading">
-  LEAD MANAGEMENT
-</div>
+        <NavLink
+          to="/admin/leads"
+          end
+          onClick={onClose}
+          className={({ isActive }) =>
+            `app-nav-item ${isActive ? "active" : ""}`
+          }
+        >
+          <span className="nav-icon">
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </span>
 
-<NavLink
-  to="/admin/leads"
-  end
-  className={({ isActive }) =>
-    `app-nav-item ${isActive ? "active" : ""}`
-  }
->
-  <span className="nav-icon">
-    <svg
-      width="17"
-      height="17"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  </span>
-
-  <span>Leads</span>
-</NavLink>
+          <span>Leads</span>
+        </NavLink>
 
         {/* Company Calendar */}
         {user.role === "admin" && (
           <NavLink
             to="/company-calendar"
             end
+            onClick={onClose}
             className={({ isActive }) =>
               `app-nav-item ${isActive ? "active" : ""}`
             }
@@ -210,6 +232,38 @@ const Sidebar = () => {
             <span>Company Calendar</span>
           </NavLink>
         )}
+
+        {/* Monthly Reports */}
+        {user.role === "admin" && (
+          <NavLink
+            to="/admin/reports"
+            end
+            onClick={onClose}
+            className={({ isActive }) =>
+              `app-nav-item ${isActive ? "active" : ""}`
+            }
+          >
+            <span className="nav-icon">
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+            </span>
+            <span>Meta Ads Live</span>
+          </NavLink>
+        )}
       </nav>
 
       {/* BOTTOM SECTION: SETTING & LOGOUT */}
@@ -217,7 +271,10 @@ const Sidebar = () => {
         <button
           type="button"
           className="app-sidebar-bottom-btn"
-          onClick={() => navigate("/change-password")}
+          onClick={() => {
+            onClose?.();
+            navigate("/change-password");
+          }}
         >
           <span className="nav-icon">
             <svg
@@ -240,7 +297,10 @@ const Sidebar = () => {
         <button
           type="button"
           className="app-sidebar-bottom-btn"
-          onClick={handleLogout}
+          onClick={() => {
+            onClose?.();
+            handleLogout();
+          }}
         >
           <span className="nav-icon">
             <svg

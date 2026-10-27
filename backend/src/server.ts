@@ -13,21 +13,16 @@ import companyRoutes from "./routes/companyRoutes.js";
 import reminderRoutes from "./routes/reminderRoutes.js";
 import companyReminderRoutes from "./routes/companyReminderRoutes.js";
 import leadRoutes from "./routes/leadRoutes.js";
+import metaAdsRoutes from "./routes/metaAdsRoutes.js";
 
 dotenv.config();
 
 const app = express();
 
-// ==========================================
 // HTTP SERVER
-// ==========================================
-
 const httpServer = createServer(app);
 
-// ==========================================
 // SOCKET.IO
-// ==========================================
-
 export const io = new Server(httpServer, {
   cors: {
     origin: [
@@ -40,9 +35,7 @@ export const io = new Server(httpServer, {
   },
 });
 
-// ==========================================
 // SOCKET CONNECTION
-// ==========================================
 io.on("connection", (socket) => {
   console.log("🟢 User connected:", socket.id);
 
@@ -68,23 +61,15 @@ io.on("connection", (socket) => {
     console.log("🔴 User disconnected:", socket.id);
   });
 });
-// ==========================================
-// MIDDLEWARE
-// ==========================================
 
+// MIDDLEWARE
 app.use(cors());
 app.use(express.json());
 
-// ==========================================
 // DATABASE
-// ==========================================
-
 connectDB();
 
-// ==========================================
 // ROUTES
-// ==========================================
-
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
@@ -92,11 +77,9 @@ app.use("/api/companies", companyRoutes);
 app.use("/api/reminders", reminderRoutes);
 app.use("/api/company-reminders", companyReminderRoutes);
 app.use("/api/leads", leadRoutes);
+app.use("/api/meta", metaAdsRoutes);
 
-// ==========================================
 // TEST ROUTE
-// ==========================================
-
 app.get("/", (_req, res) => {
   res.json({
     success: true,
@@ -104,10 +87,7 @@ app.get("/", (_req, res) => {
   });
 });
 
-// ==========================================
 // START SERVER
-// ==========================================
-
 const PORT = process.env.PORT || 5000;
 
 httpServer.listen(PORT, () => {

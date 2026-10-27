@@ -4,8 +4,9 @@ import {
 } from "react";
 
 import axios from "axios";
-
+import { fetchAvailableMetaAccounts, type MetaAdAccount } from "../services/metaAdsService";
 import "./pages.css";
+
 
 interface CompanyData {
   _id: string;
@@ -19,6 +20,13 @@ interface CompanyData {
   address: string;
   status: "active" | "inactive";
   notes: string;
+  metaAdsConfig?: {
+    adAccountId?: string;
+    adAccountName?: string;
+    currency?: string;
+    accountStatus?: number;
+    connectedAt?: string;
+  };
   createdAt: string;
 }
 
@@ -33,6 +41,7 @@ interface CompanyForm {
   address: string;
   status: "active" | "inactive";
   notes: string;
+  adAccountId?: string;
 }
 
 const API_URL =
@@ -49,6 +58,7 @@ const emptyForm: CompanyForm = {
   address: "",
   status: "active",
   notes: "",
+  adAccountId: "",
 };
 
 const Company = () => {
@@ -73,6 +83,11 @@ const Company = () => {
   const [submitting, setSubmitting] =
     useState(false);
 
+  // Meta Ad Accounts searchable dropdown state
+  const [metaAccounts, setMetaAccounts] = useState<MetaAdAccount[]>([]);
+  const [metaSearch, setMetaSearch] = useState<string>("");
+  const [showMetaDropdown, setShowMetaDropdown] = useState<boolean>(false);
+
   const getToken = () => {
     return (
       localStorage.getItem("token") ||
@@ -87,9 +102,7 @@ const Company = () => {
     },
   });
 
-  // =====================================
   // GET COMPANIES
-  // =====================================
 
   const loadCompanies = async () => {
     try {
@@ -121,13 +134,24 @@ const Company = () => {
     }
   };
 
+  // Load Meta Ad Accounts for searchable dropdown
+  const loadMetaAccounts = async () => {
+    try {
+      const res = await fetchAvailableMetaAccounts();
+      if (res.success && res.accounts) {
+        setMetaAccounts(res.accounts);
+      }
+    } catch (err) {
+      console.warn("Could not load Meta Ad Accounts:", err);
+    }
+  };
+
   useEffect(() => {
     loadCompanies();
+    loadMetaAccounts();
   }, []);
 
-  // =====================================
   // FORM CHANGE
-  // =====================================
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -142,19 +166,17 @@ const Company = () => {
     }));
   };
 
-  // =====================================
   // OPEN ADD MODAL
-  // =====================================
 
   const openAddModal = () => {
     setEditingCompany(null);
     setForm(emptyForm);
+    setMetaSearch("");
+    setShowMetaDropdown(false);
     setShowModal(true);
   };
 
-  // =====================================
   // OPEN EDIT MODAL
-  // =====================================
 
   const openEditModal = (
     company: CompanyData
@@ -174,14 +196,15 @@ const Company = () => {
       address: company.address || "",
       status: company.status,
       notes: company.notes || "",
+      adAccountId: company.metaAdsConfig?.adAccountId || "",
     });
 
+    setMetaSearch("");
+    setShowMetaDropdown(false);
     setShowModal(true);
   };
 
-  // =====================================
   // SAVE COMPANY
-  // =====================================
 
   const handleSubmit = async (
     e: React.FormEvent
@@ -191,16 +214,35 @@ const Company = () => {
     try {
       setSubmitting(true);
 
+      const selectedMetaAcc = metaAccounts.find(
+        (a) => a.id === form.adAccountId
+      );
+
+      const payload: any = {
+        ...form,
+      };
+
+      if (form.adAccountId && selectedMetaAcc) {
+        payload.metaAdsConfig = {
+          adAccountId: selectedMetaAcc.id,
+          adAccountName: selectedMetaAcc.name,
+          currency: selectedMetaAcc.currency,
+          accountStatus: selectedMetaAcc.account_status,
+        };
+      } else if (editingCompany && !form.adAccountId) {
+        payload.metaAdsConfig = null;
+      }
+
       if (editingCompany) {
         await axios.patch(
           `${API_URL}/companies/${editingCompany._id}`,
-          form,
+          payload,
           authConfig()
         );
       } else {
         await axios.post(
           `${API_URL}/companies`,
-          form,
+          payload,
           authConfig()
         );
       }
@@ -225,9 +267,7 @@ const Company = () => {
     }
   };
 
-  // =====================================
   // STATUS
-  // =====================================
 
   const toggleStatus = async (
     company: CompanyData
@@ -272,9 +312,7 @@ const Company = () => {
     }
   };
 
-  // =====================================
   // DELETE
-  // =====================================
 
   const deleteCompany = async (
     company: CompanyData
@@ -307,9 +345,7 @@ const Company = () => {
     }
   };
 
-  // =====================================
   // SEARCH
-  // =====================================
 
   const filteredCompanies =
     companies.filter((company) => {
@@ -630,7 +666,6 @@ const Company = () => {
       </div>
 
       {/* ADD / EDIT MODAL */}
-
       {showModal && (
 
         <div
@@ -818,6 +853,202 @@ const Company = () => {
                       Inactive
                     </option>
                   </select>
+                </div>
+
+                {/* SEARCHABLE META AD ACCOUNT SELECTION */}
+                <div className="form-field full-width" style={{ position: "relative" }}>
+                  <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span>🔗 Meta Marketing Ad Account (Optional)</span>
+                    {form.adAccountId && (
+                      <span
+                        onClick={() => {
+                          setForm((prev) => ({ ...prev, adAccountId: "" }));
+                          setMetaSearch("");
+                        }}
+                        style={{ fontSize: "11px", color: "#ef4444", cursor: "pointer", textDecoration: "underline" }}
+                      >
+                        Clear Selection
+                      </span>
+                    )}
+                  </label>
+
+                  <div style={{ position: "relative" }}>
+                    <input
+                      type="text"
+                      placeholder={
+                        metaAccounts.length === 0
+                          ? "Loading accessible Meta ad accounts..."
+                          : form.adAccountId
+                          ? (() => {
+                              const selected = metaAccounts.find((a) => a.id === form.adAccountId);
+                              return selected ? `${selected.name} (${selected.currency}) — [${selected.id}]` : "Search Meta Ad Account...";
+                            })()
+                          : "Type to search Meta Ad Account by client name or ID..."
+                      }
+                      value={metaSearch}
+                      onChange={(e) => {
+                        setMetaSearch(e.target.value);
+                        setShowMetaDropdown(true);
+                      }}
+                      onFocus={() => setShowMetaDropdown(true)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 14px",
+                        background: "var(--input-bg, #0f172a)",
+                        border: form.adAccountId ? "1px solid #3b82f6" : "1px solid var(--border-color, rgba(255, 255, 255, 0.15))",
+                        borderRadius: "8px",
+                        color: "var(--text-primary, #f8fafc)",
+                        fontSize: "13.5px",
+                      }}
+                    />
+
+                    {/* Clear search icon button if typing */}
+                    {metaSearch && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMetaSearch("");
+                          setShowMetaDropdown(false);
+                        }}
+                        style={{
+                          position: "absolute",
+                          right: "10px",
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          background: "transparent",
+                          border: "none",
+                          color: "#94a3b8",
+                          cursor: "pointer",
+                          fontSize: "13px",
+                        }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Selected Account Badge */}
+                  {form.adAccountId && (
+                    <div
+                      style={{
+                        marginTop: "6px",
+                        padding: "6px 10px",
+                        background: "rgba(59, 130, 246, 0.1)",
+                        border: "1px solid rgba(59, 130, 246, 0.25)",
+                        borderRadius: "6px",
+                        fontSize: "12px",
+                        color: "#93c5fd",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <span>✅ Linked:</span>
+                      <strong>
+                        {(() => {
+                          const acc = metaAccounts.find((a) => a.id === form.adAccountId);
+                          return acc ? `${acc.name} (${acc.currency})` : form.adAccountId;
+                        })()}
+                      </strong>
+                    </div>
+                  )}
+
+                  {/* Dropdown Suggestions List */}
+                  {showMetaDropdown && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "100%",
+                        left: 0,
+                        right: 0,
+                        background: "#0f172a",
+                        border: "1px solid rgba(255, 255, 255, 0.15)",
+                        borderRadius: "8px",
+                        marginTop: "4px",
+                        maxHeight: "220px",
+                        overflowY: "auto",
+                        zIndex: 9999,
+                        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.5)",
+                      }}
+                    >
+                      <div
+                        onClick={() => {
+                          setForm((prev) => ({ ...prev, adAccountId: "" }));
+                          setMetaSearch("");
+                          setShowMetaDropdown(false);
+                        }}
+                        style={{
+                          padding: "10px 14px",
+                          fontSize: "12.5px",
+                          color: "#94a3b8",
+                          cursor: "pointer",
+                          borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      >
+                        ⚪ None (Don't connect Meta Ad Account now)
+                      </div>
+
+                      {metaAccounts
+                        .filter((acc) => {
+                          if (!metaSearch) return true;
+                          const q = metaSearch.toLowerCase();
+                          return (
+                            acc.name.toLowerCase().includes(q) ||
+                            acc.id.toLowerCase().includes(q) ||
+                            acc.currency.toLowerCase().includes(q)
+                          );
+                        })
+                        .map((acc) => (
+                          <div
+                            key={acc.id}
+                            onClick={() => {
+                              setForm((prev) => ({ ...prev, adAccountId: acc.id }));
+                              setMetaSearch("");
+                              setShowMetaDropdown(false);
+                            }}
+                            style={{
+                              padding: "10px 14px",
+                              fontSize: "13px",
+                              cursor: "pointer",
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              background: form.adAccountId === acc.id ? "rgba(59, 130, 246, 0.15)" : "transparent",
+                              borderBottom: "1px solid rgba(255, 255, 255, 0.04)",
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(59, 130, 246, 0.1)")}
+                            onMouseLeave={(e) =>
+                              (e.currentTarget.style.background = form.adAccountId === acc.id ? "rgba(59, 130, 246, 0.15)" : "transparent")
+                            }
+                          >
+                            <div>
+                              <div style={{ fontWeight: 600, color: "#f8fafc" }}>{acc.name}</div>
+                              <div style={{ fontSize: "11px", color: "#64748b" }}>ID: {acc.id}</div>
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <span style={{ fontSize: "11px", background: "#1e293b", padding: "2px 6px", borderRadius: "4px", color: "#93c5fd" }}>
+                                {acc.currency}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+
+                      {metaAccounts.filter((acc) => {
+                        if (!metaSearch) return true;
+                        const q = metaSearch.toLowerCase();
+                        return (
+                          acc.name.toLowerCase().includes(q) ||
+                          acc.id.toLowerCase().includes(q)
+                        );
+                      }).length === 0 && (
+                        <div style={{ padding: "14px", fontSize: "12.5px", color: "#94a3b8", textAlign: "center" }}>
+                          No matching Meta Ad Account found for "{metaSearch}".
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-field full-width">

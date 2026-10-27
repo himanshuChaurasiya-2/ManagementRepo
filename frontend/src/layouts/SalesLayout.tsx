@@ -15,10 +15,7 @@ import {
 import ThemeToggle from "../components/ThemeToggle";
 import "./SalesLayout.css";
 
-// ==========================================
 // NOTIFICATION TYPE
-// ==========================================
-
 interface TaskNotification {
   _id?: string;
   message?: string;
@@ -30,30 +27,32 @@ interface TaskNotification {
   };
 }
 
-// ==========================================
 // STORAGE KEY
-// ==========================================
-
 const getNotificationStorageKey = (userId?: string) => {
   return userId
     ? `sales_notifications_${userId}`
     : "sales_notifications";
 };
 
-// ==========================================
 // SALES LAYOUT
-// ==========================================
-
 const SalesLayout = () => {
   const { user, logout } = useAuth();
   const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Mobile navigation state
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   // Notifications
   const [notifications, setNotifications] = useState<TaskNotification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [popupNotification, setPopupNotification] = useState<TaskNotification | null>(null);
+
+  // Close mobile navbar on route change
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
 
   // Load Stored Notifications
   useEffect(() => {
@@ -169,6 +168,15 @@ const SalesLayout = () => {
 
   return (
     <div className="app-shell">
+      {/* Mobile Backdrop Overlay */}
+      {mobileNavOpen && (
+        <div
+          className="app-sidebar-backdrop"
+          onClick={() => setMobileNavOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Global Reminder */}
       <ReminderNotification />
 
@@ -192,19 +200,29 @@ const SalesLayout = () => {
         </div>
       )}
 
-      {/* ======================================
-          DARK SIDEBAR (MATCHING REFERENCE THEME)
-          ====================================== */}
-      <aside className="app-sidebar">
-        {/* BRAND */}
-        <Link to="/sales/dashboard" className="app-sidebar-logo">
-          <img
-            src={theme === "light" ? "/images/logo-dark.png" : "/images/logo.png"}
-            alt="Employee Portal Logo"
-            className="app-sidebar-logo-img"
-          />
-          <span>Employee portal</span>
-        </Link>
+      {/* DARK SIDEBAR (MATCHING REFERENCE THEME) */}
+      <aside className={`app-sidebar ${mobileNavOpen ? "mobile-open" : ""}`}>
+        {/* BRAND ROW + MOBILE CLOSE */}
+        <div className="app-sidebar-brand-row">
+          <Link to="/sales/dashboard" className="app-sidebar-logo" onClick={() => setMobileNavOpen(false)}>
+            <img
+              src={theme === "light" ? "/images/logo-dark.png" : "/images/logo.png"}
+              alt="Employee Portal Logo"
+              className="app-sidebar-logo-img"
+            />
+            <span>Employee portal</span>
+          </Link>
+
+          <button
+            type="button"
+            className="mobile-sidebar-close-btn"
+            onClick={() => setMobileNavOpen(false)}
+            aria-label="Close navigation"
+            title="Close menu"
+          >
+            ✕
+          </button>
+        </div>
 
         {/* NAVIGATION LINKS */}
         <nav className="app-sidebar-nav">
@@ -314,38 +332,41 @@ const SalesLayout = () => {
             <span>Companies</span>
           </Link>
 
-{/* Leads */}
-<Link
-  to="/sales/leads"
-  className={`app-nav-item ${
-    isActive("/sales/leads") ? "active" : ""
-  }`}
->
-  <span className="nav-icon">
-    <svg
-      width="17"
-      height="17"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  </span>
+          {/* Leads */}
+          <Link
+            to="/sales/leads"
+            className={`app-nav-item ${
+              isActive("/sales/leads") ? "active" : ""
+            }`}
+          >
+            <span className="nav-icon">
+              <svg
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </span>
 
-  <span>Leads</span>
-</Link>
+            <span>Leads</span>
+          </Link>
 
           <div className="sidebar-section-heading">REPORTS</div>
 
-          {/* Sales Reports (Soon) */}
-          <div className="app-nav-item disabled">
+          {/* Monthly Reports */}
+          <Link
+            to="/sales/reports"
+            className={`app-nav-item ${isActive("/sales/reports") ? "active" : ""}`}
+          >
             <span className="nav-icon">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" x2="18" y1="20" y2="10" />
@@ -353,9 +374,8 @@ const SalesLayout = () => {
                 <line x1="6" x2="6" y1="20" y2="14" />
               </svg>
             </span>
-            <span>Sales Reports</span>
-            <small className="nav-soon-pill">Soon</small>
-          </div>
+            <span>Monthly Reports</span>
+          </Link>
         </nav>
 
         {/* BOTTOM SECTION: SETTING & LOGOUT */}
@@ -391,13 +411,24 @@ const SalesLayout = () => {
         </div>
       </aside>
 
-      {/* ======================================
-          MAIN WRAPPER (TOPBAR + CANVAS)
-          ====================================== */}
+      {/* MAIN WRAPPER (TOPBAR + CANVAS) */}
       <div className="app-main-wrapper">
         {/* NAVBAR */}
         <header className="app-topbar">
-          <h1 className="app-topbar-title">Dashboard</h1>
+          <div className="app-topbar-left">
+            <button
+              type="button"
+              className={`app-navbar-toggle ${mobileNavOpen ? "open" : ""}`}
+              onClick={() => setMobileNavOpen((prev) => !prev)}
+              aria-label={mobileNavOpen ? "Close navigation menu" : "Open navigation menu"}
+              title={mobileNavOpen ? "Close menu" : "Open menu"}
+            >
+              <span className="navbar-toggle-bar bar-1"></span>
+              <span className="navbar-toggle-bar bar-2"></span>
+              <span className="navbar-toggle-bar bar-3"></span>
+            </button>
+            <h1 className="app-topbar-title">Dashboard</h1>
+          </div>
 
           {/* RIGHT SIDE: THEME TOGGLE, NOTIFICATION & USER PROFILE */}
           <div className="app-topbar-right">

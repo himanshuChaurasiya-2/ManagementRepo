@@ -9,6 +9,8 @@ import {
   batchDeleteLeads,
   deleteSingleLead,
   getLeadDeletionLogs,
+  reassignLead,
+  batchReassignLeads,
 } from "../controllers/leadController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -123,5 +125,24 @@ router.delete(
   deleteSingleLead
 );
 
+
+
+// =====================================================
+// REASSIGN LEADS (ADMIN ONLY)
+// =====================================================
+
+router.patch(
+  "/:id/assign",
+  protect,
+  adminOnly,
+  reassignLead
+);
+
+router.post(
+  "/batch-assign",
+  protect,
+  adminOnly,
+  batchReassignLeads
+);
 
 export default router;

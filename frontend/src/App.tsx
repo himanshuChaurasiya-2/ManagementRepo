@@ -31,6 +31,7 @@ import CompanyCalendarView from "./pages/sales/CompanyCalendarView";
 import ReminderNotification from "./components/ReminderNotification";
 import Lead from "./pages/sales/Lead";
 import AdminLeads from "./pages/admin/AdminLeads";
+import MonthlyReportDashboard from "./pages/reports/MonthlyReportDashboard";
 
 function App() {
   return (
@@ -39,9 +40,7 @@ function App() {
           <ReminderNotification />
         <Routes>
 
-          {/* =====================================
-              PUBLIC ROUTES
-          ===================================== */}
+          {/* PUBLIC ROUTES */}
 
           <Route
             path="/login"
@@ -53,15 +52,11 @@ function App() {
             element={<ChangePassword />}
           />
 
-          {/* =====================================
-              PROTECTED APPLICATION
-          ===================================== */}
+          {/* PROTECTED APPLICATION */}
 
           <Route element={<ProtectedRoute />}>
 
-            {/* =================================
-                ADMIN APPLICATION
-            ================================= */}
+            {/* ADMIN APPLICATION */}
 
             <Route element={<DashboardLayout />}>
 
@@ -96,14 +91,21 @@ function App() {
   element={<AdminLeads/>}
 />
 
-                {/* =================================
-                    COMPANY CALENDAR
-                    ADMIN ONLY
-                ================================= */}
+                {/* COMPANY CALENDAR :ADMIN ONLY */}
 
                 <Route
                   path="/company-calendar"
                   element={<CompanyCalendar />}
+                />
+
+                {/* Monthly Reporting Dashboard */}
+                <Route
+                  path="/admin/reports"
+                  element={<MonthlyReportDashboard />}
+                />
+                <Route
+                  path="/reports"
+                  element={<MonthlyReportDashboard />}
                 />
 
               </Route>
@@ -111,9 +113,7 @@ function App() {
             </Route>
 
 
-            {/* =================================
-                SALES APPLICATION
-            ================================= */}
+            {/* SALES APPLICATION */}
 
             <Route element={<RoleRoute allowedRoles={["sales"]} />}>
 
@@ -151,12 +151,13 @@ function App() {
                 <Route path="sales/leads" element={<Lead/>} />
 
                 {/* Company Calendar - READ ONLY */}
-    <Route
-      path="/sales/company-calendar"
-      element={<CompanyCalendarView/>}
-    />
+                <Route
+                  path="/sales/company-calendar"
+                  element={<CompanyCalendarView/>}
+                />
 
-    <Route path="/leads" element={<Lead/>} />
+                <Route path="/leads" element={<Lead/>} />
+                <Route path="/sales/reports" element={<MonthlyReportDashboard />} />
 
               </Route>
 
@@ -165,9 +166,7 @@ function App() {
           </Route>
 
 
-          {/* =====================================
-              FALLBACK
-          ===================================== */}
+          {/* FALLBACK */}
 
           <Route
             path="*"

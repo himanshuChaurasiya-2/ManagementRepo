@@ -21,6 +21,7 @@ export const createCompany = async (
       address,
       status,
       notes,
+      metaAdsConfig,
     } = req.body;
 
     // Required fields
@@ -44,7 +45,7 @@ export const createCompany = async (
       .toLowerCase()
       .trim();
 
-    const company = await Company.create({
+    const companyData: any = {
       companyName: companyName.trim(),
       contactPerson: contactPerson.trim(),
       email: normalizedEmail,
@@ -56,7 +57,21 @@ export const createCompany = async (
       address: address?.trim() || "",
       status: status || "active",
       notes: notes?.trim() || "",
-    });
+    };
+
+    if (metaAdsConfig?.adAccountId) {
+      companyData.metaAdsConfig = {
+        adAccountId: metaAdsConfig.adAccountId.startsWith("act_")
+          ? metaAdsConfig.adAccountId
+          : `act_${metaAdsConfig.adAccountId}`,
+        adAccountName: metaAdsConfig.adAccountName || companyName.trim(),
+        currency: metaAdsConfig.currency || "USD",
+        accountStatus: Number(metaAdsConfig.accountStatus || 1),
+        connectedAt: new Date(),
+      };
+    }
+
+    const company = await Company.create(companyData);
 
     res.status(201).json({
       success: true,
@@ -170,31 +185,50 @@ export const updateCompany = async (
       address,
       status,
       notes,
+      metaAdsConfig,
     } = req.body;
+
+    const updatePayload: any = {
+      companyName:
+        companyName?.trim(),
+      contactPerson:
+        contactPerson?.trim(),
+      email: email
+        ? email.toLowerCase().trim()
+        : undefined,
+      phone: phone?.trim(),
+      alternatePhone:
+        alternatePhone?.trim() || "",
+      industry: industry?.trim(),
+      website:
+        website?.trim() || "",
+      address:
+        address?.trim() || "",
+      status,
+      notes:
+        notes?.trim() || "",
+    };
+
+    if (metaAdsConfig !== undefined) {
+      if (metaAdsConfig?.adAccountId) {
+        updatePayload.metaAdsConfig = {
+          adAccountId: metaAdsConfig.adAccountId.startsWith("act_")
+            ? metaAdsConfig.adAccountId
+            : `act_${metaAdsConfig.adAccountId}`,
+          adAccountName: metaAdsConfig.adAccountName || companyName?.trim() || "",
+          currency: metaAdsConfig.currency || "USD",
+          accountStatus: Number(metaAdsConfig.accountStatus || 1),
+          connectedAt: new Date(),
+        };
+      } else {
+        updatePayload.metaAdsConfig = undefined;
+      }
+    }
 
     const company =
       await Company.findByIdAndUpdate(
         id,
-        {
-          companyName:
-            companyName?.trim(),
-          contactPerson:
-            contactPerson?.trim(),
-          email: email
-            ? email.toLowerCase().trim()
-            : undefined,
-          phone: phone?.trim(),
-          alternatePhone:
-            alternatePhone?.trim() || "",
-          industry: industry?.trim(),
-          website:
-            website?.trim() || "",
-          address:
-            address?.trim() || "",
-          status,
-          notes:
-            notes?.trim() || "",
-        },
+        updatePayload,
         {
           new: true,
           runValidators: true,

@@ -6,7 +6,7 @@ interface JwtPayload {
   userId: string;
 }
 
-interface AuthRequest extends Request {
+export interface AuthRequest extends Request {
   userId?: string;
   user?: {
     id?: string;
@@ -23,10 +23,8 @@ export const protect = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // =====================================================
+    
     // CHECK AUTHORIZATION HEADER
-    // =====================================================
-
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -38,10 +36,7 @@ export const protect = async (
       return;
     }
 
-    // =====================================================
     // GET TOKEN
-    // =====================================================
-
     const token = authHeader.split(" ")[1];
 
     if (!token) {
@@ -53,10 +48,7 @@ export const protect = async (
       return;
     }
 
-    // =====================================================
     // JWT SECRET
-    // =====================================================
-
     const secret = process.env.JWT_SECRET;
 
     if (!secret) {
@@ -68,10 +60,7 @@ export const protect = async (
       return;
     }
 
-    // =====================================================
     // VERIFY TOKEN
-    // =====================================================
-
     const decoded = jwt.verify(
       token,
       secret
@@ -86,17 +75,10 @@ export const protect = async (
       return;
     }
 
-    // =====================================================
     // SET USER ID
-    // =====================================================
-
     req.userId = decoded.userId;
 
-    // =====================================================
     // GET USER FROM DATABASE
-    // IMPORTANT: THIS ALSO GETS THE ROLE
-    // =====================================================
-
     const user = await User.findById(decoded.userId).select(
       "_id name email role"
     );
@@ -110,10 +92,7 @@ export const protect = async (
       return;
     }
 
-    // =====================================================
     // ATTACH USER TO REQUEST
-    // =====================================================
-
     req.user = {
       id: user._id.toString(),
       _id: user._id.toString(),
@@ -121,10 +100,6 @@ export const protect = async (
       name: user.name,
       email: user.email,
     };
-
-    // =====================================================
-    // CONTINUE
-    // =====================================================
 
     next();
   } catch (error) {

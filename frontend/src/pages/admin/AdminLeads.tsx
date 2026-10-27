@@ -8,37 +8,26 @@ import { createPortal } from "react-dom";
 import type { ChangeEvent } from "react";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
+import LeadStatusBadgePopover from "../../components/LeadStatusBadgePopover";
+import type {
+  LeadStatus,
+  LeadSubStatus,
+} from "../../components/LeadStatusBadgePopover";
+import LeadSlideDrawer, {
+  getUrgencyInfo,
+} from "../../components/LeadSlideDrawer";
 import "./Adminlead.css";
 
 // =====================================================
 // TYPES
 // =====================================================
 
-type LeadStatus =
-  | "Interested"
-  | "Not Interested"
-  | "No Contact"
-  | "Follow up"
-  | "Junk";
-
-type LeadSubStatus =
-  | "Hot"
-  | "Warm"
-  | "Cold"
-  | "Pricing Issue"
-  | "Not Required"
-  | "Evaluating Competitors"
-  | "Ring Not Received"
-  | "Switched Off"
-  | "Incoming Not Available"
-  | "Call Me Later"
-  | "Call Disconnected"
-  | "";
-
 interface UploadedBy {
   _id?: string;
   name?: string;
   email?: string;
+  role?: string;
+  jobPosition?: string;
 }
 
 interface Lead {
@@ -49,13 +38,9 @@ interface Lead {
   email?: string;
   company?: string;
   source?: string;
-
-  // Backend may return empty/undefined for newly imported leads
   status?: LeadStatus | "";
   subStatus?: LeadSubStatus | "";
-
   notes?: string;
-
   uploadedBy?: UploadedBy | string;
   createdAt?: string;
   updatedAt?: string;
@@ -240,6 +225,24 @@ const getLeadUploaderRole = (
   return "";
 };
 
+const formatTimestamp = (dateStr?: string) => {
+  if (!dateStr) return "—";
+  try {
+    const d = new Date(dateStr);
+    return `${d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })} ${d.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })}`;
+  } catch {
+    return dateStr;
+  }
+};
+
 // =====================================================
 // COMPONENT
 // =====================================================
@@ -285,13 +288,34 @@ const AdminLeads: React.FC = () => {
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
-  // Notes Modal State
-  const [activeNotesLead, setActiveNotesLead] = useState<Lead | null>(null);
-  const [notesText, setNotesText] = useState<string>("");
-  const [isSavingNotes, setIsSavingNotes] = useState<boolean>(false);
+  // Slide-out Drawer State (replacing old notes modal)
+  const [selectedDrawerLead, setSelectedDrawerLead] = useState<Lead | null>(null);
+
+  // Inline Reassignment Popover State
+  const [activeReassignPopoverLeadId, setActiveReassignPopoverLeadId] = useState<string | null>(null);
+  const [isReassigning, setIsReassigning] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const selectAllCheckboxRef = useRef<HTMLInputElement | null>(null);
+  const reassignPopoverRef = useRef<HTMLDivElement | null>(null);
+
+  // Close reassign popover on click outside
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (
+        reassignPopoverRef.current &&
+        !reassignPopoverRef.current.contains(e.target as Node)
+      ) {
+        setActiveReassignPopoverLeadId(null);
+      }
+    };
+    if (activeReassignPopoverLeadId) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [activeReassignPopoverLeadId]);
 
   // ===================================================
   // AUTH CONFIG
@@ -307,28 +331,6 @@ const AdminLeads: React.FC = () => {
         Authorization: `Bearer ${token}`,
       },
     };
-  };
-
-  // ===================================================
-  // VALID STATUS HELPERS
-  // ===================================================
-
-  const isValidStatus = (value: unknown): value is LeadStatus => {
-    return typeof value === "string" && statuses.includes(value as LeadStatus);
-  };
-
-  const getSafeStatus = (status?: LeadStatus | ""): LeadStatus | "" => {
-    if (isValidStatus(status)) {
-      return status;
-    }
-    return "";
-  };
-
-  const getSafeSubStatuses = (status?: LeadStatus | ""): LeadSubStatus[] => {
-    if (!isValidStatus(status)) {
-      return [];
-    }
-    return subStatusMap[status] ?? [];
   };
 
   // ===================================================
@@ -430,7 +432,6 @@ const AdminLeads: React.FC = () => {
   const userStatsList = useMemo((): UserLeadCard[] => {
     const userMap = new Map<string, UserLeadCard>();
 
-    // 1. Initialize from users list
     users.forEach((u) => {
       userMap.set(u._id, {
         userId: u._id,
@@ -451,7 +452,6 @@ const AdminLeads: React.FC = () => {
       });
     });
 
-    // 2. Also register any uploader found in leads that might not be in users list
     leads.forEach((lead) => {
       const uploaderId = getLeadUploaderId(lead.uploadedBy);
       if (
@@ -480,7 +480,6 @@ const AdminLeads: React.FC = () => {
       }
     });
 
-    // Unassigned tracker
     let hasUnassigned = false;
     const unassignedCard: UserLeadCard = {
       userId: "unassigned",
@@ -498,7 +497,6 @@ const AdminLeads: React.FC = () => {
       unprocessed: 0,
     };
 
-    // 3. Aggregate lead counts into each user's stats
     leads.forEach((lead) => {
       const uploaderId = getLeadUploaderId(lead.uploadedBy);
       let card = userMap.get(uploaderId);
@@ -524,13 +522,11 @@ const AdminLeads: React.FC = () => {
       list.push(unassignedCard);
     }
 
-    // Sort by total leads descending, then by name
     return list.sort(
       (a, b) => b.totalLeads - a.totalLeads || a.name.localeCompare(b.name)
     );
   }, [users, leads]);
 
-  // Filtered list of user cards according to user search bar
   const filteredUserCards = useMemo(() => {
     if (!userSearchQuery.trim()) return userStatsList;
     const q = userSearchQuery.trim().toLowerCase();
@@ -542,7 +538,6 @@ const AdminLeads: React.FC = () => {
     );
   }, [userStatsList, userSearchQuery]);
 
-  // Active selected user object
   const selectedUserObj = useMemo(() => {
     if (selectedUserId === "all") return null;
     if (selectedUserId === "unassigned") {
@@ -571,7 +566,7 @@ const AdminLeads: React.FC = () => {
   }, [statusFilter]);
 
   // ===================================================
-  // SCOPED LEADS (FOR SELECTED USER METRICS)
+  // SCOPED LEADS
   // ===================================================
 
   const userScopedLeads = useMemo(() => {
@@ -583,7 +578,6 @@ const AdminLeads: React.FC = () => {
       }
       if (uploaderId === selectedUserId) return true;
 
-      // Also check fallback matching
       const targetUser = users.find((u) => u._id === selectedUserId);
       if (targetUser) {
         const uploaderName = getLeadUploaderName(lead.uploadedBy, users).toLowerCase();
@@ -597,7 +591,6 @@ const AdminLeads: React.FC = () => {
     });
   }, [leads, selectedUserId, users]);
 
-  // Dynamic statistics
   const statTotal = userScopedLeads.length;
   const statInterested = userScopedLeads.filter(
     (l) => l.status === "Interested"
@@ -637,6 +630,26 @@ const AdminLeads: React.FC = () => {
       return matchesSearch && matchesStatus && matchesSubStatus;
     });
   }, [userScopedLeads, search, statusFilter, subStatusFilter, users]);
+
+  // Target leads list for delete modal preview
+  const targetLeadsList = useMemo(() => {
+    const targetSet = new Set(targetDeleteIds);
+    return leads.filter((l) => targetSet.has(l._id));
+  }, [leads, targetDeleteIds]);
+
+  // Total status counts across all leads
+  const totalAllInterested = useMemo(
+    () => leads.filter((l) => l.status === "Interested").length,
+    [leads]
+  );
+  const totalAllFollowUp = useMemo(
+    () => leads.filter((l) => l.status === "Follow up").length,
+    [leads]
+  );
+  const totalAllNoContact = useMemo(
+    () => leads.filter((l) => l.status === "No Contact").length,
+    [leads]
+  );
 
   // ===================================================
   // SELECTION HANDLERS
@@ -715,6 +728,10 @@ const AdminLeads: React.FC = () => {
       const targetSet = new Set(targetDeleteIds);
       setSelectedIds((prev) => prev.filter((id) => !targetSet.has(id)));
 
+      if (selectedDrawerLead && targetSet.has(selectedDrawerLead._id)) {
+        setSelectedDrawerLead(null);
+      }
+
       setShowConfirmDeleteModal(false);
       setTargetDeleteIds([]);
 
@@ -734,24 +751,23 @@ const AdminLeads: React.FC = () => {
   };
 
   // ===================================================
-  // UPDATE STATUS
+  // CHAINED STATUS UPDATE HANDLER
   // ===================================================
 
-  const updateStatus = async (lead: Lead, status: LeadStatus) => {
+  const handleUpdateStatus = async (
+    lead: Lead,
+    status: LeadStatus,
+    subStatus: LeadSubStatus
+  ) => {
     try {
       setUpdatingId(lead._id);
       setError("");
-      setSuccess("");
-
-      const safeSubStatuses: LeadSubStatus[] = subStatusMap[status] ?? [];
-      const defaultSubStatus: LeadSubStatus =
-        status === "Junk" ? "" : safeSubStatuses[0] ?? "";
 
       const response = await axios.patch(
         `${API_URL}/leads/${lead._id}/status`,
         {
           status,
-          subStatus: defaultSubStatus,
+          subStatus,
         },
         getAuthConfig()
       );
@@ -764,13 +780,25 @@ const AdminLeads: React.FC = () => {
             ? updatedLead ?? {
                 ...item,
                 status,
-                subStatus: defaultSubStatus,
+                subStatus,
               }
             : item
         )
       );
 
-      setSuccess("Lead status updated successfully.");
+      if (selectedDrawerLead && selectedDrawerLead._id === lead._id) {
+        setSelectedDrawerLead((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: updatedLead?.status ?? status,
+                subStatus: updatedLead?.subStatus ?? subStatus,
+              }
+            : null
+        );
+      }
+
+      setSuccess("Lead pipeline status updated.");
       setTimeout(() => {
         setSuccess("");
       }, 2500);
@@ -785,105 +813,67 @@ const AdminLeads: React.FC = () => {
   };
 
   // ===================================================
-  // UPDATE SUB STATUS
+  // REASSIGNMENT HANDLER (1-CLICK ADMIN REASSIGN)
   // ===================================================
 
-  const updateSubStatus = async (lead: Lead, subStatus: LeadSubStatus) => {
-    const currentStatus = getSafeStatus(lead.status);
-
-    if (!currentStatus) {
-      setError("Please select a status first.");
-      return;
-    }
-
-    if (
-      currentStatus !== "Junk" &&
-      !getSafeSubStatuses(currentStatus).includes(subStatus)
-    ) {
-      setError("Invalid sub-status selected.");
-      return;
-    }
-
+  const handleReassignLead = async (leadId: string, userId: string) => {
     try {
-      setUpdatingId(lead._id);
+      setIsReassigning(true);
       setError("");
-      setSuccess("");
 
       const response = await axios.patch(
-        `${API_URL}/leads/${lead._id}/status`,
-        {
-          status: currentStatus,
-          subStatus,
-        },
+        `${API_URL}/leads/${leadId}/assign`,
+        { userId },
         getAuthConfig()
       );
 
       const updatedLead: Lead | undefined = response.data?.lead;
+      const targetUser = users.find((u) => u._id === userId);
 
-      setLeads((previous) =>
-        previous.map((item) =>
-          item._id === lead._id
+      setLeads((prev) =>
+        prev.map((item) =>
+          item._id === leadId
             ? updatedLead ?? {
                 ...item,
-                status: currentStatus,
-                subStatus,
+                uploadedBy: targetUser || userId,
               }
             : item
         )
       );
 
-      setSuccess("Lead sub-status updated successfully.");
-      setTimeout(() => {
-        setSuccess("");
-      }, 2500);
+      if (selectedDrawerLead && selectedDrawerLead._id === leadId) {
+        setSelectedDrawerLead((prev) =>
+          prev
+            ? {
+                ...prev,
+                uploadedBy: updatedLead?.uploadedBy ?? targetUser ?? userId,
+              }
+            : null
+        );
+      }
+
+      setActiveReassignPopoverLeadId(null);
+      setSuccess("Lead reassigned successfully.");
+      setTimeout(() => setSuccess(""), 2500);
     } catch (err: any) {
-      console.error("Update lead sub-status error:", err);
-      setError(
-        err?.response?.data?.message || "Failed to update lead sub-status."
-      );
+      console.error("Reassign lead error:", err);
+      setError(err?.response?.data?.message || "Failed to reassign lead.");
     } finally {
-      setUpdatingId(null);
+      setIsReassigning(false);
     }
   };
 
   // ===================================================
-  // NOTES HANDLERS
+  // NOTES SAVE HANDLER (SLIDE DRAWER)
   // ===================================================
 
-  const handleOpenNotes = (lead: Lead) => {
-    setActiveNotesLead(lead);
-    setNotesText(lead.notes || "");
-  };
-
-  const handleCloseNotes = () => {
-    if (isSavingNotes) return;
-    setActiveNotesLead(null);
-    setNotesText("");
-  };
-
-  const handleInsertTimestamp = () => {
-    const now = new Date();
-    const formatted = `[${now.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })} ${now.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    })}] `;
-    setNotesText((prev) => (prev ? `${prev}\n${formatted}` : formatted));
-  };
-
-  const handleSaveNotes = async () => {
-    if (!activeNotesLead) return;
+  const handleSaveNotes = async (leadId: string, notes: string) => {
     try {
-      setIsSavingNotes(true);
       setError("");
 
       const response = await axios.patch(
-        `${API_URL}/leads/${activeNotesLead._id}/notes`,
-        { notes: notesText },
+        `${API_URL}/leads/${leadId}/notes`,
+        { notes },
         getAuthConfig()
       );
 
@@ -891,22 +881,26 @@ const AdminLeads: React.FC = () => {
 
       setLeads((previous) =>
         previous.map((item) =>
-          item._id === activeNotesLead._id
-            ? { ...item, notes: updatedLead?.notes ?? notesText }
+          item._id === leadId
+            ? { ...item, notes: updatedLead?.notes ?? notes }
             : item
         )
       );
+
+      if (selectedDrawerLead && selectedDrawerLead._id === leadId) {
+        setSelectedDrawerLead((prev) =>
+          prev ? { ...prev, notes: updatedLead?.notes ?? notes } : null
+        );
+      }
 
       setSuccess("Lead notes saved successfully.");
       setTimeout(() => {
         setSuccess("");
       }, 2500);
-      handleCloseNotes();
     } catch (err: any) {
       console.error("Save lead notes error:", err);
       setError(err?.response?.data?.message || "Failed to save lead notes.");
-    } finally {
-      setIsSavingNotes(false);
+      throw err;
     }
   };
 
@@ -948,7 +942,6 @@ const AdminLeads: React.FC = () => {
     try {
       setImporting(true);
       setError("");
-      setSuccess("");
       setImportResult(null);
 
       const formData = new FormData();
@@ -957,28 +950,28 @@ const AdminLeads: React.FC = () => {
       const response = await axios.post(
         `${API_URL}/leads/import-excel`,
         formData,
-        getAuthConfig()
+        {
+          headers: {
+            ...getAuthConfig().headers,
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
 
-      const result: ImportResult = response.data;
-      setImportResult(result);
-
-      if (result.imported > 0) {
-        setSuccess(
-          `${result.imported} lead${result.imported > 1 ? "s" : ""} imported successfully.`
-        );
-      }
+      setImportResult(response.data);
+      setSuccess("Leads imported successfully.");
 
       setSelectedFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
 
-      await fetchLeads();
+      await handleRefreshAll();
     } catch (err: any) {
-      console.error("Excel import error:", err);
+      console.error("Import error:", err);
       setError(
-        err?.response?.data?.message || "Failed to import leads from Excel."
+        err?.response?.data?.message ||
+          "Failed to import leads. Please verify file format."
       );
     } finally {
       setImporting(false);
@@ -986,7 +979,7 @@ const AdminLeads: React.FC = () => {
   };
 
   // ===================================================
-  // CLEAR FILTERS
+  // RESET FILTERS
   // ===================================================
 
   const clearFilters = () => {
@@ -997,67 +990,8 @@ const AdminLeads: React.FC = () => {
 
   const handleResetUserFilter = () => {
     setSelectedUserId("all");
+    setUserSearchQuery("");
   };
-
-  // ===================================================
-  // STATUS CLASS & FORMATTING
-  // ===================================================
-
-  const getStatusClass = (status?: LeadStatus | "") => {
-    switch (status) {
-      case "Interested":
-        return "lead-status interested";
-      case "Not Interested":
-        return "lead-status not-interested";
-      case "No Contact":
-        return "lead-status no-contact";
-      case "Follow up":
-        return "lead-status follow-up";
-      case "Junk":
-        return "lead-status junk";
-      default:
-        return "lead-status";
-    }
-  };
-
-  const formatDate = (date?: string) => {
-    if (!date) return "—";
-    const parsed = new Date(date);
-    if (Number.isNaN(parsed.getTime())) return "—";
-    return parsed.toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
-  const formatTimestamp = (dateStr?: string) => {
-    if (!dateStr) return "—";
-    const date = new Date(dateStr);
-    if (isNaN(date.getTime())) return "—";
-    return date.toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-    });
-  };
-
-  const targetLeadsList = leads.filter((lead) =>
-    targetDeleteIds.includes(lead._id)
-  );
-
-  // Overall counts for Master card
-  const totalAllInterested = leads.filter((l) => l.status === "Interested").length;
-  const totalAllFollowUp = leads.filter((l) => l.status === "Follow up").length;
-  const totalAllNoContact = leads.filter((l) => l.status === "No Contact").length;
-
-  // ===================================================
-  // RENDER
-  // ===================================================
 
   return (
     <div className="lead-page">
@@ -1066,9 +1000,11 @@ const AdminLeads: React.FC = () => {
       ================================================= */}
       <div className="lead-page-header">
         <div>
-          <div className="lead-breadcrumb">Admin / Lead Management</div>
-          <h1>Leads</h1>
-          <p>Manage, track, analyze by team user, and batch audit all sales leads.</p>
+          <div className="lead-breadcrumb">Admin / Leads Pipeline</div>
+          <h1>Leads Management</h1>
+          <p>
+            Master grid overview of organization leads, team assignments, and pipeline progression
+          </p>
         </div>
 
         <div className="lead-header-actions">
@@ -1076,11 +1012,11 @@ const AdminLeads: React.FC = () => {
             type="button"
             className="lead-history-btn"
             onClick={openHistoryModal}
-            title="View Deletion Audit Log"
+            title="View audit trail of deleted leads"
           >
             <svg
-              width="17"
-              height="17"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -1099,20 +1035,23 @@ const AdminLeads: React.FC = () => {
             className="lead-refresh-btn"
             onClick={handleRefreshAll}
             disabled={loading || loadingUsers}
+            title="Refresh leads and team data"
           >
             <svg
-              className={loading || loadingUsers ? "lead-spin-icon" : ""}
-              width="17"
-              height="17"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className={loading || loadingUsers ? "lead-spin-icon" : ""}
             >
-              <path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 5v4h4" />
-              <path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 19v-4h-4" />
+              <path d="M21 2v6h-6" />
+              <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+              <path d="M3 22v-6h6" />
+              <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
             </svg>
             {loading || loadingUsers ? "Refreshing..." : "Refresh"}
           </button>
@@ -1124,73 +1063,57 @@ const AdminLeads: React.FC = () => {
       ================================================= */}
       {error && (
         <div className="lead-alert lead-alert-error">
-          <span>⚠</span>
-          {error}
+          <span>⚠️</span>
+          <span>{error}</span>
           <button type="button" onClick={() => setError("")}>
-            ×
+            ✕
           </button>
         </div>
       )}
 
       {success && (
         <div className="lead-alert lead-alert-success">
-          <span>✓</span>
-          {success}
+          <span>✅</span>
+          <span>{success}</span>
+          <button type="button" onClick={() => setSuccess("")}>
+            ✕
+          </button>
         </div>
       )}
 
       {/* =================================================
-          USER CARDS SECTION (TEAM PERFORMANCE & SELECTION)
+          SALES TEAM LEADS CAROUSEL
       ================================================= */}
       <section className="lead-users-section">
-        <div className="lead-users-header">
+        <div className="lead-users-heading-wrap">
           <div className="lead-users-title-group">
-            <div className="lead-users-icon">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
+            <div className="lead-users-title-row">
+              <h3>Sales Team Lead Distribution</h3>
+              <span className="lead-users-count-tag">
+                {userStatsList.length} Member{userStatsList.length !== 1 ? "s" : ""}
+              </span>
             </div>
-            <div>
-              <div className="lead-users-heading-wrap">
-                <h3>Sales Team Lead Breakdown</h3>
-                <span className="lead-users-count-tag">
-                  {userStatsList.length} Rep{userStatsList.length !== 1 ? "s" : ""}
-                </span>
-              </div>
-              <p>Click any user card below to separately view and manage their assigned leads.</p>
-            </div>
+            <p>
+              Click any team member card to isolate their leads, or keep All Team Leads selected.
+            </p>
           </div>
 
           <div className="lead-users-controls">
             <div className="lead-users-search">
               <svg
-                width="15"
-                height="15"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
               >
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
               <input
                 type="text"
-                placeholder="Find sales rep..."
+                placeholder="Find representative..."
                 value={userSearchQuery}
                 onChange={(e) => setUserSearchQuery(e.target.value)}
               />
@@ -1217,17 +1140,63 @@ const AdminLeads: React.FC = () => {
           </div>
         </div>
 
-        {/* User Cards Scroll / Grid Container */}
         <div className="lead-users-track">
-          {/* 1. MASTER CARD: ALL TEAM LEADS */}
-          <div
-            className={`lead-user-card all-card ${
-              selectedUserId === "all" ? "active" : ""
-            }`}
-            onClick={() => setSelectedUserId("all")}
-            role="button"
-            tabIndex={0}
-          >
+          {loading && userStatsList.length === 0 ? (
+            [1, 2, 3, 4].map((i) => (
+              <div key={i} className="lead-user-card lead-user-card-shimmer">
+                <div className="lead-user-card-header">
+                  <div
+                    className="lead-shimmer lead-shimmer-avatar"
+                    style={{ width: "42px", height: "42px", borderRadius: "12px" }}
+                  />
+                  <div className="lead-user-meta" style={{ gap: "6px" }}>
+                    <div
+                      className="lead-shimmer lead-shimmer-line"
+                      style={{ width: "100px", height: "14px" }}
+                    />
+                    <div
+                      className="lead-shimmer lead-shimmer-line"
+                      style={{ width: "130px", height: "12px" }}
+                    />
+                  </div>
+                </div>
+                <div className="lead-user-metric-row" style={{ marginTop: "12px" }}>
+                  <div
+                    className="lead-shimmer lead-shimmer-line"
+                    style={{ width: "40px", height: "28px" }}
+                  />
+                  <div
+                    className="lead-shimmer lead-shimmer-line"
+                    style={{ width: "110px", height: "12px", marginTop: "4px" }}
+                  />
+                </div>
+                <div className="lead-user-capsules-row" style={{ marginTop: "12px" }}>
+                  <div
+                    className="lead-shimmer lead-shimmer-badge"
+                    style={{ width: "70px", height: "22px" }}
+                  />
+                  <div
+                    className="lead-shimmer lead-shimmer-badge"
+                    style={{ width: "70px", height: "22px" }}
+                  />
+                  <div
+                    className="lead-shimmer lead-shimmer-badge"
+                    style={{ width: "70px", height: "22px" }}
+                  />
+                </div>
+              </div>
+            ))
+          ) : (
+            <>
+              {/* MASTER CARD: ALL TEAM LEADS */}
+              <div
+                className={`lead-user-card all-card ${
+                  selectedUserId === "all" ? "active" : ""
+                }`}
+                onClick={() => setSelectedUserId("all")}
+                role="button"
+                tabIndex={0}
+              >
             <div className="lead-user-card-header">
               <div className="lead-user-avatar-all">
                 <svg
@@ -1284,7 +1253,7 @@ const AdminLeads: React.FC = () => {
             </div>
           </div>
 
-          {/* 2. INDIVIDUAL USER CARDS */}
+          {/* INDIVIDUAL USER CARDS */}
           {filteredUserCards.map((user) => {
             const isSelected = selectedUserId === user.userId;
             const initials =
@@ -1368,17 +1337,6 @@ const AdminLeads: React.FC = () => {
                     <span className="lead-capsule-label">No Contact</span>
                     <span className="lead-capsule-count">{user.noContact}</span>
                   </span>
-                  {(user.notInterested > 0 || user.junk > 0) && (
-                    <span
-                      className="lead-capsule other"
-                      title={`${user.notInterested + user.junk} Closed/Junk leads`}
-                    >
-                      <span className="lead-capsule-label">Closed/Junk</span>
-                      <span className="lead-capsule-count">
-                        {user.notInterested + user.junk}
-                      </span>
-                    </span>
-                  )}
                 </div>
 
                 <div className="lead-user-card-footer">
@@ -1395,53 +1353,21 @@ const AdminLeads: React.FC = () => {
               </div>
             );
           })}
-
-          {filteredUserCards.length === 0 && userSearchQuery && (
-            <div className="lead-user-search-empty">
-              <span>🔍</span>
-              <p>No team members matching &ldquo;{userSearchQuery}&rdquo;</p>
-              <button
-                type="button"
-                onClick={() => setUserSearchQuery("")}
-                className="lead-user-clear-search-btn"
-              >
-                Clear Search
-              </button>
-            </div>
+            </>
           )}
         </div>
       </section>
 
       {/* =================================================
-          EXCEL IMPORT
+          EXCEL IMPORT CARD
       ================================================= */}
       <section className="lead-import-card">
         <div className="lead-import-info">
-          <div className="lead-import-icon">
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <path d="M8 13h8" />
-              <path d="M8 17h8" />
-            </svg>
-          </div>
-
-          <div>
-            <h3>Import Leads</h3>
-            <p>
-              Upload an Excel file containing Name and Phone. Optional columns:
-              Sr No, Email, Company and Source.
-            </p>
-          </div>
+          {/* <div className="lead-import-badge">Bulk Upload</div> */}
+          <h3>Import Leads via Excel</h3>
+          <p>
+            Upload .xlsx or .xls file. Expected columns: Name, Phone, Email, Company, Source.
+          </p>
         </div>
 
         <div className="lead-import-actions">
@@ -1480,9 +1406,7 @@ const AdminLeads: React.FC = () => {
         </div>
       </section>
 
-      {/* =================================================
-          IMPORT RESULT
-      ================================================= */}
+      {/* IMPORT RESULT */}
       {importResult && (
         <section className="lead-import-result">
           <div className="lead-result-stat">
@@ -1517,7 +1441,7 @@ const AdminLeads: React.FC = () => {
       )}
 
       {/* =================================================
-          STATISTICS (DYNAMIC BASED ON SELECTED USER)
+          DYNAMIC STATS COUNTERS
       ================================================= */}
       <div className="lead-stats-grid">
         <div className="lead-stat-card">
@@ -1531,28 +1455,28 @@ const AdminLeads: React.FC = () => {
 
         <div className="lead-stat-card">
           <div className="lead-stat-label">Interested</div>
-          <div className="lead-stat-value" style={{ color: "#059669" }}>
+          <div className="lead-stat-value" style={{ color: "#10b981" }}>
             {statInterested}
           </div>
         </div>
 
         <div className="lead-stat-card">
           <div className="lead-stat-label">Follow Up</div>
-          <div className="lead-stat-value" style={{ color: "#d97706" }}>
+          <div className="lead-stat-value" style={{ color: "#f59e0b" }}>
             {statFollowUp}
           </div>
         </div>
 
         <div className="lead-stat-card">
           <div className="lead-stat-label">No Contact</div>
-          <div className="lead-stat-value" style={{ color: "#2563eb" }}>
+          <div className="lead-stat-value" style={{ color: "#3b82f6" }}>
             {statNoContact}
           </div>
         </div>
       </div>
 
       {/* =================================================
-          BATCH ACTION BAR (WHEN LEADS SELECTED)
+          BATCH ACTION BAR
       ================================================= */}
       {selectedIds.length > 0 && (
         <div className="admin-lead-batch-bar">
@@ -1597,9 +1521,7 @@ const AdminLeads: React.FC = () => {
         </div>
       )}
 
-      {/* =================================================
-          ACTIVE USER FILTER BANNER
-      ================================================= */}
+      {/* ACTIVE USER FILTER BANNER */}
       {selectedUserId !== "all" && (
         <div className="lead-active-user-banner">
           <div className="lead-active-user-info">
@@ -1607,7 +1529,7 @@ const AdminLeads: React.FC = () => {
             <div className="lead-active-user-text">
               <strong>{selectedUserObj?.name || "Selected User"}</strong>
               <span>
-                Showing {filteredLeads.length} of {userScopedLeads.length} lead{userScopedLeads.length !== 1 ? "s" : ""} uploaded by this user ({leads.length} total team leads)
+                Showing {filteredLeads.length} of {userScopedLeads.length} lead{userScopedLeads.length !== 1 ? "s" : ""} ({leads.length} total org leads)
               </span>
             </div>
           </div>
@@ -1623,9 +1545,10 @@ const AdminLeads: React.FC = () => {
       )}
 
       {/* =================================================
-          FILTER BAR
+          MAIN MASTER GRID & TABLE CARD
       ================================================= */}
       <section className="lead-table-card">
+        {/* RESPONSIVE FILTER BAR */}
         <div className="lead-filter-bar">
           <div className="lead-search">
             <svg
@@ -1650,59 +1573,59 @@ const AdminLeads: React.FC = () => {
             />
           </div>
 
-          <select
-            value={statusFilter}
-            onChange={(event) => {
-              const value = event.target.value as "All" | LeadStatus;
-              setStatusFilter(value);
-              setSubStatusFilter("All");
-            }}
-            className="lead-filter-select"
-          >
-            <option value="All">All Status</option>
-            {statuses.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={subStatusFilter}
-            onChange={(event) =>
-              setSubStatusFilter(event.target.value as "All" | LeadSubStatus)
-            }
-            className="lead-filter-select"
-          >
-            <option value="All">All Sub Status</option>
-            {availableSubStatuses
-              .filter((value) => value !== "")
-              .map((subStatus) => (
-                <option key={subStatus} value={subStatus}>
-                  {subStatus}
+          <div className="lead-filter-dropdowns">
+            <select
+              value={statusFilter}
+              onChange={(event) => {
+                const value = event.target.value as "All" | LeadStatus;
+                setStatusFilter(value);
+                setSubStatusFilter("All");
+              }}
+              className="lead-filter-select"
+            >
+              <option value="All">All Pipeline Stages</option>
+              {statuses.map((status) => (
+                <option key={status} value={status}>
+                  {status}
                 </option>
               ))}
-          </select>
+            </select>
 
-          {(search || statusFilter !== "All" || subStatusFilter !== "All") && (
-            <button
-              type="button"
-              className="lead-clear-btn"
-              onClick={clearFilters}
+            <select
+              value={subStatusFilter}
+              onChange={(event) =>
+                setSubStatusFilter(event.target.value as "All" | LeadSubStatus)
+              }
+              className="lead-filter-select"
             >
-              Clear
-            </button>
-          )}
+              <option value="All">All Sub-Statuses</option>
+              {availableSubStatuses
+                .filter((value) => value !== "")
+                .map((subStatus) => (
+                  <option key={subStatus} value={subStatus}>
+                    {subStatus}
+                  </option>
+                ))}
+            </select>
+
+            {(search || statusFilter !== "All" || subStatusFilter !== "All") && (
+              <button
+                type="button"
+                className="lead-clear-btn"
+                onClick={clearFilters}
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* =================================================
-            TABLE HEADER INFO
-        ================================================= */}
+        {/* HEADER SUMMARY ROW */}
         <div className="lead-table-header">
           <div>
             <strong>
               {selectedUserId === "all"
-                ? "All Team Leads"
+                ? "Organization Leads"
                 : `${selectedUserObj?.name || "User"}'s Leads`}
             </strong>
             <span>
@@ -1710,467 +1633,730 @@ const AdminLeads: React.FC = () => {
               {selectedUserId !== "all" && ` (from ${leads.length} total)`}
             </span>
             {selectedIds.length > 0 && (
-              <span style={{ color: "#2563eb", fontWeight: 600 }}>
+              <span style={{ color: "#818cf8", fontWeight: 700 }}>
                 • {selectedIds.length} selected
               </span>
             )}
           </div>
         </div>
 
-        {/* =================================================
-            TABLE
-        ================================================= */}
-        <div className="lead-table-wrapper">
-          {loading ? (
-            <div className="lead-loading">
-              <div className="lead-spinner" />
-              <span>Loading leads...</span>
+        {/* LOADING & EMPTY STATES */}
+        {loading ? (
+          <div className="lead-shimmer-container" aria-label="Loading leads">
+            {/* 1. DESKTOP SHIMMER TABLE */}
+            <div className="lead-table-wrap lead-shimmer-table-wrap">
+              <div className="table-responsive">
+                <table className="lead-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: "42px", textAlign: "center" }}>
+                        <div className="lead-shimmer lead-shimmer-checkbox" />
+                      </th>
+                      <th style={{ width: "50px", textAlign: "center" }}>#</th>
+                      <th style={{ width: "260px" }}>Lead & Contact Vector</th>
+                      <th style={{ width: "210px" }}>Context & Urgency</th>
+                      <th style={{ width: "240px" }}>Chained Pipeline Status</th>
+                      <th style={{ width: "200px" }}>Assigned Representative</th>
+                      <th style={{ width: "130px", textAlign: "right" }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                      <tr key={i} className="lead-shimmer-row">
+                        <td style={{ textAlign: "center" }}>
+                          <div className="lead-shimmer lead-shimmer-checkbox" />
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          <div className="lead-shimmer lead-shimmer-sr" />
+                        </td>
+                        <td>
+                          <div className="lead-vector-contact">
+                            <div className="vector-person-row">
+                              <div className="lead-shimmer lead-shimmer-avatar" />
+                              <div className="lead-shimmer lead-shimmer-line lead-shimmer-name" />
+                            </div>
+                            <div className="lead-shimmer lead-shimmer-line lead-shimmer-phone" />
+                            <div className="lead-shimmer lead-shimmer-line lead-shimmer-email" />
+                          </div>
+                        </td>
+                        <td>
+                          <div className="lead-context-block">
+                            <div className="lead-shimmer lead-shimmer-line lead-shimmer-company" />
+                            <div className="lead-context-pills">
+                              <div className="lead-shimmer lead-shimmer-badge" />
+                              <div className="lead-shimmer lead-shimmer-urgency" />
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="lead-shimmer lead-shimmer-status-pill" />
+                        </td>
+                        <td>
+                          <div className="lead-rep-cell">
+                            <div className="lead-shimmer lead-shimmer-rep-badge" />
+                          </div>
+                        </td>
+                        <td style={{ textAlign: "right" }}>
+                          <div
+                            className="lead-actions-cell"
+                            style={{ justifyContent: "flex-end" }}
+                          >
+                            <div className="lead-shimmer lead-shimmer-action-btn" />
+                            <div className="lead-shimmer lead-shimmer-action-btn" />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          ) : filteredLeads.length === 0 ? (
-            <div className="lead-empty">
-              <div className="lead-empty-icon">👥</div>
-              <h3>
-                {selectedUserId !== "all"
-                  ? `No leads found for ${selectedUserObj?.name || "this user"}`
-                  : "No leads found"}
-              </h3>
-              <p>
-                {leads.length === 0
-                  ? "Import an Excel file to add leads."
-                  : selectedUserId !== "all"
-                  ? "This user does not have any leads matching the current criteria."
-                  : "Try changing your search or filters."}
-              </p>
-              {selectedUserId !== "all" && (
-                <button
-                  type="button"
-                  className="lead-empty-action-btn"
-                  onClick={handleResetUserFilter}
-                >
-                  View All Leads
-                </button>
-              )}
-            </div>
-          ) : (
-            <table className="lead-table">
-              <thead>
-                <tr>
-                  <th style={{ width: "42px", textAlign: "center" }}>
-                    <input
-                      ref={selectAllCheckboxRef}
-                      type="checkbox"
-                      className="lead-checkbox"
-                      checked={isAllSelected}
-                      onChange={handleSelectAll}
-                      title="Select / Deselect all"
+
+            {/* 2. MOBILE SHIMMER CARD STREAM */}
+            <div className="lead-mobile-card-stream lead-shimmer-card-stream">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="lead-mobile-card lead-shimmer-card">
+                  {/* ROW 1: HEADER */}
+                  <div className="mobile-card-header">
+                    <div className="mobile-card-identity">
+                      <div className="lead-shimmer lead-shimmer-checkbox" />
+                      <div className="mobile-names-wrap">
+                        <div
+                          className="lead-shimmer lead-shimmer-line lead-shimmer-name"
+                          style={{ width: "130px", height: "16px" }}
+                        />
+                        <div
+                          className="lead-shimmer lead-shimmer-line lead-shimmer-company"
+                          style={{
+                            width: "90px",
+                            height: "12px",
+                            marginTop: "4px",
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="mobile-card-quick-actions">
+                      <div className="lead-shimmer lead-shimmer-action-btn" />
+                      <div className="lead-shimmer lead-shimmer-action-btn" />
+                    </div>
+                  </div>
+
+                  {/* ROW 2: CONTACT */}
+                  <div className="mobile-card-contact-row">
+                    <div
+                      className="lead-shimmer lead-shimmer-line"
+                      style={{ width: "110px", height: "14px" }}
                     />
-                  </th>
-                  <th>Sr. No.</th>
-                  <th>Lead</th>
-                  <th>Contact</th>
-                  <th>Company</th>
-                  <th>Source</th>
-                  <th>Status</th>
-                  <th>Sub Status</th>
-                  <th style={{ minWidth: "160px" }}>Notes</th>
-                  <th>Uploaded By / User</th>
-                  <th>Created</th>
-                  <th style={{ width: "60px", textAlign: "center" }}>Actions</th>
-                </tr>
-              </thead>
+                    <div
+                      className="lead-shimmer lead-shimmer-line"
+                      style={{ width: "160px", height: "13px" }}
+                    />
+                  </div>
 
-              <tbody>
-                {filteredLeads.map((lead, index) => {
-                  const safeStatus = getSafeStatus(lead.status);
-                  const subStatuses = getSafeSubStatuses(lead.status);
-                  const isUpdating = updatingId === lead._id;
-                  const isSelected = selectedIds.includes(lead._id);
+                  {/* ROW 3: BADGES */}
+                  <div className="mobile-card-tags-row">
+                    <div
+                      className="lead-shimmer lead-shimmer-badge"
+                      style={{ width: "65px", height: "20px" }}
+                    />
+                    <div
+                      className="lead-shimmer lead-shimmer-badge"
+                      style={{ width: "80px", height: "20px" }}
+                    />
+                  </div>
 
-                  const safeSubStatus =
-                    lead.subStatus && subStatuses.includes(lead.subStatus)
-                      ? lead.subStatus
-                      : "";
+                  {/* ROW 4: PIPELINE STAGE */}
+                  <div className="mobile-card-pipeline-row">
+                    <div
+                      className="lead-shimmer lead-shimmer-status-pill"
+                      style={{ width: "100%", height: "36px" }}
+                    />
+                  </div>
 
-                  const uploaderName = getLeadUploaderName(lead.uploadedBy, users);
-                  const uploaderEmail = getLeadUploaderEmail(lead.uploadedBy, users);
-                  const uploaderRole = getLeadUploaderRole(lead.uploadedBy, users);
-                  const uploaderId = getLeadUploaderId(lead.uploadedBy);
+                  {/* ROW 5: ASSIGNED REP */}
+                  <div className="mobile-card-rep-section">
+                    <div
+                      className="lead-shimmer lead-shimmer-line"
+                      style={{ width: "120px", height: "14px" }}
+                    />
+                    <div
+                      className="lead-shimmer lead-shimmer-rep-badge"
+                      style={{ width: "95px", height: "28px" }}
+                    />
+                  </div>
 
-                  return (
-                    <tr
-                      key={lead._id}
-                      className={isSelected ? "row-selected" : ""}
-                    >
-                      {/* CHECKBOX */}
-                      <td style={{ textAlign: "center" }}>
+                  {/* ROW 6: FOOTER */}
+                  <div className="mobile-card-notes-footer">
+                    <div
+                      className="lead-shimmer lead-shimmer-line"
+                      style={{
+                        width: "100%",
+                        height: "32px",
+                        borderRadius: "10px",
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : filteredLeads.length === 0 ? (
+          <div className="lead-empty">
+            <div className="lead-empty-icon">👥</div>
+            <h3>
+              {selectedUserId !== "all"
+                ? `No leads found for ${selectedUserObj?.name || "this user"}`
+                : "No leads found"}
+            </h3>
+            <p>
+              {leads.length === 0
+                ? "Import an Excel file to populate leads."
+                : selectedUserId !== "all"
+                ? "This user does not have any leads matching the current criteria."
+                : "Try adjusting your search keywords or pipeline status filters."}
+            </p>
+            {selectedUserId !== "all" && (
+              <button
+                type="button"
+                className="lead-empty-action-btn"
+                onClick={handleResetUserFilter}
+              >
+                View All Leads
+              </button>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* =============================================
+                1. DESKTOP / TABLET MASTER-DETAIL TABLE
+                (Fluid width, no 1250px bottleneck)
+            ============================================= */}
+            <div className="lead-desktop-table-view">
+              <table className="lead-master-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: "40px", textAlign: "center" }}>
+                      <input
+                        ref={selectAllCheckboxRef}
+                        type="checkbox"
+                        className="lead-checkbox"
+                        checked={isAllSelected}
+                        onChange={handleSelectAll}
+                        title="Select / Deselect all"
+                      />
+                    </th>
+                    <th style={{ width: "50px", textAlign: "center" }}>#</th>
+                    <th style={{ width: "260px" }}>Lead & Contact Vector</th>
+                    <th style={{ width: "210px" }}>Context & Urgency</th>
+                    <th style={{ width: "240px" }}>Chained Pipeline Status</th>
+                    <th style={{ width: "200px" }}>Assigned Representative</th>
+                    <th style={{ width: "130px", textAlign: "right" }}>Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {filteredLeads.map((lead, index) => {
+                    const isSelected = selectedIds.includes(lead._id);
+                    const urgency = getUrgencyInfo(lead);
+                    const uploaderName = getLeadUploaderName(lead.uploadedBy, users);
+                    const uploaderEmail = getLeadUploaderEmail(lead.uploadedBy, users);
+                    const uploaderRole = getLeadUploaderRole(lead.uploadedBy, users);
+                    const uploaderId = getLeadUploaderId(lead.uploadedBy);
+                    const isReassignOpen = activeReassignPopoverLeadId === lead._id;
+
+                    return (
+                      <tr
+                        key={lead._id}
+                        className={`${isSelected ? "row-selected" : ""} ${
+                          selectedDrawerLead?._id === lead._id ? "row-drawer-active" : ""
+                        }`}
+                      >
+                        {/* 1. SELECTION CHECKBOX */}
+                        <td style={{ textAlign: "center" }}>
+                          <input
+                            type="checkbox"
+                            className="lead-checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleSelect(lead._id)}
+                          />
+                        </td>
+
+                        {/* 2. SR NO */}
+                        <td style={{ textAlign: "center" }}>
+                          <span className="lead-sr-no">{index + 1}</span>
+                        </td>
+
+                        {/* 3. CONTACT VECTOR (NAME, PHONE, EMAIL) */}
+                        <td>
+                          <div className="lead-vector-contact">
+                            <div className="vector-person-row">
+                              {/* <div
+                                className="vector-avatar"
+                                style={{
+                                  background: getAvatarGradient(lead._id + lead.name),
+                                }}
+                              >
+                                {lead.name?.charAt(0).toUpperCase() || "L"}
+                              </div> */}
+                              <div className="vector-names-col">
+                                <button
+                                  type="button"
+                                  className="vector-name-link"
+                                  onClick={() => setSelectedDrawerLead(lead)}
+                                  title="Click to open slide-out detail drawer"
+                                >
+                                  {lead.name}
+                                </button>
+                                {lead.email && (
+                                  <a
+                                    href={`mailto:${lead.email}`}
+                                    className="vector-email-link"
+                                    title={`Send email to ${lead.email}`}
+                                  >
+                                    {lead.email}
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="vector-phone-row">
+                              <a
+                                href={`tel:${lead.phone}`}
+                                className="vector-phone-link"
+                                title={`Call ${lead.phone}`}
+                              >
+                                📞 {lead.phone}
+                              </a>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* 4. CONTEXT & URGENCY (COMPANY, SOURCE, URGENCY DOT) */}
+                        <td>
+                          <div className="lead-vector-context">
+                            <div className="context-company-row">
+                              <strong className="context-company">
+                                {lead.company || "Individual"}
+                              </strong>
+                            </div>
+
+                            <div className="context-tags-row">
+                              {lead.source && (
+                                <span className="lead-source-chip">
+                                  {lead.source}
+                                </span>
+                              )}
+
+                              {/* REAL-TIME URGENCY INDICATOR */}
+                              <span
+                                className={`urgency-badge urgency-${urgency.level}`}
+                                title={urgency.text}
+                              >
+                                <span
+                                  className="urgency-dot"
+                                  style={{ backgroundColor: urgency.color }}
+                                />
+                                {urgency.label}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* 5. CHAINED PIPELINE STATUS */}
+                        <td>
+                          <div className="lead-status-column-cell">
+                            <LeadStatusBadgePopover
+                              currentStatus={lead.status as any}
+                              currentSubStatus={lead.subStatus as any}
+                              isLoading={updatingId === lead._id}
+                              onUpdate={(st, subSt) =>
+                                handleUpdateStatus(lead, st, subSt)
+                              }
+                              size="md"
+                              align="left"
+                            />
+                          </div>
+                        </td>
+
+                        {/* 6. REPRESENTATIVE & 1-CLICK REASSIGN */}
+                        <td>
+                          <div className="lead-rep-cell">
+                            <div
+                              className="lead-rep-badge-btn"
+                              onClick={() =>
+                                setActiveReassignPopoverLeadId(
+                                  isReassignOpen ? null : lead._id
+                                )
+                              }
+                              title="Click to reassign to another representative"
+                              role="button"
+                              tabIndex={0}
+                            >
+                              <div
+                                className="lead-rep-avatar"
+                                style={{
+                                  background: getAvatarGradient(
+                                    uploaderId + uploaderName
+                                  ),
+                                }}
+                              >
+                                {uploaderName.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="lead-rep-info">
+                                <span className="rep-name">{uploaderName}</span>
+                                <span className="rep-sub">
+                                  {uploaderRole || uploaderEmail || "Sales Rep"}
+                                </span>
+                              </div>
+                              <span className="rep-reassign-icon" title="Reassign">
+                                ⇄
+                              </span>
+                            </div>
+
+                            {/* REASSIGNMENT POPOVER */}
+                            {isReassignOpen && (
+                              <div
+                                className="lead-reassign-floating-popover"
+                                ref={reassignPopoverRef}
+                              >
+                                <div className="reassign-popover-header">
+                                  <span>Reassign Lead</span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setActiveReassignPopoverLeadId(null)
+                                    }
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                                <div className="reassign-popover-list">
+                                  {users
+                                    .filter((u) => u.status !== "inactive")
+                                    .map((user) => {
+                                      const isCurr = user._id === uploaderId;
+                                      return (
+                                        <button
+                                          key={user._id}
+                                          type="button"
+                                          disabled={isReassigning || isCurr}
+                                          className={`reassign-user-item ${
+                                            isCurr ? "active-assigned" : ""
+                                          }`}
+                                          onClick={() =>
+                                            handleReassignLead(lead._id, user._id)
+                                          }
+                                        >
+                                          <span className="rep-avatar-sm">
+                                            {user.name.charAt(0).toUpperCase()}
+                                          </span>
+                                          <div className="rep-user-info-sm">
+                                            <strong>{user.name}</strong>
+                                            <small>
+                                              {user.jobPosition || user.role}
+                                            </small>
+                                          </div>
+                                          {isCurr && (
+                                            <span className="assigned-tag">
+                                              Current
+                                            </span>
+                                          )}
+                                        </button>
+                                      );
+                                    })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* 7. ACTIONS & NOTES DRAWER TRIGGER */}
+                        <td style={{ textAlign: "right" }}>
+                          <div className="lead-row-actions-group">
+                            {/* SLIDE-OUT DRAWER BUTTON */}
+                            <button
+                              type="button"
+                              className={`lead-drawer-trigger-btn ${
+                                lead.notes && lead.notes.trim() ? "has-notes" : ""
+                              }`}
+                              onClick={() => setSelectedDrawerLead(lead)}
+                              title={
+                                lead.notes ? lead.notes : "Open Slide Drawer & Notes"
+                              }
+                            >
+                              <span className="drawer-btn-icon">📝</span>
+                              <span className="drawer-btn-label">
+                                {lead.notes && lead.notes.trim() ? "Notes" : "Drawer"}
+                              </span>
+                            </button>
+
+                            {/* QUICK CALL */}
+                            {/* <a
+                              href={`tel:${lead.phone}`}
+                              className="lead-quick-call-btn"
+                              title={`Direct Call: ${lead.phone}`}
+                            >
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                              </svg>
+                            </a> */}
+
+                            {/* DELETE BUTTON */}
+                            <button
+                              type="button"
+                              className="admin-lead-row-delete-btn"
+                              onClick={() => promptSingleDelete(lead._id)}
+                              title="Delete this lead"
+                            >
+                              <svg
+                                width="14"
+                                height="14"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                              </svg>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* =============================================
+                2. MOBILE TOUCH-FRIENDLY CARD STREAM
+                (Shown automatically on <= 768px viewport)
+            ============================================= */}
+            <div className="lead-mobile-card-stream">
+              {filteredLeads.map((lead) => {
+                const isSelected = selectedIds.includes(lead._id);
+                const urgency = getUrgencyInfo(lead);
+                const uploaderName = getLeadUploaderName(lead.uploadedBy, users);
+                const isReassignOpen = activeReassignPopoverLeadId === lead._id;
+
+                return (
+                  <div
+                    key={lead._id}
+                    className={`lead-mobile-card ${isSelected ? "selected" : ""}`}
+                  >
+                    {/* ROW 1: HEADER (CHECKBOX, SR NO, AVATAR, NAME, COMPANY & DELETE BUTTON) */}
+                    <div className="mobile-card-header">
+                      <div className="mobile-card-identity">
                         <input
                           type="checkbox"
                           className="lead-checkbox"
                           checked={isSelected}
                           onChange={() => handleToggleSelect(lead._id)}
                         />
-                      </td>
-
-                      {/* SR NO */}
-                      <td>
-                        <span className="lead-sr-no">{index + 1}</span>
-                      </td>
-
-                      {/* NAME */}
-                      <td>
-                        <div className="lead-person">
-                          <div className="lead-avatar">
-                            {lead.name?.charAt(0).toUpperCase() || "L"}
-                          </div>
-                          <div>
-                            <strong>{lead.name}</strong>
-                            {lead.email && <small>{lead.email}</small>}
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* CONTACT */}
-                      <td>
-                        <a href={`tel:${lead.phone}`} className="lead-phone">
-                          {lead.phone}
-                        </a>
-                      </td>
-
-                      {/* COMPANY */}
-                      <td>{lead.company || "—"}</td>
-
-                      {/* SOURCE */}
-                      <td>{lead.source || "—"}</td>
-
-                      {/* STATUS */}
-                      <td>
-                        <div className="lead-status-wrapper">
-                          <select
-                            value={safeStatus}
-                            disabled={isUpdating}
-                            className={getStatusClass(safeStatus)}
-                            onChange={(event) => {
-                              const selectedStatus = event.target
-                                .value as LeadStatus;
-                              if (isValidStatus(selectedStatus)) {
-                                updateStatus(lead, selectedStatus);
-                              }
-                            }}
+                        {/* <span className="mobile-sr-badge">#{index + 1}</span> */}
+                        {/* <div
+                          className="mobile-avatar"
+                          style={{
+                            background: getAvatarGradient(lead._id + lead.name),
+                          }}
+                        >
+                          {lead.name.charAt(0).toUpperCase()}
+                        </div> */}
+                        <div className="mobile-names-wrap">
+                          <button
+                            type="button"
+                            className="mobile-lead-name-btn"
+                            onClick={() => setSelectedDrawerLead(lead)}
+                            title="Open Lead Drawer"
                           >
-                            <option value="" disabled>
-                              Select Status
-                            </option>
-                            {statuses.map((status) => (
-                              <option key={status} value={status}>
-                                {status}
-                              </option>
-                            ))}
-                          </select>
+                            {lead.name}
+                          </button>
+                          {lead.company && (
+                            <span className="mobile-lead-company">
+                              {lead.company}
+                            </span>
+                          )}
                         </div>
-                      </td>
+                      </div>
 
-                      {/* SUB STATUS */}
-                      <td>
-                        <select
-                          value={safeStatus === "Junk" ? "" : safeSubStatus}
-                          disabled={
-                            isUpdating ||
-                            safeStatus === "" ||
-                            safeStatus === "Junk"
+                      <button
+                        type="button"
+                        className="mobile-delete-btn"
+                        onClick={() => promptSingleDelete(lead._id)}
+                        title="Delete Lead"
+                        aria-label="Delete Lead"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* ROW 2: CONTACT INFORMATION WITH DEDICATED QUICK CTAS */}
+                    <div className="mobile-card-contact-box">
+                      <div className="mobile-contact-item">
+                        <div className="mobile-contact-info">
+                          <span className="mobile-contact-label">Phone</span>
+                          <a href={`tel:${lead.phone}`} className="mobile-phone-link">
+                            {lead.phone}
+                          </a>
+                        </div>
+                        {/* <a
+                          href={`tel:${lead.phone}`}
+                          className="mobile-quick-cta call"
+                          title="Call Lead"
+                        >
+                          📞 Call
+                        </a> */}
+                      </div>
+
+                      {lead.email && (
+                        <div className="mobile-contact-item">
+                          <div className="mobile-contact-info">
+                            <span className="mobile-contact-label">Email</span>
+                            <a href={`mailto:${lead.email}`} className="mobile-email-link">
+                              {lead.email}
+                            </a>
+                          </div>
+                          {/* <a
+                            href={`mailto:${lead.email}`}
+                            className="mobile-quick-cta email"
+                            title="Send Email"
+                          >
+                            ✉️ Mail
+                          </a> */}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* ROW 3: SOURCE & REAL-TIME URGENCY PILLS */}
+                    <div className="mobile-card-tags-row">
+                      {lead.source && (
+                        <span className="mobile-source-tag">📍 {lead.source}</span>
+                      )}
+                      <span
+                        className={`urgency-badge urgency-${urgency.level}`}
+                        title={urgency.text}
+                      >
+                        <span
+                          className="urgency-dot"
+                          style={{ backgroundColor: urgency.color }}
+                        />
+                        {urgency.label}
+                      </span>
+                    </div>
+
+                    {/* ROW 4: PIPELINE STAGE (CHAINED STATUS BADGE) */}
+                    <div className="mobile-card-pipeline-row">
+                      {/* <span className="mobile-section-label">Pipeline Stage</span> */}
+                      <div className="mobile-status-container">
+                        <LeadStatusBadgePopover
+                          currentStatus={lead.status as any}
+                          currentSubStatus={lead.subStatus as any}
+                          isLoading={updatingId === lead._id}
+                          onUpdate={(st, subSt) =>
+                            handleUpdateStatus(lead, st, subSt)
                           }
-                          className="lead-substatus-select"
-                          onChange={(event) => {
-                            const selectedSubStatus = event.target
-                              .value as LeadSubStatus;
-                            if (selectedSubStatus !== "") {
-                              updateSubStatus(lead, selectedSubStatus);
-                            }
-                          }}
-                        >
-                          {safeStatus === "Junk" ? (
-                            <option value="">—</option>
-                          ) : (
-                            <>
-                              <option value="" disabled>
-                                {safeStatus === ""
-                                  ? "Select Status First"
-                                  : "Select Sub Status"}
-                              </option>
-                              {subStatuses
-                                .filter((subStatus) => subStatus !== "")
-                                .map((subStatus) => (
-                                  <option key={subStatus} value={subStatus}>
-                                    {subStatus}
-                                  </option>
-                                ))}
-                            </>
-                          )}
-                        </select>
-                      </td>
+                          size="md"
+                          align="left"
+                        />
+                      </div>
+                    </div>
 
-                      {/* NOTES */}
-                      <td>
-                        <div className="lead-notes-cell">
-                          {lead.notes && lead.notes.trim() ? (
-                            <button
-                              type="button"
-                              className="lead-note-badge"
-                              onClick={() => handleOpenNotes(lead)}
-                              title={lead.notes}
-                            >
-                              <span className="lead-note-icon">📝</span>
-                              <span className="lead-note-snippet">
-                                {lead.notes.length > 28
-                                  ? `${lead.notes.slice(0, 28)}...`
-                                  : lead.notes}
-                              </span>
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              className="lead-add-note-btn"
-                              onClick={() => handleOpenNotes(lead)}
-                              title="Add a note to this lead"
-                            >
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                                <line x1="12" y1="5" x2="12" y2="19" />
-                                <line x1="5" y1="12" x2="19" y2="12" />
-                              </svg>
-                              <span>Add Note</span>
-                            </button>
-                          )}
+                    {/* ROW 5: ASSIGNED FIELD REPRESENTATIVE */}
+                    <div className="mobile-card-rep-section">
+                      <div className="mobile-rep-left">
+                        <span className="mobile-section-label">Assigned:</span>
+                        <div className="mobile-rep-name-group">
+                          <strong className="mobile-rep-name">{uploaderName}</strong>
                         </div>
-                      </td>
+                      </div>
+                      <button
+                        type="button"
+                        className="mobile-reassign-btn"
+                        onClick={() =>
+                          setActiveReassignPopoverLeadId(
+                            isReassignOpen ? null : lead._id
+                          )
+                        }
+                      >
+                        {isReassignOpen ? "Close ✕" : "Reassign ⇄"}
+                      </button>
+                    </div>
 
-                      {/* UPLOADER / USER DETAILS */}
-                      <td>
-                        <div
-                          className="lead-uploader-clickable"
-                          onClick={() => {
-                            if (uploaderId && uploaderId !== "unassigned") {
-                              setSelectedUserId(uploaderId);
-                            }
-                          }}
-                          title={`Filter leads by ${uploaderName}${uploaderEmail ? ` (${uploaderEmail})` : ""}`}
-                        >
-                          <span className="lead-uploader-avatar-mini">
-                            {uploaderName.charAt(0).toUpperCase()}
-                          </span>
-                          <div className="lead-uploader-info-col">
-                            <strong className="lead-uploader-name">{uploaderName}</strong>
-                            {uploaderEmail ? (
-                              <span className="lead-uploader-sub">{uploaderEmail}</span>
-                            ) : uploaderRole ? (
-                              <span className="lead-uploader-sub">{uploaderRole}</span>
-                            ) : null}
-                          </div>
+                    {/* MOBILE REASSIGNMENT LIST PANEL */}
+                    {isReassignOpen && (
+                      <div className="mobile-reassign-panel">
+                        <span className="panel-title">Choose Representative:</span>
+                        <div className="mobile-reassign-list">
+                          {users
+                            .filter((u) => u.status !== "inactive")
+                            .map((user) => (
+                              <button
+                                key={user._id}
+                                type="button"
+                                disabled={isReassigning}
+                                className="mobile-reassign-option"
+                                onClick={() =>
+                                  handleReassignLead(lead._id, user._id)
+                                }
+                              >
+                                <div className="opt-meta">
+                                  <strong>{user.name}</strong>
+                                  <small>{user.jobPosition || user.role}</small>
+                                </div>
+                                <span className="opt-action">Assign →</span>
+                              </button>
+                            ))}
                         </div>
-                      </td>
+                      </div>
+                    )}
 
-                      {/* CREATED */}
-                      <td>
-                        <span className="lead-date">
-                          {formatDate(lead.createdAt)}
+                    {/* ROW 6: NOTES & SLIDE-OUT DRAWER TRIGGER */}
+                    <div
+                      className="mobile-card-notes-footer"
+                      onClick={() => setSelectedDrawerLead(lead)}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className="notes-left">
+                        <span className="notes-icon">📝</span>
+                        <span className="notes-snippet">
+                          {lead.notes && lead.notes.trim()
+                            ? lead.notes
+                            : "Tap to open details & notes..."}
                         </span>
-                      </td>
-
-                      {/* SINGLE DELETE */}
-                      <td style={{ textAlign: "center" }}>
-                        <button
-                          type="button"
-                          className="admin-lead-row-delete-btn"
-                          onClick={() => promptSingleDelete(lead._id)}
-                          title="Delete this lead"
-                        >
-                          <svg
-                            width="15"
-                            height="15"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M3 6h18" />
-                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                          </svg>
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
+                      </div>
+                      <span className="notes-arrow">→</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
       </section>
 
       {/* =================================================
-          LEAD NOTES MODAL
+          RIGHT-SIDE SLIDE-OUT DRAWER (MOBILE BOTTOM SHEET)
       ================================================= */}
-      {activeNotesLead &&
-        createPortal(
-          <div
-            className="lead-modal-overlay"
-            onClick={(e) => {
-              if (e.target === e.currentTarget && !isSavingNotes) handleCloseNotes();
-            }}
-          >
-            <div className="lead-modal-box lead-notes-modal-box" onClick={(e) => e.stopPropagation()}>
-              <div className="lead-modal-header">
-                <div className="lead-notes-header-left">
-                  <div className="lead-notes-icon-wrapper">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 20h9" />
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="lead-notes-title-row">
-                      <h3>Lead Notes</h3>
-                      <span className="lead-notes-badge-tag">
-                        {activeNotesLead.name}
-                      </span>
-                    </div>
-                    <p>
-                      Notes are recorded directly on the dashboard and not imported by Excel.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  className="lead-modal-close-btn"
-                  onClick={handleCloseNotes}
-                  disabled={isSavingNotes}
-                  title="Close notes"
-                  aria-label="Close"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="lead-modal-body">
-                {/* LEAD QUICK CONTEXT BAR */}
-                <div className="lead-notes-context-bar">
-                  <div className="lead-notes-context-item">
-                    <span className="label">Contact</span>
-                    <strong>{activeNotesLead.phone}</strong>
-                  </div>
-                  {activeNotesLead.company && (
-                    <div className="lead-notes-context-item">
-                      <span className="label">Company</span>
-                      <strong>{activeNotesLead.company}</strong>
-                    </div>
-                  )}
-                  {activeNotesLead.email && (
-                    <div className="lead-notes-context-item">
-                      <span className="label">Email</span>
-                      <strong>{activeNotesLead.email}</strong>
-                    </div>
-                  )}
-                  <div className="lead-notes-context-item">
-                    <span className="label">Status</span>
-                    <span className={`lead-status-pill ${getSafeStatus(activeNotesLead.status).toLowerCase().replace(/\s+/g, "-")}`}>
-                      {getSafeStatus(activeNotesLead.status) || "Select"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* TEXTAREA CONTROLS */}
-                <div className="lead-notes-editor-header">
-                  <span className="lead-notes-editor-label">Note Content</span>
-                  <div className="lead-notes-editor-actions">
-                    <button
-                      type="button"
-                      className="lead-timestamp-btn"
-                      onClick={handleInsertTimestamp}
-                      title="Insert current date & time stamp"
-                    >
-                      <svg
-                        width="13"
-                        height="13"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                      </svg>
-                      + Timestamp
-                    </button>
-                    {notesText && (
-                      <button
-                        type="button"
-                        className="lead-clear-note-text-btn"
-                        onClick={() => setNotesText("")}
-                        title="Clear note text"
-                      >
-                        Clear
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <textarea
-                  className="lead-notes-textarea"
-                  placeholder="Write lead notes, follow-up remarks, meeting takeaways, requirements, or next steps here..."
-                  value={notesText}
-                  onChange={(e) => setNotesText(e.target.value)}
-                  rows={7}
-                  autoFocus
-                />
-
-                <div className="lead-notes-meta-footer">
-                  <span className="lead-notes-char-count">
-                    {notesText.length} character{notesText.length === 1 ? "" : "s"} • {notesText.trim() ? notesText.trim().split(/\s+/).length : 0} word{notesText.trim().split(/\s+/).length === 1 ? "" : "s"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="lead-modal-footer">
-                <button
-                  type="button"
-                  className="lead-modal-btn cancel"
-                  onClick={handleCloseNotes}
-                  disabled={isSavingNotes}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="lead-modal-btn confirm-notes-save"
-                  onClick={handleSaveNotes}
-                  disabled={isSavingNotes}
-                >
-                  {isSavingNotes ? (
-                    <>
-                      <div className="lead-spinner-mini" />
-                      Saving Note...
-                    </>
-                  ) : (
-                    "Save Note"
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
+      <LeadSlideDrawer
+        lead={selectedDrawerLead}
+        isOpen={!!selectedDrawerLead}
+        onClose={() => setSelectedDrawerLead(null)}
+        onSaveNotes={handleSaveNotes}
+        onUpdateStatus={(l, st, subSt) => handleUpdateStatus(l as any, st, subSt)}
+        users={users}
+        onReassign={handleReassignLead}
+        isAdmin={true}
+      />
 
       {/* =================================================
           CONFIRM DELETE MODAL
@@ -2297,9 +2483,18 @@ const AdminLeads: React.FC = () => {
 
               <div className="lead-modal-body history-body">
                 {loadingLogs ? (
-                  <div className="lead-history-loading">
-                    <div className="lead-spinner" />
-                    <p>Loading audit logs...</p>
+                  <div className="lead-history-loading" style={{ padding: "12px 0" }}>
+                    {[1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className="lead-shimmer"
+                        style={{
+                          height: "56px",
+                          borderRadius: "12px",
+                          marginBottom: "12px",
+                        }}
+                      />
+                    ))}
                   </div>
                 ) : deletionLogs.length === 0 ? (
                   <div className="lead-history-empty">

@@ -65,7 +65,7 @@ const SalesSidebar = () => {
           }
         >
           <span>📈</span>
-          Reports
+          Meta Ads Live
         </NavLink>
 
         <NavLink

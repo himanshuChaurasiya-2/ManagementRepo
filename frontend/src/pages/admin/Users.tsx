@@ -58,6 +58,18 @@ const Users = () => {
   const [submitting, setSubmitting] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
+  // Master-Detail & Mobile Drawer State
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [copyEmailSuccess, setCopyEmailSuccess] = useState<string | null>(null);
+
+  // Swipe-to-dismiss gesture state for mobile bottom sheet
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+  const [dragOffsetY, setDragOffsetY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+
   const getToken = () => {
     return (
       localStorage.getItem("token") ||
@@ -86,7 +98,14 @@ const Users = () => {
       );
 
       if (response.data.success) {
-        setUsers(response.data.users);
+        const loadedUsers = response.data.users || [];
+        setUsers(loadedUsers);
+        setSelectedUserId((prev) => {
+          if (prev && loadedUsers.some((u: User) => u._id === prev)) {
+            return prev;
+          }
+          return loadedUsers.length > 0 ? loadedUsers[0]._id : null;
+        });
       }
     } catch (error: any) {
       console.error("Get users error:", error);
@@ -274,6 +293,264 @@ const Users = () => {
     }
   };
 
+  // Close mobile drawer on desktop resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 769 && mobileDrawerOpen) {
+        setMobileDrawerOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [mobileDrawerOpen]);
+
+  const handleSelectUser = (user: User) => {
+    setSelectedUserId(user._id);
+    if (window.innerWidth < 769) {
+      setMobileDrawerOpen(true);
+      setDragOffsetY(0);
+    }
+  };
+
+  // Mobile Bottom Sheet Swipe-to-Dismiss handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartY(e.touches[0].clientY);
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartY === null) return;
+    const diff = e.touches[0].clientY - touchStartY;
+    if (diff > 0) {
+      setDragOffsetY(diff);
+    } else {
+      setDragOffsetY(0);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (dragOffsetY > 80) {
+      setMobileDrawerOpen(false);
+    }
+    setTouchStartY(null);
+    setDragOffsetY(0);
+    setIsDragging(false);
+  };
+
+  const handleCopyEmail = (emailToCopy: string) => {
+    navigator.clipboard.writeText(emailToCopy);
+    setCopyEmailSuccess(emailToCopy);
+    setTimeout(() => setCopyEmailSuccess(null), 2000);
+  };
+
+  // Filtered users for condensed master list
+  const filteredUsers = users.filter((user) => {
+    const query = searchQuery.trim().toLowerCase();
+    const matchesSearch =
+      !query ||
+      user.name.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query) ||
+      (user.jobPosition && user.jobPosition.toLowerCase().includes(query));
+
+    const matchesStatus =
+      statusFilter === "all" ? true : user.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const selectedUser =
+    users.find((u) => u._id === selectedUserId) ||
+    (filteredUsers.length > 0 ? filteredUsers[0] : users.length > 0 ? users[0] : null);
+
+  // Render Rich User Profile (Shared between Desktop Right Panel & Mobile Bottom Sheet)
+  const renderUserProfile = (user: User, isMobileSheet: boolean = false) => {
+    return (
+      <div className={`user-profile-view ${isMobileSheet ? "is-mobile-sheet" : ""}`}>
+        {/* PROFILE HEADER HERO */}
+        <div className="user-profile-hero">
+          <div className="d-flex align-items-center" style={{gap:8}}>
+            <div className="user-profile-avatar-wrapper position-relative">
+              <div className="user-profile-avatar">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <span
+                className={`user-avatar-status-dot ${
+                  user.status === "active" ? "dot-active" : "dot-inactive"
+                }`}
+                title={`Status: ${user.status}`}
+              />
+            </div>
+
+            <div className="user-profile-title-block flex-grow-1">
+              <div className="d-flex align-items-center flex-wrap mb-1" style={{ gap: 4 }}>
+                <h3 className="user-profile-name m-0">{user.name}</h3>
+                {/* <span
+                  className={`user-status-badge ${
+                    user.status === "active" ? "status-active" : "status-inactive"
+                  }`}
+                >
+                  <span className="badge-dot" />
+                  {user.status}
+                </span> */}
+                <span className={`user-role-badge role-${user.role}`}>
+                  {/* <span className="badge-dot" /> */}
+                  {user.role}
+                </span>
+              </div>
+
+              <div className="user-profile-meta d-flex align-items-center gap-2 flex-wrap">
+                <span className="user-profile-position">
+                  {user.jobPosition ||
+                    (user.role === "admin" ? "Administrator" : "Sales Representative")}
+                </span>
+                {/* <span className="meta-separator">•</span> */}
+                {/* <span className="meta-separator">•</span> */}
+                {/* <span className="m-1">
+                  Joined {new Date(user.createdAt).toLocaleDateString()}
+                </span> */}
+              </div>
+            </div>
+          </div>
+
+          {/* ACTION BUTTONS TOOLBAR */}
+          <div className="user-profile-actions-bar">
+            <button
+              className={`user-action-btn ${
+                user.status === "active" ? "deactivate-btn" : "activate-btn"
+              }`}
+              disabled={actionLoading === user._id}
+              onClick={() => handleStatusChange(user)}
+            >
+              {actionLoading === user._id ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-1" role="status" />
+                  Updating...
+                </>
+              ) : user.status === "active" ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="me-1">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                  </svg>
+                  Deactivate Account
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="me-1">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                  Activate Account
+                </>
+              )}
+            </button>
+
+            {user.role === "sales" && (
+              <button
+                className="user-action-btn reset-btn"
+                disabled={actionLoading === user._id}
+                onClick={() => handleResetPassword(user)}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="me-1">
+                  <path d="M21 2l-2 2m-1.5 1.5L12 11l-4 4-3 3-2-2 3-3 4-4 5.5-5.5z" />
+                  <path d="M15 5l4 4" />
+                </svg>
+                Reset Password
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* PROFILE BODY DETAILS CARDS */}
+        <div className="user-profile-body-grid">
+          {/* Card 1: Contact & Identification */}
+          <div className="user-detail-card">
+            <div className="user-detail-card-header">
+              {/* <span className="card-header-icon">📧</span> */}
+              <h5>Contact & Role</h5>
+            </div>
+
+            <div className="user-detail-card-content">
+              <div className="detail-field">
+                <span className="detail-field-label">Email Address</span>
+                <div className="d-flex align-items-center gap-2 flex-wrap">
+                  <a href={`mailto:${user.email}`} className="detail-field-value user-email-link">
+                    {user.email}
+                  </a>
+                  <button
+                    type="button"
+                    className="btn-copy-mini"
+                    onClick={() => handleCopyEmail(user.email)}
+                    title="Copy email address"
+                  >
+                    {copyEmailSuccess === user.email ? "✓ Copied" : "Copy"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="detail-field">
+                <span className="detail-field-label">Job Position</span>
+                <span className="detail-field-value">
+                  {user.jobPosition || (user.role === "admin" ? "Administrator" : "Sales Representative")}
+                </span>
+              </div>
+
+              <div className="detail-field">
+                <span className="detail-field-label">System Role</span>
+                <span className="detail-field-value text-capitalize">
+                  {user.role}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Security & Credentials */}
+          <div className="user-detail-card">
+            <div className="user-detail-card-header">
+              {/* <span className="card-header-icon">🔒</span> */}
+              <h5>Security & Credentials</h5>
+            </div>
+
+            <div className="user-detail-card-content">
+              <div className="detail-field">
+                <span className="detail-field-label">Password Status</span>
+                <div>
+                  {user.mustChangePassword ? (
+                    <span className="password-status-badge password-required">
+                      ⚠️ Temporary Password
+                    </span>
+                  ) : (
+                    <span className="password-status-badge password-set">
+                      ✓ Password Secured & Set
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="detail-field">
+                <span className="detail-field-label">Account Created</span>
+                <span className="detail-field-value">
+                  {new Date(user.createdAt).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </span>
+              </div>
+
+              {/* <div className="detail-field">
+                <span className="detail-field-label">User ID</span>
+                <span className="detail-field-value user-mono-id">
+                  {user._id}
+                </span>
+              </div> */}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="users-page">
 
@@ -325,7 +602,11 @@ const Users = () => {
             </div>
           </div>
           <div className="user-stat-number">
-            {users.length}
+            {loading ? (
+              <span className="users-shimmer users-shimmer-stat" aria-hidden="true" />
+            ) : (
+              users.length
+            )}
           </div>
         </div>
 
@@ -350,12 +631,14 @@ const Users = () => {
             </div>
           </div>
           <div className="user-stat-number text-success">
-            {
+            {loading ? (
+              <span className="users-shimmer users-shimmer-stat" aria-hidden="true" />
+            ) : (
               users.filter(
                 (user) =>
                   user.status === "active"
               ).length
-            }
+            )}
           </div>
         </div>
 
@@ -380,252 +663,275 @@ const Users = () => {
             </div>
           </div>
           <div className="user-stat-number text-danger">
-            {
+            {loading ? (
+              <span className="users-shimmer users-shimmer-stat" aria-hidden="true" />
+            ) : (
               users.filter(
                 (user) =>
                   user.status === "inactive"
               ).length
-            }
+            )}
           </div>
         </div>
 
       </div>
 
-      {/* ================= USERS TABLE ================= */}
-
-      <div className="users-table-card">
-
-        {loading ? (
-          <div className="users-empty">
-
-            <div
-              className="spinner-border text-primary"
-              role="status"
-            />
-
-            <p className="text-muted mt-3 mb-0">
-              Loading users...
-            </p>
-
-          </div>
-        ) : users.length === 0 ? (
-
-          <div className="users-empty">
-
-            <div className="users-empty-icon">
-              👤
+      {/* ================= MASTER-DETAIL SPLIT CONTAINER ================= */}
+      <div className="users-split-container">
+        {/* LEFT MASTER PANEL: Condensed, highly scannable vertical list */}
+        <div className="users-master-panel">
+          <div className="master-panel-header">
+            {/* Search Input */}
+            <div className="master-search-box">
+              <span className="master-search-icon">🔍</span>
+              <input
+                type="text"
+                className="master-search-input"
+                placeholder="Search users..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search users"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="master-search-clear"
+                  onClick={() => setSearchQuery("")}
+                  title="Clear search"
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
-            <h5>
-              No users found
-            </h5>
-
-            <p>
-              Create your first sales user.
-            </p>
-
-            <button
-              className="add-user-btn"
-              onClick={() =>
-                setShowCreateModal(true)
-              }
-            >
-              Add Sales User
-            </button>
-
+            {/* Status Filter Chips */}
+            <div className="master-filter-chips">
+              <button
+                type="button"
+                className={`master-filter-chip ${statusFilter === "all" ? "active" : ""}`}
+                onClick={() => setStatusFilter("all")}
+              >
+                All <span className="chip-count">{users.length}</span>
+              </button>
+              <button
+                type="button"
+                className={`master-filter-chip ${statusFilter === "active" ? "active" : ""}`}
+                onClick={() => setStatusFilter("active")}
+              >
+                Active{" "}
+                <span className="chip-count">
+                  {users.filter((u) => u.status === "active").length}
+                </span>
+              </button>
+              <button
+                type="button"
+                className={`master-filter-chip ${statusFilter === "inactive" ? "active" : ""}`}
+                onClick={() => setStatusFilter("inactive")}
+              >
+                Inactive{" "}
+                <span className="chip-count">
+                  {users.filter((u) => u.status === "inactive").length}
+                </span>
+              </button>
+            </div>
           </div>
 
-        ) : (
-
-          <div className="table-responsive">
-
-            <table className="users-table">
-
-              <thead>
-                <tr>
-
-                  <th>
-                    User
-                  </th>
-
-                  <th>
-                    Email
-                  </th>
-
-                  <th>
-                    Role
-                  </th>
-
-                  <th>
-                    Status
-                  </th>
-
-                  <th>
-                    Password
-                  </th>
-
-                  <th className="text-end">
-                    Actions
-                  </th>
-
-                </tr>
-              </thead>
-
-              <tbody>
-
-                {users.map((user) => (
-
-                  <tr key={user._id}>
-
-                    {/* USER */}
-
-                    <td>
-
-                      <div className="d-flex align-items-center gap-3">
-
-                        <div className="user-avatar">
-                          {user.name
-                            .charAt(0)
-                            .toUpperCase()}
-                        </div>
-
-                        <div>
-
-                          <div className="user-name">
-                            {user.name}
-                          </div>
-
-                          <span className="user-position-text">
-                            {user.jobPosition || (user.role === "admin" ? "Administrator" : "Sales Representative")}
-                          </span>
-
-                          <span className="user-created">
-                            Joined{" "}
-                            {new Date(
-                              user.createdAt
-                            ).toLocaleDateString()}
-                          </span>
-
-                        </div>
-
-                      </div>
-
-                    </td>
-
-                    {/* EMAIL */}
-
-                    <td>
-                      {user.email}
-                    </td>
-
-                    {/* ROLE */}
-
-                    <td>
-
-                      <span className="user-role-badge">
-                        {user.role}
-                      </span>
-
-                    </td>
-
-                    {/* STATUS */}
-
-                    <td>
-
-                      <span
-                        className={`user-status-badge ${user.status === "active"
-                            ? "status-active"
-                            : "status-inactive"
-                          }`}
-                      >
-                        {user.status}
-                      </span>
-
-                    </td>
-
-                    {/* PASSWORD */}
-
-                    <td>
-
-                      {user.mustChangePassword ? (
-
-                        <span className="password-status-badge password-required">
-                          Change required
-                        </span>
-
-                      ) : (
-
-                        <span className="password-status-badge password-set">
-                          Set
-                        </span>
-
-                      )}
-
-                    </td>
-
-                    {/* ACTIONS */}
-
-                    <td>
-
-                      <div className="d-flex justify-content-end gap-2">
-
-                        <button
-                          className={`user-action-btn ${user.status === "active"
-                              ? "deactivate-btn"
-                              : "activate-btn"
-                            }`}
-                          disabled={
-                            actionLoading ===
-                            user._id
-                          }
-                          onClick={() =>
-                            handleStatusChange(
-                              user
-                            )
-                          }
-                        >
-                          {user.status ===
-                            "active"
-                            ? "Deactivate"
-                            : "Activate"}
-                        </button>
-
-                        {user.role === "sales" && (
-
-                          <button
-                            className="user-action-btn reset-btn"
-                            disabled={
-                              actionLoading ===
-                              user._id
-                            }
-                            onClick={() =>
-                              handleResetPassword(
-                                user
-                              )
-                            }
-                          >
-                            Reset Password
-                          </button>
-
-                        )}
-
-                      </div>
-
-                    </td>
-
-                  </tr>
-
+          {/* Condensed Scannable List */}
+          <div className="users-master-list">
+            {loading ? (
+              <div className="users-shimmer-list" aria-label="Loading users list">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="users-shimmer-master-item">
+                    <div className="users-shimmer users-shimmer-avatar" />
+                    <div className="users-shimmer-item-info">
+                      <div className="users-shimmer users-shimmer-name" />
+                      <div className="users-shimmer users-shimmer-sub" />
+                    </div>
+                    <div className="users-shimmer users-shimmer-badge" />
+                  </div>
                 ))}
+              </div>
+            ) : filteredUsers.length === 0 ? (
+              <div className="users-empty">
+                <div className="users-empty-icon">👥</div>
+                <h5>No users found</h5>
+                <p>No user matches your search or filter.</p>
+                {searchQuery || statusFilter !== "all" ? (
+                  <button
+                    type="button"
+                    className="btn-outline-soft mt-2"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setStatusFilter("all");
+                    }}
+                  >
+                    Reset Filter
+                  </button>
+                ) : (
+                  <button
+                    className="add-user-btn mt-2"
+                    onClick={() => setShowCreateModal(true)}
+                  >
+                    Add Sales User
+                  </button>
+                )}
+              </div>
+            ) : (
+              filteredUsers.map((user) => {
+                const isSelected = selectedUserId === user._id;
+                return (
+                  <div
+                    key={user._id}
+                    className={`user-master-item ${isSelected ? "is-selected" : ""}`}
+                    onClick={() => handleSelectUser(user)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        handleSelectUser(user);
+                      }
+                    }}
+                  >
+                    {/* Avatar with Status Dot */}
+                    <div className="master-avatar-wrapper position-relative">
+                      <div className="master-avatar">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span
+                        className={`master-avatar-dot ${
+                          user.status === "active" ? "dot-active" : "dot-inactive"
+                        }`}
+                      />
+                    </div>
 
-              </tbody>
+                    {/* Condensed Info */}
+                    <div className="master-item-info">
+                      <div className="d-flex align-items-center justify-content-between gap-1">
+                        <span className="master-item-name">{user.name}</span>
+                        <span className={`user-role-badge role-${user.role} role-compact`}>
+                          {user.role}
+                        </span>
+                      </div>
+                      <div className="master-item-sub">
+                        {user.jobPosition ||
+                          (user.role === "admin"
+                            ? "Administrator"
+                            : "Sales Representative")}
+                      </div>
+                    </div>
 
-            </table>
-
+                    {/* Arrow chevron indicator */}
+                    <div className="master-item-arrow" aria-hidden="true">
+                      ›
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
+        </div>
 
-        )}
+        {/* RIGHT DETAIL PANEL: Expansive full profile on desktop */}
+        <div className="users-detail-panel">
+          {loading ? (
+            <div className="users-profile-shimmer" aria-label="Loading profile details">
+              {/* Hero Shimmer */}
+              <div className="users-shimmer-hero">
+                <div className="d-flex align-items-center gap-3">
+                  <div className="users-shimmer users-shimmer-profile-avatar" />
+                  <div className="flex-grow-1 d-flex flex-column gap-2">
+                    <div className="users-shimmer users-shimmer-title" />
+                    <div className="users-shimmer users-shimmer-meta" />
+                  </div>
+                </div>
+                <div className="users-shimmer-actions">
+                  <div className="users-shimmer users-shimmer-btn" />
+                  <div className="users-shimmer users-shimmer-btn" />
+                </div>
+              </div>
 
+              {/* Body Cards Shimmer */}
+              <div className="users-shimmer-body-grid">
+                <div className="users-shimmer-card">
+                  <div className="users-shimmer users-shimmer-card-header mb-2" />
+                  <div className="d-flex flex-column gap-3">
+                    <div className="users-shimmer users-shimmer-field" />
+                    <div className="users-shimmer users-shimmer-field" />
+                    <div className="users-shimmer users-shimmer-field" />
+                  </div>
+                </div>
+                <div className="users-shimmer-card">
+                  <div className="users-shimmer users-shimmer-card-header mb-2" />
+                  <div className="d-flex flex-column gap-3">
+                    <div className="users-shimmer users-shimmer-field" />
+                    <div className="users-shimmer users-shimmer-field" />
+                    <div className="users-shimmer users-shimmer-field" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : selectedUser ? (
+            renderUserProfile(selectedUser, false)
+          ) : (
+            <div className="users-empty">
+              <div className="users-empty-icon">👤</div>
+              <h5>Select a user</h5>
+              <p>Choose any user from the list to view their complete profile.</p>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* MOBILE DRAWER SHEET (Bottom Sheet covering 85% of viewport with swipe-to-dismiss) */}
+      {mobileDrawerOpen && selectedUser && (
+        <div className="user-mobile-sheet-root">
+          {/* Backdrop overlay */}
+          <div
+            className="user-sheet-backdrop"
+            onClick={() => setMobileDrawerOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* Drawer Sheet Container */}
+          <div
+            className="user-sheet-drawer"
+            style={{
+              transform: `translateY(${dragOffsetY}px)`,
+              transition: isDragging
+                ? "none"
+                : "transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)",
+            }}
+          >
+            {/* Draggable header bar */}
+            <div
+              className="user-sheet-drag-area"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <div className="sheet-drag-pill" />
+              <div className="sheet-header-row">
+                <span className="sheet-drag-hint">Swipe down or tap close</span>
+                <button
+                  type="button"
+                  className="user-sheet-close-btn"
+                  onClick={() => setMobileDrawerOpen(false)}
+                  title="Close profile"
+                  aria-label="Close profile"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable Rich Profile Content inside Drawer */}
+            <div className="user-sheet-content">
+              {renderUserProfile(selectedUser, true)}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ================= CREATE USER MODAL ================= */}
 

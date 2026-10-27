@@ -11,6 +11,13 @@ export interface ICompany extends Document {
   address?: string;
   status: "active" | "inactive";
   notes?: string;
+  metaAdsConfig?: {
+    adAccountId?: string;
+    adAccountName?: string;
+    currency?: string;
+    accountStatus?: number;
+    connectedAt?: Date;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -76,6 +83,14 @@ const companySchema = new Schema<ICompany>(
       type: String,
       trim: true,
       default: "",
+    },
+
+    metaAdsConfig: {
+      adAccountId: { type: String, trim: true, default: "" },
+      adAccountName: { type: String, trim: true, default: "" },
+      currency: { type: String, trim: true, default: "USD" },
+      accountStatus: { type: Number, default: 1 },
+      connectedAt: { type: Date },
     },
   },
   {

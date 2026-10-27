@@ -453,7 +453,7 @@
   justify-content: center;
   color: #ffffff;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  /* transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); */
   padding: 0;
   flex-shrink: 0;
 }
@@ -462,7 +462,7 @@
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.5);
   color: #fca5a5;
-  transform: rotate(90deg);
+  /* transform: rotate(90deg); */
 }
 
 .company-close-btn svg {

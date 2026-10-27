@@ -806,4 +806,89 @@ export const updateLeadNotes = async (
       message: "Failed to update lead notes",
     });
   }
-};
+};
+
+// =====================================================
+// REASSIGN LEAD (ADMIN ONLY)
+// =====================================================
+
+export const reassignLead = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) {
+      res.status(400).json({ message: "New assignee user ID is required" });
+      return;
+    }
+
+    const targetUser = await User.findById(userId);
+    if (!targetUser) {
+      res.status(404).json({ message: "Target user not found" });
+      return;
+    }
+
+    const lead = await Lead.findById(id);
+    if (!lead) {
+      res.status(404).json({ message: "Lead not found" });
+      return;
+    }
+
+    lead.uploadedBy = targetUser._id as any;
+    await lead.save();
+
+    const populatedLead = await Lead.findById(id).populate(
+      "uploadedBy",
+      "name email role jobPosition status"
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Lead reassigned successfully",
+      lead: populatedLead,
+    });
+  } catch (error) {
+    console.error("Reassign lead error:", error);
+    res.status(500).json({ message: "Failed to reassign lead" });
+  }
+};
+
+// =====================================================
+// BATCH REASSIGN LEADS (ADMIN ONLY)
+// =====================================================
+
+export const batchReassignLeads = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { leadIds, userId } = req.body;
+
+    if (!Array.isArray(leadIds) || leadIds.length === 0 || !userId) {
+      res.status(400).json({ message: "leadIds array and userId are required" });
+      return;
+    }
+
+    const targetUser = await User.findById(userId);
+    if (!targetUser) {
+      res.status(404).json({ message: "Target user not found" });
+      return;
+    }
+
+    await Lead.updateMany(
+      { _id: { $in: leadIds } },
+      { $set: { uploadedBy: targetUser._id } }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: leadIds.length + " leads reassigned successfully",
+    });
+  } catch (error) {
+    console.error("Batch reassign leads error:", error);
+    res.status(500).json({ message: "Failed to batch reassign leads" });
+  }
+};

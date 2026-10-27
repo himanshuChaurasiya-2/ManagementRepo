@@ -15,7 +15,7 @@ const createAdmin = async (): Promise<void> => {
     });
 
     if (existingAdmin) {
-      console.log("❌ An admin already exists.");
+      console.log("An admin already exists.");
       process.exit(0);
     }
 
@@ -32,7 +32,7 @@ const createAdmin = async (): Promise<void> => {
       mustChangePassword: false,
     });
 
-    console.log("✅ Admin created successfully");
+    console.log("Admin created successfully");
     console.log("Email:", "admin@example.com");
     console.log("Temporary password:", password);
 
@@ -40,7 +40,7 @@ const createAdmin = async (): Promise<void> => {
 
     process.exit(0);
   } catch (error) {
-    console.error("❌ Failed to create admin:", error);
+    console.error("Failed to create admin:", error);
     process.exit(1);
   }
 };

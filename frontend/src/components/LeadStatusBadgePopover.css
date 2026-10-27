@@ -1,0 +1,388 @@
+/* =====================================================
+   CHAINED STATUS BADGE PILL & MINIMAL DROPDOWN
+   Clean, title-only, responsive across all devices
+===================================================== */
+
+.chained-status-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  max-width: 100%;
+}
+
+/* =====================================================
+   TRIGGER PILL
+===================================================== */
+
+.chained-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-align: left;
+}
+
+.chained-status-pill:hover:not(:disabled) {
+  filter: brightness(1.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.chained-status-pill:active:not(:disabled),
+.chained-status-pill.active-open {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.35);
+}
+
+.chained-status-pill:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.chained-status-pill.status-unassigned {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.25);
+  color: #94a3b8;
+}
+
+.chained-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chained-status-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.chained-status-text .main-label {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.chained-status-text .sub-label {
+  font-weight: 500;
+  opacity: 0.9;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.chained-status-text .dot-sep {
+  opacity: 0.5;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.chained-status-text .sub-label-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.chained-status-caret {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.6;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.chained-status-pill.active-open .chained-status-caret {
+  transform: rotate(180deg);
+}
+
+.chained-status-spinner {
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: chained-spin 0.6s linear infinite;
+}
+
+@keyframes chained-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Size Variants */
+.chained-status-sm .chained-status-pill {
+  padding: 3px 8px;
+  font-size: 11px;
+  gap: 5px;
+}
+
+.chained-status-lg .chained-status-pill {
+  padding: 7px 14px;
+  font-size: 13px;
+  gap: 8px;
+}
+
+/* =====================================================
+   CHAINED STATUS POPUP / MENU (DESKTOP & MOBILE)
+===================================================== */
+
+/* Mobile backdrop overlay */
+.chained-status-mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+  animation: chained-fade-in 0.15s ease-out;
+}
+
+@keyframes chained-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Menu card */
+.chained-status-menu {
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  padding: 6px;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.chained-status-menu.desktop-view {
+  position: fixed;
+  z-index: 99999;
+  width: 300px;
+  animation: chained-scale-in 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chained-status-menu.mobile-view {
+  width: 100%;
+  max-width: 320px;
+  animation: chained-scale-in 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes chained-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Grid layout: 2 columns */
+.chained-menu-grid {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 6px;
+  min-height: 150px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.chained-menu-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.chained-menu-col.main-col {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding-right: 5px;
+}
+
+.chained-menu-col.sub-col {
+  padding-left: 2px;
+}
+
+/* Menu items */
+.chained-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: #cbd5e1;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s ease;
+  user-select: none;
+  line-height: 1.3;
+  overflow: hidden;
+}
+
+.chained-menu-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+/* Selection and non-selection styling are identical; only difference on selection is the given green bg */
+.chained-menu-item.main-item.selected,
+.chained-menu-item.main-item.current,
+.chained-menu-item.sub-item.current-sub {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.28);
+  color: #34d399;
+  font-weight: 500;
+}
+
+.chained-menu-item .item-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.chained-menu-item .item-title {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chained-menu-item .item-arrow {
+  font-size: 13px;
+  opacity: 0.5;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.chained-menu-item.main-item.selected .item-arrow,
+.chained-menu-item.main-item.current .item-arrow {
+  opacity: 1;
+  color: #34d399;
+}
+
+.chained-menu-item .item-check {
+  font-size: 11px;
+  color: #34d399;
+  font-weight: 600;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.chained-no-sub {
+  padding: 8px;
+  font-size: 11px;
+  color: #64748b;
+  text-align: center;
+}
+
+/* =====================================================
+   LIGHT THEME OVERRIDES
+===================================================== */
+[data-theme="light"] .chained-status-pill,
+body.light-mode .chained-status-pill {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+[data-theme="light"] .chained-status-pill:hover:not(:disabled),
+body.light-mode .chained-status-pill:hover:not(:disabled) {
+  background: #ffffff;
+  border-color: #94a3b8;
+}
+
+[data-theme="light"] .chained-status-menu,
+body.light-mode .chained-status-menu {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .chained-menu-col.main-col,
+body.light-mode .chained-menu-col.main-col {
+  border-right-color: #e2e8f0;
+}
+
+[data-theme="light"] .chained-menu-item,
+body.light-mode .chained-menu-item {
+  color: #334155;
+}
+
+[data-theme="light"] .chained-menu-item:hover,
+body.light-mode .chained-menu-item:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+[data-theme="light"] .chained-menu-item.main-item.selected,
+[data-theme="light"] .chained-menu-item.main-item.current,
+[data-theme="light"] .chained-menu-item.sub-item.current-sub,
+body.light-mode .chained-menu-item.main-item.selected,
+body.light-mode .chained-menu-item.main-item.current,
+body.light-mode .chained-menu-item.sub-item.current-sub {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #047857;
+}
+
+[data-theme="light"] .chained-menu-item.main-item.selected .item-arrow,
+[data-theme="light"] .chained-menu-item.main-item.current .item-arrow,
+body.light-mode .chained-menu-item.main-item.selected .item-arrow,
+body.light-mode .chained-menu-item.main-item.current .item-arrow {
+  color: #047857;
+}
+
+[data-theme="light"] .chained-no-sub,
+body.light-mode .chained-no-sub {
+  color: #94a3b8;
+}

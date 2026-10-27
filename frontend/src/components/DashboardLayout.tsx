@@ -1,41 +1,41 @@
-import { Outlet } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
-import AdminNotificationFloat from "./AdminNotificationFloat";
-import ThemeToggle from "./ThemeToggle";
-import { useAuth } from "../context/AuthContext";
+import Navbar from "./Navbar";
 
 const DashboardLayout = () => {
-  const { user } = useAuth();
-  const adminName = user?.name || user?.email?.split("@")[0] || "Administrator";
-  const adminInitial = adminName.charAt(0).toUpperCase();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const location = useLocation();
+
+  // Automatically close mobile navbar on navigation / route change
+  useEffect(() => {
+    setMobileNavOpen(false);
+  }, [location.pathname]);
 
   return (
     <div className="app-shell">
-      {/* SIDEBAR */}
-      <Sidebar />
+      {/* MOBILE BACKDROP OVERLAY */}
+      {mobileNavOpen && (
+        <div
+          className="app-sidebar-backdrop"
+          onClick={() => setMobileNavOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* SIDEBAR NAVIGATION */}
+      <Sidebar
+        mobileOpen={mobileNavOpen}
+        onClose={() => setMobileNavOpen(false)}
+      />
 
       {/* MAIN WRAPPER (TOPBAR + CANVAS) */}
       <div className="app-main-wrapper">
-        {/* TOPBAR / NAVBAR */}
-        <header className="app-topbar">
-          <h1 className="app-topbar-title">Dashboard</h1>
-
-          {/* RIGHT SIDE: THEME TOGGLE, NOTIFICATION BELL & USER PROFILE */}
-          <div className="app-topbar-right">
-            <ThemeToggle compact />
-            <AdminNotificationFloat />
-
-            <div className="app-user-profile">
-              <div className="app-user-text">
-                <span className="app-user-name">{adminName}</span>
-                <span className="app-user-role">Administrator</span>
-              </div>
-              <div className="app-user-avatar">
-                {adminInitial}
-              </div>
-            </div>
-          </div>
-        </header>
+        {/* RESPONSIVE TOPBAR / NAVBAR */}
+        <Navbar
+          mobileNavOpen={mobileNavOpen}
+          onToggleMobileNav={() => setMobileNavOpen((prev) => !prev)}
+        />
 
         {/* MAIN CANVAS */}
         <main className="app-canvas">

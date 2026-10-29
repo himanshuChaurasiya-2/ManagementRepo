@@ -39,10 +39,24 @@ interface ResetPasswordResponse {
   temporaryPassword: string;
 }
 
+interface UserTaskItem {
+  _id: string;
+  status: "pending" | "in-progress" | "completed";
+  assignedTo?:
+    | {
+        _id: string;
+        name?: string;
+        email?: string;
+      }
+    | string;
+  dueDate?: string | Date;
+}
+
 const API_URL = "http://localhost:5000/api";
 
 const Users = () => {
   const [users, setUsers] = useState<User[]>([]);
+  const [tasks, setTasks] = useState<UserTaskItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -92,13 +106,15 @@ const Users = () => {
     try {
       setLoading(true);
 
-      const response = await axios.get(
-        `${API_URL}/users`,
-        getAuthConfig()
-      );
+      const [usersResponse, tasksResponse] = await Promise.all([
+        axios.get(`${API_URL}/users`, getAuthConfig()),
+        axios
+          .get(`${API_URL}/tasks`, getAuthConfig())
+          .catch(() => ({ data: { success: false, tasks: [] } })),
+      ]);
 
-      if (response.data.success) {
-        const loadedUsers = response.data.users || [];
+      if (usersResponse.data.success) {
+        const loadedUsers = usersResponse.data.users || [];
         setUsers(loadedUsers);
         setSelectedUserId((prev) => {
           if (prev && loadedUsers.some((u: User) => u._id === prev)) {
@@ -106,6 +122,10 @@ const Users = () => {
           }
           return loadedUsers.length > 0 ? loadedUsers[0]._id : null;
         });
+      }
+
+      if (tasksResponse.data?.tasks) {
+        setTasks(tasksResponse.data.tasks);
       }
     } catch (error: any) {
       console.error("Get users error:", error);
@@ -364,6 +384,23 @@ const Users = () => {
 
   // Render Rich User Profile (Shared between Desktop Right Panel & Mobile Bottom Sheet)
   const renderUserProfile = (user: User, isMobileSheet: boolean = false) => {
+    const userTasks = tasks.filter((t) => {
+      const assignedId =
+        typeof t.assignedTo === "object" && t.assignedTo !== null
+          ? (t.assignedTo as any)._id
+          : t.assignedTo;
+      return assignedId === user._id;
+    });
+
+    const totalTasks = userTasks.length;
+    const completedTasks = userTasks.filter((t) => t.status === "completed").length;
+    const inProgressTasks = userTasks.filter((t) => t.status === "in-progress").length;
+    const pendingTasks = userTasks.filter((t) => t.status === "pending").length;
+
+    const completedPct = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const inProgressPct = totalTasks > 0 ? Math.round((inProgressTasks / totalTasks) * 100) : 0;
+    const pendingPct = totalTasks > 0 ? Math.round((pendingTasks / totalTasks) * 100) : 0;
+
     return (
       <div className={`user-profile-view ${isMobileSheet ? "is-mobile-sheet" : ""}`}>
         {/* PROFILE HEADER HERO */}
@@ -517,11 +554,11 @@ const Users = () => {
                 <div>
                   {user.mustChangePassword ? (
                     <span className="password-status-badge password-required">
-                      ⚠️ Temporary Password
+                      ⚠️Temporary Password
                     </span>
                   ) : (
                     <span className="password-status-badge password-set">
-                      ✓ Password Secured & Set
+                      Password Secured
                     </span>
                   )}
                 </div>
@@ -544,6 +581,198 @@ const Users = () => {
                   {user._id}
                 </span>
               </div> */}
+            </div>
+          </div>
+
+          {/* Card 3: Exploded Circular Segmented Pie Task Overview */}
+          <div className="user-detail-card user-task-overview-card">
+            <div className="user-detail-card-header task-overview-header-row">
+              <h5>Task Overview</h5>
+            </div>
+
+            <div className="task-overview-flanking-layout">
+              {/* Left Column Callouts */}
+              <div className="task-callout-col col-left">
+                <div className="task-callout-item">
+                  <span className="task-callout-title" style={{ color: "#F28E79" }}>
+                    TOTAL TASKS
+                  </span>
+                  <div className="task-callout-data-row">
+                    <span className="task-callout-count">{totalTasks} Tasks</span>
+                  </div>
+                </div>
+
+                <div className="task-callout-item">
+                  <span className="task-callout-title" style={{ color: "#2C7DA0" }}>
+                    PENDING
+                  </span>
+                  <div className="task-callout-data-row">
+                    <span className="task-callout-count">{pendingTasks} Tasks</span>
+                    <span className="task-callout-pct">({pendingPct}%)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Center Pie with Small Curved Arrows pointing directly to Titles */}
+              <div className="task-pie-center-wrap">
+                <svg
+                  viewBox="0 0 240 220"
+                  className="task-pie-svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-label="Task Distribution Chart"
+                >
+                  {/* S1: Top-Left TOTAL (Coral #F28E79) */}
+                  <path
+                    className="task-pie-slice"
+                    d="M 116.5,106.5 L 44.5,106.5 A 72 72 0 0 1 116.5,34.5 Z"
+                    fill="#F28E79"
+                  />
+                  <text
+                    x="86"
+                    y="76"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    className="task-pie-pct-label"
+                  >
+                    {totalTasks > 0 ? "100%" : "0%"}
+                  </text>
+                  {/* Arrow 1: Starts at S1, curves UP & LEFT, arrowhead points DIRECTLY to "TOTAL TASKS" title */}
+                  <path
+                    d="M 58,54 Q 34,38 2,16"
+                    fill="none"
+                    stroke="#F28E79"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M 2,16 L 11,16.5 M 2,16 L 7.5,23.5"
+                    fill="none"
+                    stroke="#F28E79"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+
+                  {/* S2: Top-Right COMPLETED (Mint Green #52B788) */}
+                  <path
+                    className="task-pie-slice"
+                    d="M 123.5,106.5 L 123.5,34.5 A 72 72 0 0 1 195.5,106.5 Z"
+                    fill="#52B788"
+                  />
+                  <text
+                    x="154"
+                    y="76"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    className="task-pie-pct-label"
+                  >
+                    {completedPct}%
+                  </text>
+                  {/* Arrow 2: Starts at S2, curves UP & RIGHT, arrowhead points DIRECTLY to "COMPLETED" title */}
+                  <path
+                    d="M 182,54 Q 206,38 238,16"
+                    fill="none"
+                    stroke="#52B788"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M 238,16 L 229,16.5 M 238,16 L 232.5,23.5"
+                    fill="none"
+                    stroke="#52B788"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+
+                  {/* S3: Bottom-Right IN PROGRESS (Vibrant Teal #00A896) */}
+                  <path
+                    className="task-pie-slice"
+                    d="M 123.5,113.5 L 195.5,113.5 A 72 72 0 0 1 123.5,185.5 Z"
+                    fill="#00A896"
+                  />
+                  <text
+                    x="154"
+                    y="144"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    className="task-pie-pct-label"
+                  >
+                    {inProgressPct}%
+                  </text>
+                  {/* Arrow 3: Starts at S3, curves DOWN & RIGHT, arrowhead points DIRECTLY to "IN PROGRESS" title */}
+                  <path
+                    d="M 182,166 Q 206,182 238,204"
+                    fill="none"
+                    stroke="#00A896"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M 238,204 L 229,203.5 M 238,204 L 232.5,196.5"
+                    fill="none"
+                    stroke="#00A896"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+
+                  {/* S4: Bottom-Left PENDING (Slate Blue #2C7DA0) */}
+                  <path
+                    className="task-pie-slice"
+                    d="M 116.5,113.5 L 116.5,185.5 A 72 72 0 0 1 44.5,113.5 Z"
+                    fill="#2C7DA0"
+                  />
+                  <text
+                    x="86"
+                    y="144"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    className="task-pie-pct-label"
+                  >
+                    {pendingPct}%
+                  </text>
+                  {/* Arrow 4: Starts at S4, curves DOWN & LEFT, arrowhead points DIRECTLY to "PENDING" title */}
+                  <path
+                    d="M 58,166 Q 34,182 2,204"
+                    fill="none"
+                    stroke="#2C7DA0"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M 2,204 L 11,203.5 M 2,204 L 7.5,196.5"
+                    fill="none"
+                    stroke="#2C7DA0"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+
+              {/* Right Column Callouts */}
+              <div className="task-callout-col col-right">
+                <div className="task-callout-item">
+                  <span className="task-callout-title" style={{ color: "#52B788" }}>
+                    COMPLETED
+                  </span>
+                  <div className="task-callout-data-row">
+                    <span className="task-callout-count">{completedTasks} Tasks</span>
+                    <span className="task-callout-pct">({completedPct}%)</span>
+                  </div>
+                </div>
+
+                <div className="task-callout-item">
+                  <span className="task-callout-title" style={{ color: "#00A896" }}>
+                    IN PROGRESS
+                  </span>
+                  <div className="task-callout-data-row">
+                    <span className="task-callout-count">{inProgressTasks} Tasks</span>
+                    <span className="task-callout-pct">({inProgressPct}%)</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

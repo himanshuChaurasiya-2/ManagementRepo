@@ -1845,7 +1845,7 @@ const AdminLeads: React.FC = () => {
                         title="Select / Deselect all"
                       />
                     </th>
-                    <th style={{ width: "50px", textAlign: "center" }}>#</th>
+                    {/* <th style={{ width: "50px", textAlign: "center" }}>#</th> */}
                     <th style={{ width: "260px" }}>Lead & Contact Vector</th>
                     <th style={{ width: "210px" }}>Context & Urgency</th>
                     <th style={{ width: "240px" }}>Chained Pipeline Status</th>
@@ -1855,7 +1855,7 @@ const AdminLeads: React.FC = () => {
                 </thead>
 
                 <tbody>
-                  {filteredLeads.map((lead, index) => {
+                  {filteredLeads.map((lead) => {
                     const isSelected = selectedIds.includes(lead._id);
                     const urgency = getUrgencyInfo(lead);
                     const uploaderName = getLeadUploaderName(lead.uploadedBy, users);
@@ -1882,9 +1882,9 @@ const AdminLeads: React.FC = () => {
                         </td>
 
                         {/* 2. SR NO */}
-                        <td style={{ textAlign: "center" }}>
+                        {/* <td style={{ textAlign: "center" }}>
                           <span className="lead-sr-no">{index + 1}</span>
-                        </td>
+                        </td> */}
 
                         {/* 3. CONTACT VECTOR (NAME, PHONE, EMAIL) */}
                         <td>
@@ -2320,7 +2320,7 @@ const AdminLeads: React.FC = () => {
                     )}
 
                     {/* ROW 6: NOTES & SLIDE-OUT DRAWER TRIGGER */}
-                    <div
+                    {/* <div
                       className="mobile-card-notes-footer"
                       onClick={() => setSelectedDrawerLead(lead)}
                       role="button"
@@ -2335,7 +2335,7 @@ const AdminLeads: React.FC = () => {
                         </span>
                       </div>
                       <span className="notes-arrow">→</span>
-                    </div>
+                    </div> */}
                   </div>
                 );
               })}

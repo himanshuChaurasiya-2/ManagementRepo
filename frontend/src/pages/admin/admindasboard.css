@@ -4414,3 +4414,227 @@
   border-radius: 6px;
   font-weight: 600;
 }
+
+/* =====================================================
+   USER PROFILE: TASK OVERVIEW PIE CARD
+===================================================== */
+
+/* =====================================================
+   EXPLODED CIRCULAR SEGMENTED PIE TASK OVERVIEW
+===================================================== */
+
+.user-task-overview-card {
+  grid-column: 1 / -1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 18px;
+  overflow: hidden;
+  container-type: inline-size;
+  container-name: taskoverview;
+}
+
+.task-overview-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* FLANKING LAYOUT: Left Callouts | Center Exploded Pie with Small Arrows | Right Callouts */
+.task-overview-flanking-layout {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 20px 24px;
+  box-sizing: border-box;
+}
+
+.task-callout-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1 1 120px;
+  min-width: 0;
+  padding: 4px 0 10px;
+}
+
+.task-callout-col.col-left {
+  text-align: right;
+}
+
+.task-callout-col.col-right {
+  text-align: left;
+}
+
+.task-callout-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.task-callout-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  line-height: 1.25;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.task-callout-data-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+  line-height: 1.25;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.col-left .task-callout-data-row {
+  justify-content: flex-end;
+}
+
+.col-right .task-callout-data-row {
+  justify-content: flex-start;
+}
+
+.task-callout-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+
+.task-callout-pct {
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+/* CENTER PIE VIEWPORT & SMALL CURVED ARROWS */
+.task-pie-center-wrap {
+  flex: 0 0 220px;
+  width: 220px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.task-pie-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.task-pie-slice {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s ease;
+  cursor: pointer;
+}
+
+.task-pie-slice:hover {
+  filter: brightness(1.08);
+}
+
+.task-pie-pct-label {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 900;
+  font-size: 18px;
+  fill: #ffffff;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* RESPONSIVENESS VIA CONTAINER QUERIES & MEDIA QUERIES */
+@container taskoverview (max-width: 480px) {
+  .task-overview-flanking-layout {
+    gap: 6px;
+    padding: 10px 8px 14px;
+  }
+  .task-pie-center-wrap {
+    flex: 0 0 160px;
+    width: 160px;
+    height: 160px;
+  }
+  .task-callout-col {
+    padding: 2px 0 6px;
+    flex: 1 1 85px;
+  }
+  .task-callout-title {
+    font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+  .task-callout-count {
+    font-size: 12px;
+  }
+  .task-callout-pct {
+    font-size: 11px;
+  }
+  .task-pie-pct-label {
+    font-size: 16px;
+  }
+}
+
+@container taskoverview (max-width: 340px) {
+  .task-overview-flanking-layout {
+    gap: 4px;
+    padding: 8px 4px 12px;
+  }
+  .task-pie-center-wrap {
+    flex: 0 0 130px;
+    width: 130px;
+    height: 130px;
+  }
+  .task-callout-col {
+    padding: 0;
+    flex: 1 1 70px;
+  }
+  .task-callout-title {
+    font-size: 10px;
+    letter-spacing: 0.2px;
+  }
+  .task-callout-count {
+    font-size: 11px;
+  }
+  .task-callout-pct {
+    font-size: 10px;
+  }
+  .task-pie-pct-label {
+    font-size: 14px;
+  }
+}
+
+/* Fallback Media Query for older browser engines */
+@media (max-width: 768px) {
+  .task-overview-flanking-layout {
+    gap: 10px;
+    padding: 12px 10px 18px;
+  }
+}
+
+/* LIGHT THEME OVERRIDES */
+[data-theme="light"] .user-task-overview-card,
+body.light-mode .user-task-overview-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .task-callout-count,
+body.light-mode .task-callout-count {
+  color: #0f172a;
+}
+
+[data-theme="light"] .task-callout-pct,
+body.light-mode .task-callout-pct {
+  color: #64748b;
+}

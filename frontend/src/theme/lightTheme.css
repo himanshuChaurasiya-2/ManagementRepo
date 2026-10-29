@@ -1321,22 +1321,264 @@ body.light-mode .company-search::placeholder {
   color: #94a3b8 !important;
 }
 
+[data-theme="light"] .company-count-badge,
+body.light-mode .company-count-badge {
+  background: #e0e7ff !important;
+  border-color: #c7d2fe !important;
+  color: #4338ca !important;
+}
+
+[data-theme="light"] .company-filter-chips,
+body.light-mode .company-filter-chips {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .company-chip,
+body.light-mode .company-chip {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .company-chip:hover,
+body.light-mode .company-chip:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .company-chip.active,
+body.light-mode .company-chip.active {
+  background: #6366f1 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3) !important;
+}
+
+[data-theme="light"] .company-search-icon,
+body.light-mode .company-search-icon {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .company-search-clear,
+body.light-mode .company-search-clear {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .company-search-clear:hover,
+body.light-mode .company-search-clear:hover {
+  color: #0f172a !important;
+}
+
 [data-theme="light"] .company-table th,
 body.light-mode .company-table th {
-  background: rgba(241, 245, 249, 0.8) !important;
+  background: #f8fafc !important;
   color: #475569 !important;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 
-[data-theme="light"] .company-table td,
-body.light-mode .company-table td {
-  color: #0f172a !important;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+[data-theme="light"] .company-main-row,
+body.light-mode .company-main-row {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
 }
 
-[data-theme="light"] .company-table strong,
-body.light-mode .company-table strong {
+[data-theme="light"] .company-main-row:hover,
+body.light-mode .company-main-row:hover {
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .company-main-row.is-expanded,
+body.light-mode .company-main-row.is-expanded {
+  background: #f5f7ff !important;
+}
+
+[data-theme="light"] .company-main-row td,
+body.light-mode .company-main-row td {
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .company-chevron-btn,
+body.light-mode .company-chevron-btn {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #64748b !important;
+}
+
+[data-theme="light"] .company-chevron-btn:hover,
+body.light-mode .company-chevron-btn:hover {
+  background: #e0e7ff !important;
+  border-color: #c7d2fe !important;
+  color: #4338ca !important;
+}
+
+[data-theme="light"] .company-chevron-btn.open,
+body.light-mode .company-chevron-btn.open {
+  background: #6366f1 !important;
+  border-color: #6366f1 !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .company-name-text,
+body.light-mode .company-name-text {
   color: #0f172a !important;
+}
+
+[data-theme="light"] .company-industry-tag,
+body.light-mode .company-industry-tag {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .company-sub-link,
+body.light-mode .company-sub-link {
+  color: #4f46e5 !important;
+}
+
+[data-theme="light"] .company-sub-link.muted,
+body.light-mode .company-sub-link.muted {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .contact-name,
+body.light-mode .contact-name {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .contact-sub-hint,
+body.light-mode .contact-sub-hint {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .company-accordion-tr,
+body.light-mode .company-accordion-tr {
+  background: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .company-detail-card,
+body.light-mode .company-detail-card {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .company-detail-card:hover,
+body.light-mode .company-detail-card:hover {
+  border-color: #cbd5e1 !important;
+  background: #ffffff !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .company-detail-card-title,
+body.light-mode .company-detail-card-title {
+  color: #0f172a !important;
+  border-bottom-color: #f1f5f9 !important;
+}
+
+[data-theme="light"] .detail-label,
+body.light-mode .detail-label {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .detail-value,
+body.light-mode .detail-value {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .detail-value.bold,
+body.light-mode .detail-value.bold {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .detail-value.muted,
+body.light-mode .detail-value.muted {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .detail-value.mono-badge,
+body.light-mode .detail-value.mono-badge {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .detail-link,
+body.light-mode .detail-link {
+  color: #4f46e5 !important;
+}
+
+[data-theme="light"] .detail-external-link,
+body.light-mode .detail-external-link {
+  color: #4f46e5 !important;
+}
+
+[data-theme="light"] .btn-copy-chip,
+body.light-mode .btn-copy-chip {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .btn-copy-chip:hover,
+body.light-mode .btn-copy-chip:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .company-industry-chip,
+body.light-mode .company-industry-chip {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .detail-text-block,
+body.light-mode .detail-text-block {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .detail-text-block.notes-block,
+body.light-mode .detail-text-block.notes-block {
+  background: #f8fafc !important;
+  border-left-color: #6366f1 !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .meta-ads-empty-box,
+body.light-mode .meta-ads-empty-box {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+[data-theme="light"] .meta-unlinked-title,
+body.light-mode .meta-unlinked-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .meta-unlinked-desc,
+body.light-mode .meta-unlinked-desc {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .meta-ads-connected-box,
+body.light-mode .meta-ads-connected-box {
+  background: #f0fdf4 !important;
+  border: 1px solid #bbf7d0 !important;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+[data-theme="light"] .company-shimmer,
+body.light-mode .company-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 0%,
+    #e2e8f0 30%,
+    #cbd5e1 50%,
+    #e2e8f0 70%,
+    #f1f5f9 100%
+  ) !important;
+  background-size: 200% 100% !important;
 }
 
 [data-theme="light"] .company-empty h3,
@@ -1347,6 +1589,38 @@ body.light-mode .company-empty h3 {
 [data-theme="light"] .company-empty p,
 body.light-mode .company-empty p {
   color: #64748b !important;
+}
+
+/* Light Theme in Mobile Cards */
+@media (max-width: 768px) {
+  [data-theme="light"] .company-main-row,
+  body.light-mode .company-main-row {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  [data-theme="light"] .company-main-row .col-toggle::after,
+  body.light-mode .company-main-row .col-toggle::after {
+    color: #64748b !important;
+  }
+
+  [data-theme="light"] .company-main-row.is-expanded .col-toggle::after,
+  body.light-mode .company-main-row.is-expanded .col-toggle::after {
+    color: #4f46e5 !important;
+  }
+
+  [data-theme="light"] .company-main-row .col-actions,
+  body.light-mode .company-main-row .col-actions {
+    border-top: 1px solid #f1f5f9 !important;
+  }
+
+  [data-theme="light"] .company-accordion-tr,
+  body.light-mode .company-accordion-tr {
+    background: #f8fafc !important;
+    border: 1px solid #c7d2fe !important;
+    border-top: none !important;
+  }
 }
 
 /* Tasks Dropdown and Filters in pages.css */

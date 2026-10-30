@@ -26,6 +26,21 @@ const upload = multer({
 
 
 // =====================================================
+// GET LEADS (ADMIN = ALL, USER = OWN LEADS)
+// =====================================================
+
+router.get(
+  "/",
+  protect,
+  (req, res) => {
+    if ((req as any).user?.role === "admin") {
+      return getAllLeads(req, res);
+    }
+    return getMyLeads(req, res);
+  }
+);
+
+// =====================================================
 // USER - GET OWN LEADS
 // =====================================================
 

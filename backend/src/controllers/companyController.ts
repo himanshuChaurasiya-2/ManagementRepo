@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Company from "../models/Company.js";
+import { AuthRequest } from "../middleware/authMiddleware.js";
 
 // =====================================
 // CREATE COMPANY
@@ -188,26 +189,17 @@ export const updateCompany = async (
       metaAdsConfig,
     } = req.body;
 
-    const updatePayload: any = {
-      companyName:
-        companyName?.trim(),
-      contactPerson:
-        contactPerson?.trim(),
-      email: email
-        ? email.toLowerCase().trim()
-        : undefined,
-      phone: phone?.trim(),
-      alternatePhone:
-        alternatePhone?.trim() || "",
-      industry: industry?.trim(),
-      website:
-        website?.trim() || "",
-      address:
-        address?.trim() || "",
-      status,
-      notes:
-        notes?.trim() || "",
-    };
+    const updatePayload: any = {};
+    if (companyName !== undefined) updatePayload.companyName = companyName?.trim();
+    if (contactPerson !== undefined) updatePayload.contactPerson = contactPerson?.trim();
+    if (email !== undefined) updatePayload.email = email ? email.toLowerCase().trim() : undefined;
+    if (phone !== undefined) updatePayload.phone = phone?.trim();
+    if (alternatePhone !== undefined) updatePayload.alternatePhone = alternatePhone?.trim() || "";
+    if (industry !== undefined) updatePayload.industry = industry?.trim();
+    if (website !== undefined) updatePayload.website = website?.trim() || "";
+    if (address !== undefined) updatePayload.address = address?.trim() || "";
+    if (status !== undefined) updatePayload.status = status;
+    if (notes !== undefined) updatePayload.notes = notes?.trim() || "";
 
     if (metaAdsConfig !== undefined) {
       if (metaAdsConfig?.adAccountId) {
@@ -259,6 +251,64 @@ export const updateCompany = async (
       success: false,
       message:
         "Server error while updating company",
+    });
+  }
+};
+
+// =====================================
+// ADD INTERACTIVE NOTE (PERMANENT TIMESTAMPS)
+// =====================================
+
+export const addCompanyNote = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { note } = req.body;
+
+    if (!note || !note.trim()) {
+      res.status(400).json({
+        success: false,
+        message: "Note content is required",
+      });
+      return;
+    }
+
+    const company = await Company.findById(id);
+    if (!company) {
+      res.status(404).json({
+        success: false,
+        message: "Company not found",
+      });
+      return;
+    }
+
+    const author = req.user?.name || "Admin";
+    const dateStr = new Date().toLocaleString("en-US", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+    const entry = `[${dateStr} • ${author}]: ${note.trim()}`;
+    const updatedNotes = company.notes ? `${company.notes}\n\n${entry}` : entry;
+
+    company.notes = updatedNotes;
+    await company.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Note added to permanent history",
+      company,
+    });
+  } catch (error: any) {
+    console.error("Add company note error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while adding note",
     });
   }
 };

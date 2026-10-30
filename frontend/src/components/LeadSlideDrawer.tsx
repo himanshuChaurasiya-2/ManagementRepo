@@ -5,6 +5,11 @@ import type {
   LeadStatus,
   LeadSubStatus,
 } from "./LeadStatusBadgePopover";
+import {
+  parseLeadNotes,
+  formatCurrentTimestamp,
+  getCurrentUserName,
+} from "../utils/notesTimeline";
 import "./LeadSlideDrawer.css";
 
 export interface DrawerLead {
@@ -109,6 +114,7 @@ export const LeadSlideDrawer: React.FC<LeadSlideDrawerProps> = ({
   isAdmin = false,
 }) => {
   const [notes, setNotes] = useState("");
+  const [newNoteText, setNewNoteText] = useState("");
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isReassignOpen, setIsReassignOpen] = useState(false);
@@ -172,25 +178,17 @@ export const LeadSlideDrawer: React.FC<LeadSlideDrawerProps> = ({
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const handleInsertTimestamp = () => {
-    const now = new Date();
-    const formatted = `[${now.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    })} ${now.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    })}] `;
-    setNotes((prev) => (prev ? `${prev}\n${formatted}` : formatted));
-  };
-
-  const handleSave = async () => {
-    if (!lead) return;
+  const handleAddPermanentNote = async () => {
+    if (!lead || !newNoteText.trim()) return;
     try {
       setIsSavingNotes(true);
-      await onSaveNotes(lead._id, notes);
+      const author = getCurrentUserName();
+      const timestamp = formatCurrentTimestamp();
+      const entry = `[${timestamp} • ${author}]: ${newNoteText.trim()}`;
+      const updatedNotes = notes ? `${notes}\n\n${entry}` : entry;
+      await onSaveNotes(lead._id, updatedNotes);
+      setNotes(updatedNotes);
+      setNewNoteText("");
     } finally {
       setIsSavingNotes(false);
     }
@@ -206,40 +204,6 @@ export const LeadSlideDrawer: React.FC<LeadSlideDrawerProps> = ({
       setIsReassigning(false);
     }
   };
-
-  // Parse notes for activity timeline
-  const parseNotesTimeline = (rawNotes: string) => {
-    if (!rawNotes.trim()) return [];
-    const regex = /\[([A-Za-z]{3}\s+\d{1,2},\s+\d{4}\s+[^\]]+)\]/g;
-    const parts: { time: string; text: string }[] = [];
-    let match;
-    let lastIndex = 0;
-    let lastTime = "Initial Entry";
-
-    while ((match = regex.exec(rawNotes)) !== null) {
-      if (match.index > lastIndex) {
-        const text = rawNotes.substring(lastIndex, match.index).trim();
-        if (text) {
-          parts.push({ time: lastTime, text });
-        }
-      }
-      lastTime = match[1];
-      lastIndex = regex.lastIndex;
-    }
-
-    if (lastIndex < rawNotes.length) {
-      const text = rawNotes.substring(lastIndex).trim();
-      if (text) {
-        parts.push({ time: lastTime, text });
-      }
-    }
-
-    return parts.length > 0
-      ? parts.reverse()
-      : [{ time: "Log Note", text: rawNotes.trim() }];
-  };
-
-  const timelineEntries = parseNotesTimeline(notes);
 
   return createPortal(
     <div className="lead-drawer-backdrop" onClick={onClose}>
@@ -476,59 +440,113 @@ export const LeadSlideDrawer: React.FC<LeadSlideDrawerProps> = ({
             )}
           </div>
 
-          {/* SECTION 4: LONG-FORM NOTES & TIMELINE */}
-          <div className="drawer-card">
+          {/* SECTION 4: INTERACTIVE NOTES & PERMANENT HISTORY */}
+          <div className="drawer-card drawer-notes-history-card">
             <div className="drawer-card-header">
-              <span className="card-title">Interactive Notes & History</span>
-              <button
-                type="button"
-                className="drawer-timestamp-btn"
-                onClick={handleInsertTimestamp}
-                title="Add current date & time stamp"
-              >
-                + Timestamp
-              </button>
-            </div>
-
-            <textarea
-              className="drawer-notes-textarea"
-              placeholder="Record detailed notes, follow-up callbacks, requirements, or client objections here..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={6}
-            />
-
-            <div className="drawer-notes-action-row">
-              <span className="notes-char-counter">
-                {notes.length} characters
+              <span className="card-title">📝 Interactive Notes & History</span>
+              <span className="drawer-immutable-badge" title="Past touchpoints cannot be altered or removed">
+                🔒 Permanent Record
               </span>
-              <button
-                type="button"
-                className="drawer-save-notes-btn"
-                onClick={handleSave}
-                disabled={isSavingNotes}
-              >
-                {isSavingNotes ? "Saving..." : "Save Notes"}
-              </button>
             </div>
 
-            {/* TIMELINE VIEW OF NOTES */}
-            {timelineEntries.length > 0 && (
-              <div className="drawer-timeline-wrapper">
-                <span className="timeline-title">Historical Touchpoints</span>
-                <div className="drawer-timeline">
-                  {timelineEntries.map((entry, idx) => (
-                    <div key={idx} className="timeline-item">
-                      <div className="timeline-dot" />
-                      <div className="timeline-content">
-                        <span className="timeline-time">{entry.time}</span>
-                        <p className="timeline-text">{entry.text}</p>
-                      </div>
+            {/* Historical Touchpoints Feed */}
+            <div className="drawer-notes-history-feed">
+              {(() => {
+                const entries = parseLeadNotes(
+                  notes,
+                  lead.createdAt
+                    ? new Date(lead.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : undefined
+                );
+
+                if (entries.length === 0) {
+                  return (
+                    <div className="drawer-notes-empty">
+                      <span className="empty-icon">📋</span>
+                      <p>No conversation notes recorded yet. Add the first touchpoint below.</p>
                     </div>
-                  ))}
-                </div>
+                  );
+                }
+
+                return (
+                  <div className="drawer-touchpoint-list">
+                    {entries.map((entry) => (
+                      <div key={entry.id} className="drawer-touchpoint-item">
+                        <div className="drawer-touchpoint-header">
+                          <div className="touchpoint-author-tag">
+                            <span className="author-icon">👤</span>
+                            <span className="author-name">{entry.author}</span>
+                          </div>
+                          <div className="touchpoint-meta-right">
+                            <span className="touchpoint-time">
+                              <span className="time-icon">🕒</span>
+                              {entry.timestamp}
+                            </span>
+                            <span className="touchpoint-lock" title="Permanent audit trail — cannot be deleted or modified">
+                              🔒
+                            </span>
+                          </div>
+                        </div>
+                        <div className="drawer-touchpoint-body">
+                          <p className="touchpoint-text">{entry.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Interactive Note Composer */}
+            <div className="drawer-composer-wrapper">
+              <div className="drawer-composer-header">
+                <span className="composer-label">+ Add New Touchpoint / Note</span>
+                <span className="composer-shortcut-hint">Ctrl + Enter to save</span>
               </div>
-            )}
+              <textarea
+                className="drawer-interactive-textarea"
+                placeholder="Type customer conversation note, follow-up requirements, or action items... (will be permanently timestamped)"
+                value={newNoteText}
+                onChange={(e) => setNewNoteText(e.target.value)}
+                onKeyDown={(e) => {
+                  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddPermanentNote();
+                  }
+                }}
+                rows={3}
+              />
+              <div className="drawer-composer-actions">
+                <span className="drawer-composer-security">
+                  🔒 Automatically recorded with your name & permanent timestamp. Past notes cannot be modified or erased.
+                </span>
+                <button
+                  type="button"
+                  className="drawer-add-note-btn"
+                  onClick={handleAddPermanentNote}
+                  disabled={isSavingNotes || !newNoteText.trim()}
+                >
+                  {isSavingNotes ? (
+                    <>
+                      <span className="drawer-btn-spinner" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      <span>Add Note</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 

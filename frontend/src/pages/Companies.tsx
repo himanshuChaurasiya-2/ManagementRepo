@@ -92,9 +92,42 @@ const Company = () => {
   const [submitting, setSubmitting] =
     useState(false);
 
+  // Users list for Task creation modal
+  const [users, setUsers] = useState<{ _id: string; name?: string; email?: string }[]>([]);
+
+  // Quick Task Modal State
+  const [taskModalCompany, setTaskModalCompany] = useState<CompanyData | null>(null);
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskPriority, setTaskPriority] = useState<"low" | "medium" | "high">("medium");
+  const [taskDueDate, setTaskDueDate] = useState("");
+  const [taskDescription, setTaskDescription] = useState("");
+  const [taskAssignedTo, setTaskAssignedTo] = useState("");
+  const [creatingTask, setCreatingTask] = useState(false);
+
+  // More ▾ Dropdown state
+  const [moreDropdownId, setMoreDropdownId] = useState<string | null>(null);
+
+  // Toast Notification state
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  // Close dropdown menus when clicking outside
+  useEffect(() => {
+    const handleWindowClick = () => {
+      setMoreDropdownId(null);
+    };
+    window.addEventListener("click", handleWindowClick);
+    return () => window.removeEventListener("click", handleWindowClick);
+  }, []);
+
   // Toggle Accordion Row (Only one open at a time - opening one closes others)
   const toggleAccordion = (id: string) => {
     setExpandedCompanyId((prev) => (prev === id ? null : id));
+    setMoreDropdownId(null);
   };
 
   // Copy to clipboard helper with temporary feedback
@@ -105,19 +138,18 @@ const Company = () => {
     setTimeout(() => setCopySuccess(null), 2000);
   };
 
-  // Company initial avatar dynamic color palette
-  const getAvatarGradient = (name: string) => {
-    const gradients = [
-      "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
-      "linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)",
-      "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-      "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-      "linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)",
-      "linear-gradient(135deg, #14b8a6 0%, #0284c7 100%)",
-    ];
-    let sum = 0;
-    for (let i = 0; i < (name || "").length; i++) sum += name.charCodeAt(i);
-    return gradients[sum % gradients.length];
+  // Company logo text helper (e.g., "LOG", "Acme", "A", "LOD", "QBM")
+  const getCompanyLogoText = (name: string) => {
+    if (!name) return "CO";
+    const cleaned = name.trim();
+    const words = cleaned.split(/\s+/);
+    if (words.length === 1) {
+      return words[0].length <= 4 ? words[0] : words[0].slice(0, 3).toUpperCase();
+    }
+    if (words[0].length <= 3) {
+      return words[0];
+    }
+    return (words[0][0] + (words[1] ? words[1][0] : "")).toUpperCase();
   };
 
   // Meta Ad Accounts searchable dropdown state
@@ -183,10 +215,65 @@ const Company = () => {
     }
   };
 
+  // Load Users for Task Assignment
+  const loadUsers = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/users`, authConfig());
+      if (res.data?.success && res.data?.users) {
+        setUsers(res.data.users);
+        if (res.data.users.length > 0) {
+          setTaskAssignedTo(res.data.users[0]._id);
+        }
+      }
+    } catch {
+      // ignore user load error
+    }
+  };
+
   useEffect(() => {
     loadCompanies();
     loadMetaAccounts();
+    loadUsers();
   }, []);
+
+  // Quick Task Action Handlers
+  const openCreateTaskModal = (company: CompanyData, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setTaskModalCompany(company);
+    setTaskTitle(`Follow up with ${company.companyName}`);
+    setTaskPriority("medium");
+    setTaskDueDate(new Date(Date.now() + 86400000 * 2).toISOString().slice(0, 10));
+    setTaskDescription(`Call ${company.contactPerson} regarding updates.`);
+  };
+
+  const handleSaveTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!taskModalCompany || !taskTitle.trim()) return;
+
+    try {
+      setCreatingTask(true);
+      const assignee = taskAssignedTo || (users[0]?._id);
+      await axios.post(
+        `${API_URL}/tasks`,
+        {
+          title: taskTitle.trim(),
+          company: taskModalCompany._id,
+          assignedTo: assignee,
+          priority: taskPriority,
+          dueDate: taskDueDate,
+          description: taskDescription.trim(),
+        },
+        authConfig()
+      );
+      setTaskModalCompany(null);
+      showToast("✓ Task created successfully!");
+    } catch (err: any) {
+      console.error("Create task error:", err);
+      alert(err.response?.data?.message || "Failed to create task");
+    } finally {
+      setCreatingTask(false);
+    }
+  };
 
   // FORM CHANGE
 
@@ -257,6 +344,7 @@ const Company = () => {
 
       const payload: any = {
         ...form,
+        notes: form.notes?.trim() || "",
       };
 
       if (form.adAccountId && selectedMetaAcc) {
@@ -289,6 +377,11 @@ const Company = () => {
       setForm(emptyForm);
 
       await loadCompanies();
+      showToast(
+        editingCompany
+          ? "✓ Company updated successfully"
+          : "✓ Company created successfully"
+      );
     } catch (error: any) {
       console.error(
         "Save company error:",
@@ -336,6 +429,11 @@ const Company = () => {
       );
 
       await loadCompanies();
+      showToast(
+        `✓ Company ${
+          newStatus === "active" ? "activated" : "deactivated"
+        } successfully`
+      );
     } catch (error: any) {
       console.error(
         "Status update error:",
@@ -369,6 +467,7 @@ const Company = () => {
       );
 
       await loadCompanies();
+      showToast("✓ Company deleted successfully");
     } catch (error: any) {
       console.error(
         "Delete company error:",
@@ -522,52 +621,27 @@ const Company = () => {
 
         {/* LOADING SHIMMER SKELETON */}
         {loading ? (
-          <div className="company-table-wrapper">
-            <table className="company-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 44 }}></th>
-                  <th>Company</th>
-                  <th>Contact Person</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: "right" }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <tr key={i} className="company-shimmer-row">
-                    <td>
-                      <div className="company-shimmer company-shimmer-toggle" />
-                    </td>
-                    <td>
-                      <div className="company-identity-wrap">
-                        <div className="company-shimmer company-shimmer-avatar" />
-                        <div className="d-flex flex-column gap-2 flex-grow-1">
-                          <div className="company-shimmer company-shimmer-line company-shimmer-line-lg" />
-                          <div className="company-shimmer company-shimmer-line company-shimmer-line-sm" />
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="d-flex flex-column gap-2">
-                        <div className="company-shimmer company-shimmer-line company-shimmer-line-md" />
-                        <div className="company-shimmer company-shimmer-line company-shimmer-line-sm" />
-                      </div>
-                    </td>
-                    <td>
-                      <div className="company-shimmer company-shimmer-badge" />
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      <div className="company-actions justify-content-end">
-                        <div className="company-shimmer company-shimmer-btn" />
-                        <div className="company-shimmer company-shimmer-btn" />
-                        <div className="company-shimmer company-shimmer-btn" />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="company-cards-list">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="company-row-card company-shimmer-card">
+                <div className="company-card-header">
+                  <div className="company-shimmer company-shimmer-logo" />
+                  <div className="company-card-col name-col">
+                    <div className="company-shimmer company-shimmer-line company-shimmer-line-sm" />
+                    <div className="company-shimmer company-shimmer-line company-shimmer-line-lg" />
+                  </div>
+                  <div className="company-card-col meta-account-col">
+                    <div className="company-shimmer company-shimmer-line company-shimmer-line-sm" />
+                    <div className="company-shimmer company-shimmer-line company-shimmer-line-md" />
+                  </div>
+                  <div className="company-card-col metric-col">
+                    <div className="company-shimmer company-shimmer-line company-shimmer-line-sm" />
+                    <div className="company-shimmer company-shimmer-line company-shimmer-line-md" />
+                  </div>
+                  <div className="company-shimmer company-shimmer-dots" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredCompanies.length === 0 ? (
           /* EMPTY STATE */
@@ -597,334 +671,435 @@ const Company = () => {
             )}
           </div>
         ) : (
-          /* ACCORDION TABLE */
-          <div className="company-table-wrapper">
-            <table className="company-table">
-              <thead>
-                <tr>
-                  {/* <th style={{ width: 44 }} aria-label="Expand toggle"></th> */}
-                  <th>Company</th>
-                  <th>Contact Person</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
+          /* FLOATING ACCORDION CARDS LIST (EXACT REFERENCE IMAGE DESIGN) */
+          <div className="company-cards-list">
+            {filteredCompanies.map((company) => {
+              const isExpanded = expandedCompanyId === company._id;
+              const isMoreOpen = moreDropdownId === company._id;
 
-              <tbody>
-                {filteredCompanies.map((company) => {
-                  const isExpanded = expandedCompanyId === company._id;
-                  return (
-                    <React.Fragment key={company._id}>
-                      {/* MAIN ACCORDION ROW */}
-                      <tr
-                        className={`company-main-row ${isExpanded ? "is-expanded" : ""}`}
-                        onClick={() => toggleAccordion(company._id)}
-                        tabIndex={0}
-                        role="button"
-                        aria-expanded={isExpanded}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            toggleAccordion(company._id);
-                          }
-                        }}
-                      >
-                        {/* Toggle Chevron Icon */}
-                        {/* <td className="col-toggle" onClick={(e) => e.stopPropagation()}>
+              return (
+                <div
+                  key={company._id}
+                  className={`company-row-card ${isExpanded ? "is-expanded" : ""}`}
+                >
+                  {/* TOP HEADER ROW */}
+                  <div
+                    className="company-card-header"
+                    onClick={() => toggleAccordion(company._id)}
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={isExpanded}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        toggleAccordion(company._id);
+                      }
+                    }}
+                  >
+                    {/* LOGO BOX WITH STATUS DOT (STATUS EMBEDDED FOR MOBILE & DESKTOP) */}
+                    <div className="company-logo-wrapper">
+                      <div className="company-logo-box">
+                        {getCompanyLogoText(company.companyName)}
+                      </div>
+                      <span
+                        className={`company-logo-status-dot ${company.status}`}
+                        title={`Status: ${company.status === "active" ? "Active (Live Lead)" : "Inactive"}`}
+                      />
+                    </div>
+
+                    {/* NAME COLUMN */}
+                    <div className="company-card-col name-col">
+                      <span className="company-col-label">Name</span>
+                      <div className="company-title-wrapper">
+                        <strong className="company-card-title">
+                          {company.companyName}
+                        </strong>
+                        <span className="company-card-industry">
+                          {company.industry || "General"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* META AD ACCOUNT COLUMN (FOR BIG SCREENS) */}
+                    <div className="company-card-col meta-account-col">
+                      <span className="company-col-label">Meta Ad Account</span>
+                      {company.metaAdsConfig?.adAccountId ? (
+                        <div className="company-meta-col-info">
+                          <strong className="company-meta-acc-name" title={company.metaAdsConfig.adAccountName}>
+                            {company.metaAdsConfig.adAccountName || "Linked"}
+                          </strong>
+                          <span className="company-meta-acc-id">
+                            ID: {company.metaAdsConfig.adAccountId}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="company-meta-unlinked-tag">Not Linked</span>
+                      )}
+                    </div>
+
+                    {/* CONTACT PERSON COLUMN */}
+                    <div className="company-card-col metric-col">
+                      <span className="company-col-label">Contact Person</span>
+                      <strong className="company-metric-val">
+                        {company.contactPerson || "Primary Contact"}
+                      </strong>
+                    </div>
+
+                    {/* THREE DOTS TOGGLE BUTTON */}
+                    <button
+                      type="button"
+                      className={`company-dots-btn ${isExpanded ? "active" : ""}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleAccordion(company._id);
+                      }}
+                      title={isExpanded ? "Collapse details" : "Expand details"}
+                      aria-label={isExpanded ? "Collapse details" : "Expand details"}
+                    >
+                      <span>···</span>
+                    </button>
+                  </div>
+
+                  {/* EXPANDED SECTION */}
+                  {isExpanded && (
+                    <div className="company-card-expanded-body">
+                      {/* ACTION BUTTONS BAR */}
+                      <div className="company-action-bar">
+                        {/* 1. GREEN BUTTON: Create Task */}
+                        <button
+                          type="button"
+                          className="btn-action-task"
+                          onClick={(e) => openCreateTaskModal(company, e)}
+                          title="Create a new task for this company"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                          <span>Create Task</span>
+                        </button>
+
+                        {/* 2. NEUTRAL BUTTON: More ▾ (WITH EDIT, STATUS TOGGLE, WEBSITE, DELETE) */}
+                        <div className="more-dropdown-wrapper" onClick={(e) => e.stopPropagation()}>
                           <button
                             type="button"
-                            className={`company-chevron-btn ${isExpanded ? "open" : ""}`}
-                            onClick={() => toggleAccordion(company._id)}
-                            title={isExpanded ? "Collapse client details" : "Expand client details"}
-                            aria-label={isExpanded ? "Collapse details" : "Expand details"}
+                            className={`btn-action-more ${isMoreOpen ? "open" : ""}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setMoreDropdownId(isMoreOpen ? null : company._id);
+                            }}
+                            title="More options"
+                            aria-expanded={isMoreOpen}
                           >
-                            <svg
-                              width="15"
-                              height="15"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
+                            <span>More</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                               <polyline points="6 9 12 15 18 9" />
                             </svg>
                           </button>
-                        </td> */}
 
-                        {/* Company Identity (Avatar, Name, Industry, Domain) */}
-                        <td className="col-company">
-                          <div className="company-identity-wrap">
-                            <div
-                              className="company-avatar"
-                              style={{ background: getAvatarGradient(company.companyName) }}
-                            >
-                              {company.companyName.charAt(0).toUpperCase()}
-                            </div>
-                            <div className="company-name-group">
-                              <div className="company-title-row">
-                                <strong className="company-name-text">
-                                  {company.companyName}
-                                </strong>
-                                <span className="company-industry-tag">
-                                  {company.industry || "General"}
-                                </span>
-                              </div>
-                              {company.website ? (
+                          {/* MORE DROPDOWN MENU */}
+                          {isMoreOpen && (
+                            <div className="company-dropdown-menu">
+                              <button
+                                type="button"
+                                className="company-dropdown-item"
+                                onClick={() => {
+                                  setMoreDropdownId(null);
+                                  openEditModal(company);
+                                }}
+                              >
+                                <span>✏️</span>
+                                <span>Edit Company Details</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                className="company-dropdown-item"
+                                onClick={() => {
+                                  setMoreDropdownId(null);
+                                  toggleStatus(company);
+                                }}
+                              >
+                                <span>{company.status === "active" ? "⏸️" : "▶️"}</span>
+                                <span>{company.status === "active" ? "Deactivate Company" : "Activate Company"}</span>
+                              </button>
+
+                              {company.website && (
                                 <a
                                   href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="company-sub-link"
-                                  onClick={(e) => e.stopPropagation()}
-                                  title={`Visit ${company.website}`}
+                                  className="company-dropdown-item"
+                                  onClick={() => setMoreDropdownId(null)}
                                 >
-                                  {company.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                                  <span>🌐</span>
+                                  <span>Visit Official Website</span>
                                 </a>
-                              ) : (
-                                <span className="company-sub-link muted">No website listed</span>
+                              )}
+
+                              <div className="company-dropdown-divider" />
+
+                              <button
+                                type="button"
+                                className="company-dropdown-item danger"
+                                onClick={() => {
+                                  setMoreDropdownId(null);
+                                  deleteCompany(company);
+                                }}
+                              >
+                                <span>🗑️</span>
+                                <span>Delete Company</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* FOUR COMPREHENSIVE DETAIL CARDS (PREVIOUS DETAILS IN MODERN STYLING, NO MAP) */}
+                      <div className="company-details-grid">
+                        {/* Card 1: Primary Contact */}
+                        <div className="company-detail-card">
+                          <div className="company-detail-card-title">
+                            <span className="detail-icon">👤</span>
+                            <span>Primary Contact</span>
+                          </div>
+
+                          <div className="company-detail-item">
+                            <span className="detail-label">Contact Person</span>
+                            <span className="detail-value bold">
+                              {company.contactPerson || "Not assigned"}
+                            </span>
+                          </div>
+
+                          <div className="company-detail-item">
+                            <span className="detail-label">Email Address</span>
+                            <div className="detail-value-copyable">
+                              <a
+                                href={`mailto:${company.email}`}
+                                className="detail-link"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {company.email}
+                              </a>
+                              <button
+                                type="button"
+                                className="btn-copy-chip"
+                                onClick={(e) =>
+                                  handleCopyText(
+                                    company.email,
+                                    `email-${company._id}`,
+                                    e
+                                  )
+                                }
+                                title="Copy email address"
+                              >
+                                {copySuccess === `email-${company._id}`
+                                  ? "✓ Copied"
+                                  : "📋 Copy"}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="company-detail-item">
+                            <span className="detail-label">Direct Phone</span>
+                            <div className="detail-value-copyable">
+                              <a
+                                href={`tel:${company.phone}`}
+                                className="detail-link"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {company.phone}
+                              </a>
+                              <button
+                                type="button"
+                                className="btn-copy-chip"
+                                onClick={(e) =>
+                                  handleCopyText(
+                                    company.phone,
+                                    `phone-${company._id}`,
+                                    e
+                                  )
+                                }
+                                title="Copy phone number"
+                              >
+                                {copySuccess === `phone-${company._id}`
+                                  ? "✓ Copied"
+                                  : "📋 Copy"}
+                              </button>
+                            </div>
+                          </div>
+
+                          {company.alternatePhone && (
+                            <div className="company-detail-item">
+                              <span className="detail-label">Alternate Phone</span>
+                              <div className="detail-value-copyable">
+                                <a
+                                  href={`tel:${company.alternatePhone}`}
+                                  className="detail-link"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {company.alternatePhone}
+                                </a>
+                                <button
+                                  type="button"
+                                  className="btn-copy-chip"
+                                  onClick={(e) =>
+                                    handleCopyText(
+                                      company.alternatePhone,
+                                      `alt-${company._id}`,
+                                      e
+                                    )
+                                  }
+                                  title="Copy alternate phone"
+                                >
+                                  {copySuccess === `alt-${company._id}`
+                                    ? "✓ Copied"
+                                    : "📋 Copy"}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Card 2: Company & Address */}
+                        <div className="company-detail-card">
+                          <div className="company-detail-card-title">
+                            <span className="detail-icon">🏢</span>
+                            <span>Company & Location</span>
+                          </div>
+
+                          <div className="company-detail-item">
+                            <span className="detail-label">Office Address</span>
+                            <div className="detail-value-copyable">
+                              <span className="detail-value">
+                                {company.address || "No physical address provided"}
+                              </span>
+                              {company.address && (
+                                <button
+                                  type="button"
+                                  className="btn-copy-chip"
+                                  onClick={(e) =>
+                                    handleCopyText(
+                                      company.address,
+                                      `addr-${company._id}`,
+                                      e
+                                    )
+                                  }
+                                  title="Copy address"
+                                >
+                                  {copySuccess === `addr-${company._id}`
+                                    ? "✓ Copied"
+                                    : "📋 Copy"}
+                                </button>
                               )}
                             </div>
                           </div>
-                        </td>
 
-                        {/* Contact Person & Email hint */}
-                        <td className="col-contact">
-                          <div className="company-contact-group">
-                            <span className="contact-name">{company.contactPerson}</span>
-                            <span className="contact-sub-hint">{company.phone || company.email}</span>
+                          <div className="company-detail-item">
+                            <span className="detail-label">Official Website</span>
+                            {company.website ? (
+                              <a
+                                href={
+                                  company.website.startsWith("http")
+                                    ? company.website
+                                    : `https://${company.website}`
+                                }
+                                target="_blank"
+                                rel="noreferrer"
+                                className="detail-external-link"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {company.website} ↗
+                              </a>
+                            ) : (
+                              <span className="detail-value muted">Not provided</span>
+                            )}
                           </div>
-                        </td>
 
-                        {/* Status Badge */}
-                        <td className="col-status">
-                          <span className={`company-status ${company.status}`}>
-                            <span className={`status-dot ${company.status}`} />
-                            {company.status}
-                          </span>
-                        </td>
-
-                        {/* Actions Toolbar */}
-                        <td className="col-actions" onClick={(e) => e.stopPropagation()}>
-                          <div className="company-actions">
-                            <button
-                              type="button"
-                              className="company-action-btn edit-btn"
-                              onClick={() => openEditModal(company)}
-                              title="Edit company"
-                            >
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                              </svg>
-                              <span>Edit</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              className={`company-action-btn ${company.status === "active" ? "deactivate-btn" : "activate-btn"}`}
-                              onClick={() => toggleStatus(company)}
-                              title={company.status === "active" ? "Deactivate company" : "Activate company"}
-                            >
-                              {company.status === "active" ? "Deactivate" : "Activate"}
-                            </button>
-
-                            <button
-                              type="button"
-                              className="company-action-btn delete-btn"
-                              onClick={() => deleteCompany(company)}
-                              title="Delete company"
-                            >
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                                <polyline points="3 6 5 6 21 6" />
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                              </svg>
-                              <span>Delete</span>
-                            </button>
+                          <div className="company-detail-item">
+                            <span className="detail-label">Industry Classification</span>
+                            <span className="company-industry-chip">
+                              {company.industry || "General"}
+                            </span>
                           </div>
-                        </td>
-                      </tr>
+                        </div>
 
-                      {/* EXPANDABLE ACCORDION ROW */}
-                      {isExpanded && (
-                        <tr className="company-accordion-tr">
-                          <td colSpan={5} className="company-accordion-td">
-                            <div className="company-accordion-panel">
-                              <div className="company-accordion-grid">
-                                {/* Card 1: Contact Information */}
-                                <div className="company-detail-card">
-                                  <div className="company-detail-card-title">
-                                    <span className="detail-icon">📞</span>
-                                    <span>Contact Details</span>
-                                  </div>
+                        {/* Card 3: Meta Ads Marketing Integration */}
+                        <div className="company-detail-card">
+                          <div className="company-detail-card-title">
+                            <span className="detail-icon">⚡</span>
+                            <span>Meta Marketing Ads</span>
+                          </div>
 
-                                  <div className="company-detail-item">
-                                    <span className="detail-label">Email Address</span>
-                                    <div className="detail-value-copyable">
-                                      <a
-                                        href={`mailto:${company.email}`}
-                                        className="detail-link"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        {company.email}
-                                      </a>
-                                      <button
-                                        type="button"
-                                        className="btn-copy-chip"
-                                        onClick={(e) => handleCopyText(company.email, `email-${company._id}`, e)}
-                                        title="Copy email address"
-                                      >
-                                        {copySuccess === `email-${company._id}` ? "✓ Copied" : "Copy"}
-                                      </button>
-                                    </div>
-                                  </div>
-
-                                  <div className="company-detail-item">
-                                    <span className="detail-label">Primary Phone</span>
-                                    <div className="detail-value-copyable">
-                                      <a
-                                        href={`tel:${company.phone}`}
-                                        className="detail-link"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        {company.phone}
-                                      </a>
-                                      <button
-                                        type="button"
-                                        className="btn-copy-chip"
-                                        onClick={(e) => handleCopyText(company.phone, `phone-${company._id}`, e)}
-                                        title="Copy phone number"
-                                      >
-                                        {copySuccess === `phone-${company._id}` ? "✓ Copied" : "Copy"}
-                                      </button>
-                                    </div>
-                                  </div>
-
-                                  {company.alternatePhone && (
-                                    <div className="company-detail-item">
-                                      <span className="detail-label">Alternate Phone</span>
-                                      <span className="detail-value">{company.alternatePhone}</span>
-                                    </div>
-                                  )}
-
-                                  <div className="company-detail-item">
-                                    <span className="detail-label">Official Website</span>
-                                    {company.website ? (
-                                      <a
-                                        href={company.website.startsWith("http") ? company.website : `https://${company.website}`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="detail-external-link"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        <span>{company.website}</span>
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                                          <polyline points="15 3 21 3 21 9" />
-                                          <line x1="10" y1="14" x2="21" y2="3" />
-                                        </svg>
-                                      </a>
-                                    ) : (
-                                      <span className="detail-value muted">Not specified</span>
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* Card 2: Location & Address */}
-                                <div className="company-detail-card">
-                                  <div className="company-detail-card-title">
-                                    <span className="detail-icon">📍</span>
-                                    <span>Location & Industry</span>
-                                  </div>
-
-                                  <div className="company-detail-item">
-                                    <span className="detail-label">Office Address</span>
-                                    <p className="detail-text-block">
-                                      {company.address || "No physical address specified for this client."}
-                                    </p>
-                                  </div>
-
-                                  <div className="company-detail-item">
-                                    <span className="detail-label">Industry Classification</span>
-                                    <span className="company-industry-chip">
-                                      {company.industry || "General"}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                {/* Card 3: Meta Ads Marketing Integration */}
-                                <div className="company-detail-card">
-                                  <div className="company-detail-card-title">
-                                    <span className="detail-icon">⚡</span>
-                                    <span>Meta Marketing Ads</span>
-                                  </div>
-
-                                  {company.metaAdsConfig?.adAccountId ? (
-                                    <div className="meta-ads-connected-box">
-                                      <div className="meta-ads-status-badge connected">
-                                        <span className="status-dot green" />
-                                        <span>Meta Ad Account Linked</span>
-                                      </div>
-                                      <div className="company-detail-item mt-2">
-                                        <span className="detail-label">Account Name</span>
-                                        <span className="detail-value bold">{company.metaAdsConfig.adAccountName || "N/A"}</span>
-                                      </div>
-                                      <div className="company-detail-item">
-                                        <span className="detail-label">Account ID</span>
-                                        <span className="detail-value mono-badge">{company.metaAdsConfig.adAccountId}</span>
-                                      </div>
-                                      <div className="company-detail-item">
-                                        <span className="detail-label">Currency</span>
-                                        <span className="detail-value bold">{company.metaAdsConfig.currency || "USD"}</span>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="meta-ads-empty-box">
-                                      <span className="meta-unlinked-icon">⚪</span>
-                                      <div>
-                                        <div className="meta-unlinked-title">No Meta Account Connected</div>
-                                        <p className="meta-unlinked-desc">Edit this company to link their Meta Ads Marketing account.</p>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Card 4: Internal Notes & History */}
-                                <div className="company-detail-card">
-                                  <div className="company-detail-card-title">
-                                    <span className="detail-icon">📝</span>
-                                    <span>Client Notes & History</span>
-                                  </div>
-
-                                  <div className="company-detail-item">
-                                    <span className="detail-label">Internal Remarks</span>
-                                    <p className="detail-text-block notes-block">
-                                      {company.notes || "No internal notes recorded for this client."}
-                                    </p>
-                                  </div>
-
-                                  <div className="company-detail-item">
-                                    <span className="detail-label">Client Since</span>
-                                    <span className="detail-value">
-                                      {new Date(company.createdAt).toLocaleDateString(undefined, {
-                                        year: "numeric",
-                                        month: "long",
-                                        day: "numeric",
-                                      })}
-                                    </span>
-                                  </div>
-                                </div>
+                          {company.metaAdsConfig?.adAccountId ? (
+                            <div className="meta-ads-connected-box">
+                              <div className="meta-ads-status-badge connected">
+                                <span className="status-dot green" />
+                                <span>Meta Ad Account Linked</span>
+                              </div>
+                              <div className="company-detail-item" style={{ marginTop: 6 }}>
+                                <span className="detail-label">Account Name</span>
+                                <span className="detail-value bold">
+                                  {company.metaAdsConfig.adAccountName || "N/A"}
+                                </span>
+                              </div>
+                              <div className="company-detail-item">
+                                <span className="detail-label">Account ID</span>
+                                <span className="detail-value mono-badge">
+                                  {company.metaAdsConfig.adAccountId}
+                                </span>
+                              </div>
+                              <div className="company-detail-item">
+                                <span className="detail-label">Currency</span>
+                                <span className="detail-value bold">
+                                  {company.metaAdsConfig.currency || "USD"}
+                                </span>
                               </div>
                             </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
+                          ) : (
+                            <div className="meta-ads-empty-box">
+                              <span className="meta-unlinked-icon">⚪</span>
+                              <div>
+                                <div className="meta-unlinked-title">No Meta Account Connected</div>
+                                <p className="meta-unlinked-desc">
+                                  Edit this company to link their Meta Ads Marketing account.
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Card 4: Company Notes */}
+                        <div className="company-detail-card">
+                          <div className="company-detail-card-title">
+                            <span className="detail-icon">📝</span>
+                            <span>Company Notes</span>
+                          </div>
+
+                          <div className="company-detail-item">
+                            <span className="detail-label">Notes</span>
+                            <p className="detail-text-block notes-block">
+                              {company.notes || "No notes recorded for this company."}
+                            </p>
+                          </div>
+
+                          <div className="company-detail-item">
+                            <span className="detail-label">Client Since</span>
+                            <span className="detail-value">
+                              {new Date(company.createdAt).toLocaleDateString(undefined, {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -1363,6 +1538,118 @@ const Company = () => {
 
         </div>
 
+      )}
+
+      {/* QUICK CREATE TASK MODAL */}
+      {taskModalCompany && (
+        <div
+          className="company-modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setTaskModalCompany(null);
+          }}
+        >
+          <div className="company-modal quick-task-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="company-modal-header">
+              <div>
+                <h2>Create Task</h2>
+                <p>Assign follow-up task for {taskModalCompany.companyName}</p>
+              </div>
+              <button
+                type="button"
+                className="company-close-btn"
+                onClick={() => setTaskModalCompany(null)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveTask}>
+              <div className="company-form">
+                <div className="form-field full-width">
+                  <label>Task Title *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Schedule product demo"
+                    value={taskTitle}
+                    onChange={(e) => setTaskTitle(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label>Priority</label>
+                  <select
+                    value={taskPriority}
+                    onChange={(e) => setTaskPriority(e.target.value as any)}
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+
+                <div className="form-field">
+                  <label>Due Date</label>
+                  <input
+                    type="date"
+                    value={taskDueDate}
+                    onChange={(e) => setTaskDueDate(e.target.value)}
+                  />
+                </div>
+
+                {users.length > 0 && (
+                  <div className="form-field full-width">
+                    <label>Assign Team Member</label>
+                    <select
+                      value={taskAssignedTo}
+                      onChange={(e) => setTaskAssignedTo(e.target.value)}
+                    >
+                      {users.map((u) => (
+                        <option key={u._id} value={u._id}>
+                          {u.name || u.email}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div className="form-field full-width">
+                  <label>Description / Notes</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Details about this task..."
+                    value={taskDescription}
+                    onChange={(e) => setTaskDescription(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="company-modal-footer">
+                <button
+                  type="button"
+                  className="cancel-btn company-cancel-btn"
+                  onClick={() => setTaskModalCompany(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="company-save-btn btn-save-green"
+                  disabled={creatingTask}
+                >
+                  {creatingTask ? "Creating..." : "Save Task"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* FLOATING TOAST NOTIFICATION */}
+      {toastMessage && (
+        <div className="company-floating-toast">
+          {toastMessage}
+        </div>
       )}
 
     </div>

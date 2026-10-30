@@ -538,6 +538,210 @@
   cursor: not-allowed;
 }
 
+/* ===================================================
+   INTERACTIVE NOTES & TOUCHPOINT HISTORY
+   =================================================== */
+.drawer-immutable-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #a5b4fc;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 2px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.drawer-notes-history-feed {
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drawer-notes-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 12px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+}
+
+.drawer-notes-empty p {
+  margin: 0;
+}
+
+.drawer-touchpoint-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.drawer-touchpoint-item {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid #6366f1;
+  border-radius: 8px;
+  padding: 9px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.drawer-touchpoint-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.drawer-touchpoint-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.touchpoint-author-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.touchpoint-meta-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.touchpoint-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.touchpoint-lock {
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.touchpoint-text {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Interactive Note Composer */
+.drawer-composer-wrapper {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.drawer-composer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.composer-shortcut-hint {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.drawer-interactive-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  color: #f8fafc;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 58px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.drawer-interactive-textarea:focus {
+  border-color: #6366f1;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+}
+
+.drawer-composer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.drawer-composer-security {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  flex: 1;
+  min-width: 160px;
+}
+
+.drawer-add-note-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #6366f1;
+  color: #ffffff;
+  border: none;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.drawer-add-note-btn:hover:not(:disabled) {
+  background: #4f46e5;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+
+.drawer-add-note-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
 /* Timeline */
 .drawer-timeline-wrapper {
   margin-top: 10px;
@@ -785,5 +989,64 @@ body.light-mode .drawer-timeline::before {
 [data-theme="light"] .lead-drawer-drag-bar,
 body.light-mode .lead-drawer-drag-bar {
   background: #cbd5e1;
+}
+
+[data-theme="light"] .drawer-immutable-badge,
+body.light-mode .drawer-immutable-badge {
+  color: #4338ca;
+  background: #eef2ff;
+  border-color: #c7d2fe;
+}
+
+[data-theme="light"] .drawer-touchpoint-item,
+body.light-mode .drawer-touchpoint-item {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  border-left-color: #6366f1;
+}
+
+[data-theme="light"] .touchpoint-author-tag,
+body.light-mode .touchpoint-author-tag {
+  color: #0f172a;
+}
+
+[data-theme="light"] .touchpoint-meta-right,
+body.light-mode .touchpoint-meta-right {
+  color: #64748b;
+}
+
+[data-theme="light"] .touchpoint-text,
+body.light-mode .touchpoint-text {
+  color: #1e293b;
+}
+
+[data-theme="light"] .drawer-notes-empty,
+body.light-mode .drawer-notes-empty {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
+}
+
+[data-theme="light"] .drawer-composer-wrapper,
+body.light-mode .drawer-composer-wrapper {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .drawer-composer-header,
+body.light-mode .drawer-composer-header {
+  color: #0f172a;
+}
+
+[data-theme="light"] .drawer-interactive-textarea,
+body.light-mode .drawer-interactive-textarea {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+[data-theme="light"] .drawer-composer-security,
+body.light-mode .drawer-composer-security {
+  color: #64748b;
 }
 

@@ -5,6 +5,8 @@ import {
   getCompanyById,
   updateCompany,
   deleteCompany,
+  addCompanyNote,
+  updateCompanyStatus,
 } from "../controllers/companyController.js";
 
 import { protect } from "../middleware/authMiddleware.js";
@@ -20,9 +22,15 @@ router.get("/", protect, getCompanies);
 router.get("/:id", protect, getCompanyById);
 
 // =================================
+// Interactive Notes (Append-only permanent audit trail)
+// =================================
+router.post("/:id/notes", protect, addCompanyNote);
+
+// =================================
 // Admin only
 // =================================
 router.post("/", protect, adminOnly, createCompany);
+router.patch("/:id/status", protect, adminOnly, updateCompanyStatus);
 router.patch("/:id", protect, adminOnly, updateCompany);
 router.delete("/:id", protect, adminOnly, deleteCompany);
 

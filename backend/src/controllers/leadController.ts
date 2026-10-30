@@ -91,23 +91,29 @@ export const importLeadsFromExcel = async (
     }
 
     // -------------------------------------------------
-    // REQUIRED EXCEL COLUMNS
+    // FLEXIBLE EXCEL COLUMNS MATCHING
     // -------------------------------------------------
 
-    const requiredColumns = [
-      "Name",
-      "Phone",
-    ];
+    const rawKeys = Object.keys(rows[0] || {});
+    const findColumnKey = (aliases: string[]) => {
+      const lowerAliases = aliases.map((a) => a.toLowerCase().trim());
+      return rawKeys.find((k) => lowerAliases.includes(k.toLowerCase().trim()));
+    };
 
-    const excelColumns = Object.keys(rows[0]);
+    const nameKey = findColumnKey(["name", "full name", "lead name", "lead", "client name", "customer name"]);
+    const phoneKey = findColumnKey(["phone", "phone number", "mobile", "mobile number", "contact", "contact number", "tel", "cell"]);
+    const emailKey = findColumnKey(["email", "email id", "email address", "e-mail", "mail"]);
+    const companyKey = findColumnKey(["company", "company name", "organization", "org", "business"]);
+    const sourceKey = findColumnKey(["source", "lead source", "channel", "campaign"]);
+    const srNoKey = findColumnKey(["sr no", "sr. no.", "sr no.", "sr.no", "s.no", "sno", "serial no", "id", "#"]);
 
-    const missingColumns = requiredColumns.filter(
-      (column) => !excelColumns.includes(column)
-    );
+    if (!nameKey || !phoneKey) {
+      const missingColumns = [];
+      if (!nameKey) missingColumns.push("Name");
+      if (!phoneKey) missingColumns.push("Phone");
 
-    if (missingColumns.length > 0) {
       res.status(400).json({
-        message: "Required Excel columns are missing",
+        message: "Required Excel columns are missing: " + missingColumns.join(", "),
         missingColumns,
         expectedColumns: [
           "Sr No",
@@ -134,11 +140,11 @@ export const importLeadsFromExcel = async (
 
       const excelRowNumber = i + 2;
 
-      const name = String(row["Name"] || "").trim();
-      const phone = String(row["Phone"] || "").trim();
-      const email = String(row["Email"] || "").trim();
-      const company = String(row["Company"] || "").trim();
-      const source = String(row["Source"] || "").trim();
+      const name = nameKey ? String(row[nameKey] ?? "").trim() : "";
+      const phone = phoneKey ? String(row[phoneKey] ?? "").trim() : "";
+      const email = emailKey ? String(row[emailKey] ?? "").trim() : "";
+      const company = companyKey ? String(row[companyKey] ?? "").trim() : "";
+      const source = sourceKey ? String(row[sourceKey] ?? "").trim() : "";
 
       // -------------------------------------------------
       // VALIDATE NAME
@@ -167,17 +173,24 @@ export const importLeadsFromExcel = async (
       }
 
       // -------------------------------------------------
+      // PARSE SR NO
+      // -------------------------------------------------
+
+      const rawSrNo = srNoKey ? row[srNoKey] : undefined;
+      const parsedSrNo =
+        rawSrNo !== undefined &&
+        rawSrNo !== null &&
+        rawSrNo !== "" &&
+        !isNaN(Number(rawSrNo))
+          ? Number(rawSrNo)
+          : undefined;
+
+      // -------------------------------------------------
       // CREATE LEAD OBJECT
       // -------------------------------------------------
 
       validLeads.push({
-       srNo:
-  row["Sr No"] !== undefined &&
-  row["Sr No"] !== null &&
-  row["Sr No"] !== "" &&
-  !isNaN(Number(row["Sr No"]))
-    ? Number(row["Sr No"])
-    : undefined,
+        srNo: parsedSrNo,
 
         name,
         phone,
@@ -269,6 +282,7 @@ export const getMyLeads = async (
       .populate("uploadedBy", "name email role jobPosition status");
 
     res.status(200).json({
+      success: true,
       message: "My leads fetched successfully",
       leads,
     });
@@ -297,6 +311,7 @@ export const getAllLeads = async (
       .sort({ createdAt: -1 });
 
     res.status(200).json({
+      success: true,
       message: "All leads fetched successfully",
       leads,
     });
@@ -728,7 +743,7 @@ export const updateLeadNotes = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { notes } = req.body;
+    const { notes, note } = req.body;
 
     // -------------------------------------------------
     // GET LOGGED-IN USER
@@ -791,7 +806,21 @@ export const updateLeadNotes = async (
     // UPDATE LEAD NOTES
     // -------------------------------------------------
 
-    lead.notes = typeof notes === "string" ? notes : "";
+    if (typeof note === "string" && note.trim()) {
+      const author = req.user?.name || "Team Member";
+      const timestamp = new Date().toLocaleString("en-US", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+      const entry = `[${timestamp} • ${author}]: ${note.trim()}`;
+      lead.notes = lead.notes ? `${lead.notes}\n\n${entry}` : entry;
+    } else if (typeof notes === "string") {
+      lead.notes = notes;
+    }
 
     await lead.save();
 

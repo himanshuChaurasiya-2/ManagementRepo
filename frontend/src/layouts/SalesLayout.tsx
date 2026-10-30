@@ -362,7 +362,7 @@ const SalesLayout = () => {
 
           <div className="sidebar-section-heading">REPORTS</div>
 
-          {/* Monthly Reports */}
+          {/* Monthly Reports / Meta Ads Live */}
           <Link
             to="/sales/reports"
             className={`app-nav-item ${isActive("/sales/reports") ? "active" : ""}`}
@@ -374,7 +374,7 @@ const SalesLayout = () => {
                 <line x1="6" x2="6" y1="20" y2="14" />
               </svg>
             </span>
-            <span>Monthly Reports</span>
+            <span>Meta Ads Live</span>
           </Link>
         </nav>
 
@@ -427,7 +427,7 @@ const SalesLayout = () => {
               <span className="navbar-toggle-bar bar-2"></span>
               <span className="navbar-toggle-bar bar-3"></span>
             </button>
-            <h1 className="app-topbar-title">Dashboard</h1>
+            {/* <h1 className="app-topbar-title">Dashboard</h1> */}
           </div>
 
           {/* RIGHT SIDE: THEME TOGGLE, NOTIFICATION & USER PROFILE */}

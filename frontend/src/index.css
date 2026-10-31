@@ -187,7 +187,7 @@ body {
   color: rgba(255, 255, 255, 0.4);
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  padding: 14px 12px 6px;
+  /* padding: 14px 12px 6px; */
 }
 
 .sidebar-section-heading:first-of-type {
@@ -197,7 +197,7 @@ body {
 .app-nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  /* gap: 12px; */
   padding: 11px 14px;
   border-radius: 14px;
   color: rgba(255, 255, 255, 0.7);
@@ -238,6 +238,7 @@ body {
   justify-content: center;
   width: 18px;
   height: 18px;
+  margin-right: 4px;
   color: inherit;
   flex-shrink: 0;
 }

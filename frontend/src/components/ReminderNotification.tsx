@@ -340,7 +340,6 @@ const checkSingleReminder = async (
   now: Date
 ) => {
   // Ignore completed reminders
-
   if (
     reminder.status === "completed" ||
     !reminder.startTime
@@ -349,57 +348,62 @@ const checkSingleReminder = async (
   }
 
   // =====================================================
-  // CREATE EVENT DATE/TIME
+  // CREATE EVENT DATE/TIME (LOCAL TIME)
   // =====================================================
+  const dateStr = String(reminder.date).substring(0, 10);
+  const parts = dateStr.split("-");
+  if (parts.length < 3) return;
 
-  const eventDateTime = new Date(
-    `${reminder.date.substring(0, 10)}T${reminder.startTime}`
-  );
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+
+  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+    return;
+  }
+
+  let hours = 0;
+  let minutes = 0;
+  if (reminder.startTime) {
+    const timeParts = reminder.startTime.split(":");
+    hours = parseInt(timeParts[0], 10) || 0;
+    minutes = parseInt(timeParts[1], 10) || 0;
+  }
+
+  const eventDateTime = new Date(year, month, day, hours, minutes, 0, 0);
 
   if (isNaN(eventDateTime.getTime())) {
-    console.warn(
-      "Invalid reminder date:",
-      reminder
-    );
-
+    console.warn("Invalid reminder date:", reminder);
     return;
   }
 
   // =====================================================
   // GET REMINDER MINUTES
   // =====================================================
-
   const minutesBefore =
     type === "company"
-      ? reminder.remindBefore ?? 10
-      : reminder.reminderMinutes ?? 10;
+      ? (reminder.remindBefore ?? 10)
+      : (reminder.reminderMinutes ?? 10);
 
   // =====================================================
   // CALCULATE REMINDER TIME
   // =====================================================
-
   const reminderTime =
     eventDateTime.getTime() -
     minutesBefore * 60 * 1000;
 
   const currentTime = now.getTime();
 
-  // =====================================================
-  // 2 MINUTE WINDOW
-  // =====================================================
+  // Trigger if current time has reached reminderTime AND event is not older than 30 mins past event start
+  const hasReachedReminderTime = currentTime >= reminderTime;
+  const isStillRelevant = currentTime <= eventDateTime.getTime() + 30 * 60 * 1000;
 
-  const windowStart = reminderTime;
-
-  const windowEnd =
-    reminderTime + 2 * 60 * 1000;
-
-  if (
-    currentTime >= windowStart &&
-    currentTime <= windowEnd
-  ) {
+  if (hasReachedReminderTime && isStillRelevant) {
     await triggerReminder(
       reminder,
-      type
+      type,
+      dateStr,
+      minutesBefore
     );
   }
 };
@@ -410,48 +414,27 @@ const checkSingleReminder = async (
 
 const triggerReminder = async (
   reminder: ReminderData,
-  type: ReminderType
+  type: ReminderType,
+  dateStr: string,
+  minutesBefore: number
 ) => {
-  /*
-   * Different key for:
-   *
-   * company reminder
-   * personal reminder
-   *
-   * This prevents one reminder type
-   * from interfering with the other.
-   */
+  const notificationKey = `${type}-reminder-${reminder._id}-${dateStr}-${reminder.startTime || "allday"}-${minutesBefore}`;
 
-  const notificationKey =
-    `${type}-reminder-${reminder._id}-${reminder.date}-${reminder.startTime}`;
-
-  const alreadyNotified =
-    localStorage.getItem(
-      notificationKey
-    );
+  const alreadyNotified = localStorage.getItem(notificationKey);
 
   if (alreadyNotified === "true") {
     return;
   }
 
-  // =====================================================
   // MARK AS NOTIFIED
-  // =====================================================
-
-  localStorage.setItem(
-    notificationKey,
-    "true"
-  );
+  localStorage.setItem(notificationKey, "true");
 
   console.log(
     `🔔 ${type.toUpperCase()} REMINDER:`,
     reminder.title
   );
 
-  // =====================================================
   // SHOW IN-APP CARD
-  // =====================================================
-
   window.dispatchEvent(
     new CustomEvent("show-reminder-card", {
       detail: {
@@ -461,10 +444,7 @@ const triggerReminder = async (
     })
   );
 
-  // =====================================================
   // BROWSER NOTIFICATION
-  // =====================================================
-
   const notificationTitle =
     type === "company"
       ? `🔔 Company Reminder: ${reminder.title}`
@@ -475,38 +455,25 @@ const triggerReminder = async (
     Notification.permission === "granted"
   ) {
     try {
-      const notification =
-        new Notification(
-          notificationTitle,
-          {
-            body:
-              reminder.description ||
-              "You have a scheduled reminder.",
-
-            icon: "/favicon.ico",
-
-            tag: notificationKey,
-
-            requireInteraction: true,
-          }
-        );
+      const notification = new Notification(notificationTitle, {
+        body:
+          reminder.description ||
+          "You have a scheduled reminder.",
+        icon: "/favicon.ico",
+        tag: notificationKey,
+        requireInteraction: true,
+      });
 
       notification.onclick = () => {
         window.focus();
         notification.close();
       };
     } catch (error) {
-      console.error(
-        "Browser notification failed:",
-        error
-      );
+      console.error("Browser notification failed:", error);
     }
   }
 
-  // =====================================================
   // ALARM SOUND
-  // =====================================================
-
   playAlarmSound();
 };
 
@@ -525,54 +492,34 @@ const playAlarmSound = () => {
       ).webkitAudioContext;
 
     if (!AudioContextClass) {
-      console.warn(
-        "AudioContext not supported"
-      );
-
+      console.warn("AudioContext not supported");
       return;
     }
 
-    const audioContext =
-      new AudioContextClass();
+    const audioContext = new AudioContextClass();
 
-    const oscillator =
-      audioContext.createOscillator();
+    if (audioContext.state === "suspended") {
+      audioContext.resume().catch(() => {});
+    }
 
-    const gain =
-      audioContext.createGain();
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
 
     oscillator.type = "sine";
-
-    oscillator.frequency.setValueAtTime(
-      880,
-      audioContext.currentTime
-    );
-
-    gain.gain.setValueAtTime(
-      0.3,
-      audioContext.currentTime
-    );
+    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+    gain.gain.setValueAtTime(0.3, audioContext.currentTime);
 
     oscillator.connect(gain);
-
-    gain.connect(
-      audioContext.destination
-    );
+    gain.connect(audioContext.destination);
 
     oscillator.start();
-
-    oscillator.stop(
-      audioContext.currentTime + 1
-    );
+    oscillator.stop(audioContext.currentTime + 1);
 
     oscillator.onended = () => {
       audioContext.close();
     };
   } catch (error) {
-    console.error(
-      "Alarm sound failed:",
-      error
-    );
+    console.error("Alarm sound failed:", error);
   }
 };
 

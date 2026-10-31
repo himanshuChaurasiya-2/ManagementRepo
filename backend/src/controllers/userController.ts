@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import User from "../models/User.js";
+import { sendUserInvitationEmail } from "../services/emailService.js";
+
+const CLIENT_URL = process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:5173";
 
 const generateTemporaryPassword = (): string => {
   return `Temp@${crypto.randomBytes(6).toString("hex")}`;
@@ -47,14 +50,16 @@ export const createUser = async (
       return;
     }
 
-    // Generate temporary password
-    const temporaryPassword = generateTemporaryPassword();
+    // Generate secure invitation token
+    const rawInvitationToken = crypto.randomBytes(32).toString("hex");
+    const hashedInvitationToken = crypto
+      .createHash("sha256")
+      .update(rawInvitationToken)
+      .digest("hex");
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(
-      temporaryPassword,
-      12
-    );
+    // Temporary unusable password until user creates their password
+    const unguessablePassword = crypto.randomBytes(32).toString("hex");
+    const hashedPassword = await bcrypt.hash(unguessablePassword, 12);
 
     // Create user
     const user = await User.create({
@@ -65,12 +70,23 @@ export const createUser = async (
       role: "sales",
       status: "active",
       mustChangePassword: true,
+      invitationToken: hashedInvitationToken,
+      invitationExpires: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48 hours
     });
+
+    const inviteUrl = `${CLIENT_URL}/set-password/${rawInvitationToken}`;
+
+    // Send invitation email
+    const inviteEmailResult = await sendUserInvitationEmail(
+      user.email,
+      user.name,
+      rawInvitationToken,
+      user.jobPosition
+    );
 
     res.status(201).json({
       success: true,
-      message: "Sales user created successfully",
-
+      message: "Sales user created successfully and invitation email sent",
       user: {
         id: user._id,
         name: user.name,
@@ -80,9 +96,9 @@ export const createUser = async (
         status: user.status,
         mustChangePassword: user.mustChangePassword,
       },
-
-      // Returned only during creation
-      temporaryPassword,
+      inviteUrl,
+      previewUrl: inviteEmailResult.previewUrl,
+      emailSent: inviteEmailResult.success,
     });
   } catch (error) {
     console.error("Create user error:", error);
@@ -361,6 +377,63 @@ export const updateUser = async (
     res.status(500).json({
       success: false,
       message: "Server error while updating user",
+    });
+  }
+};
+
+// ===============================
+// RESEND INVITATION EMAIL
+// ===============================
+
+export const resendInvitation = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
+
+    const rawInvitationToken = crypto.randomBytes(32).toString("hex");
+    const hashedInvitationToken = crypto
+      .createHash("sha256")
+      .update(rawInvitationToken)
+      .digest("hex");
+
+    user.invitationToken = hashedInvitationToken;
+    user.invitationExpires = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48 hours
+
+    await user.save();
+
+    const inviteUrl = `${CLIENT_URL}/set-password/${rawInvitationToken}`;
+
+    const inviteEmailResult = await sendUserInvitationEmail(
+      user.email,
+      user.name,
+      rawInvitationToken,
+      user.jobPosition
+    );
+
+    res.status(200).json({
+      success: true,
+      message: `Invitation email resent to ${user.email}`,
+      inviteUrl,
+      previewUrl: inviteEmailResult.previewUrl,
+      emailSent: inviteEmailResult.success,
+    });
+  } catch (error) {
+    console.error("Resend invitation error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while resending invitation",
     });
   }
 };

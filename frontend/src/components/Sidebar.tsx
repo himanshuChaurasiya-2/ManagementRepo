@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onClose }) => {
             alt="Admin Portal Logo"
             className="app-sidebar-logo-img"
           />
-          <span>Admin Portal</span>
+          {/* <span>Admin Portal</span> */}
         </Link>
 
         {/* Mobile Close Button (visible only when mobile drawer is open) */}
@@ -42,7 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onClose }) => {
 
       {/* NAVIGATION LINKS */}
       <nav className="app-sidebar-nav">
-        <div className="sidebar-section-heading">MAIN MENU</div>
+        {/* <div className="sidebar-section-heading">MAIN MENU</div> */}
 
         {/* Dashboard */}
         <NavLink
@@ -163,9 +163,9 @@ const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onClose }) => {
           <span>Companies</span>
         </NavLink>
 
-        <div className="sidebar-section-heading">
+        {/* <div className="sidebar-section-heading">
           LEAD MANAGEMENT
-        </div>
+        </div> */}
 
         <NavLink
           to="/admin/leads"

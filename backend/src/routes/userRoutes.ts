@@ -6,6 +6,7 @@ import {
   updateUser,
   updateUserStatus,
   resetUserPassword,
+  resendInvitation,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { adminOnly } from "../middleware/adminMiddleware.js";
@@ -32,5 +33,8 @@ router.patch("/:id/status", updateUserStatus);
 
 // Reset user's password
 router.patch("/:id/reset-password", resetUserPassword);
+
+// Resend invitation email
+router.post("/:id/resend-invitation", resendInvitation);
 
 export default router;

@@ -27,17 +27,17 @@ export const createReminder = async (
   repeat,
 } = req.body;
 
-    if (!companyName || !title || !date) {
-  res.status(400).json({
-    message: "Company name, title and date are required",
-  });
-  return;
-}
+    if (!title || !date) {
+      res.status(400).json({
+        message: "Title and date are required",
+      });
+      return;
+    }
 
     const reminder = await Reminder.create({
       userId,
       title,
-      companyName,
+      companyName: companyName || "",
       description,
       date,
       startTime,

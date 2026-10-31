@@ -13,6 +13,8 @@ import DashboardLayout from "./components/DashboardLayout";
 import SalesLayout from "./layouts/SalesLayout";
 
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import ChangePassword from "./pages/ChangePassword";
 
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -45,6 +47,21 @@ function App() {
           <Route
             path="/login"
             element={<Login />}
+          />
+
+          <Route
+            path="/forgot-password"
+            element={<ForgotPassword />}
+          />
+
+          <Route
+            path="/reset-password/:token"
+            element={<ResetPassword />}
+          />
+
+          <Route
+            path="/set-password/:token"
+            element={<ResetPassword />}
           />
 
           <Route

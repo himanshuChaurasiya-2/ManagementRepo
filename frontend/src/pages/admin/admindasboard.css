@@ -3860,12 +3860,15 @@
 
 .user-modal {
   width: 100%;
-  max-width: 480px;
-  background: rgba(20, 26, 40, 0.92);
+  max-width: 520px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(20, 26, 40, 0.95);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 24px;
+  border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
   animation: userModalIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -3873,18 +3876,35 @@
   color: #ffffff;
 }
 
+@media (max-width: 576px) {
+  .user-modal-overlay {
+    padding: 12px;
+  }
+  .user-modal {
+    max-height: 94vh;
+    border-radius: 16px;
+  }
+}
+
 .user-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 26px;
+  padding: 20px 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: transparent;
+  flex-shrink: 0;
+}
+
+@media (max-width: 576px) {
+  .user-modal-header {
+    padding: 16px 18px;
+  }
 }
 
 .user-modal-header h5 {
   margin: 0;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.02em;
@@ -3914,8 +3934,16 @@
 }
 
 .user-modal-body {
-  padding: 24px 26px;
+  padding: 22px 24px;
   background: transparent;
+  overflow-y: auto;
+  flex: 1;
+}
+
+@media (max-width: 576px) {
+  .user-modal-body {
+    padding: 16px 18px;
+  }
 }
 
 .user-modal-footer {
@@ -3923,9 +3951,19 @@
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
-  padding: 18px 26px;
+  padding: 16px 24px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   background: transparent;
+  flex-shrink: 0;
+}
+
+@media (max-width: 576px) {
+  .user-modal-footer {
+    padding: 14px 18px;
+  }
+  .user-modal-footer .user-modal-btn {
+    width: 100%;
+  }
 }
 
 .user-modal-btn {
@@ -4093,6 +4131,109 @@
 
 .copy-password-btn:hover {
   background: rgba(99, 102, 241, 0.35);
+}
+
+/* User Invitation Link Row & Ethereal Box */
+.invite-link-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+@media (max-width: 520px) {
+  .invite-link-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .invite-link-row .copy-password-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 10px;
+  }
+}
+
+.ethereal-preview-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  margin-bottom: 14px;
+}
+
+.ethereal-preview-box span {
+  font-size: 13px;
+  color: #a5b4fc;
+  font-weight: 500;
+}
+
+.ethereal-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: #6366f1;
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.ethereal-link-btn:hover {
+  background: #4f46e5;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 520px) {
+  .ethereal-preview-box {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .ethereal-link-btn {
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+/* Resend Invite Action Button */
+.resend-invite-btn {
+  background: rgba(99, 102, 241, 0.14);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+}
+
+.resend-invite-btn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.28);
+  color: #ffffff;
+  border-color: rgba(99, 102, 241, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+
+.resend-invite-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* ==========================================================================
@@ -4637,4 +4778,103 @@ body.light-mode .task-callout-count {
 [data-theme="light"] .task-callout-pct,
 body.light-mode .task-callout-pct {
   color: #64748b;
+}
+
+/* User Modal & Invite Light Theme Overrides */
+[data-theme="light"] .user-modal-overlay,
+body.light-mode .user-modal-overlay {
+  background: rgba(15, 23, 42, 0.45);
+}
+
+[data-theme="light"] .user-modal,
+body.light-mode .user-modal {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .user-modal-header,
+body.light-mode .user-modal-header {
+  border-bottom-color: #f1f5f9;
+}
+
+[data-theme="light"] .user-modal-header h5,
+body.light-mode .user-modal-header h5 {
+  color: #0f172a;
+}
+
+[data-theme="light"] .user-modal-close-btn,
+body.light-mode .user-modal-close-btn {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+[data-theme="light"] .user-modal-close-btn:hover,
+body.light-mode .user-modal-close-btn:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+[data-theme="light"] .user-modal-footer,
+body.light-mode .user-modal-footer {
+  border-top-color: #f1f5f9;
+}
+
+[data-theme="light"] .temp-password-box,
+body.light-mode .temp-password-box {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .temp-password-label,
+body.light-mode .temp-password-label {
+  color: #64748b;
+}
+
+[data-theme="light"] .temp-password,
+body.light-mode .temp-password {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+[data-theme="light"] .password-success-notice,
+body.light-mode .password-success-notice {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.25);
+  color: #15803d;
+}
+
+[data-theme="light"] .password-success-notice strong,
+body.light-mode .password-success-notice strong {
+  color: #0f172a;
+}
+
+[data-theme="light"] .ethereal-preview-box,
+body.light-mode .ethereal-preview-box {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+[data-theme="light"] .ethereal-preview-box span,
+body.light-mode .ethereal-preview-box span {
+  color: #3730a3;
+}
+
+[data-theme="light"] .resend-invite-btn,
+body.light-mode .resend-invite-btn {
+  background: rgba(99, 102, 241, 0.1);
+  color: #4f46e5;
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+[data-theme="light"] .resend-invite-btn:hover:not(:disabled),
+body.light-mode .resend-invite-btn:hover:not(:disabled) {
+  background: rgba(99, 102, 241, 0.18);
+  color: #3730a3;
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
 }

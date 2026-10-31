@@ -47,6 +47,7 @@ export const createCompanyReminder = async (
   try {
     const {
       title,
+      companyName,
       description,
       date,
       startTime,
@@ -79,6 +80,7 @@ export const createCompanyReminder = async (
 
     const reminder = await CompanyReminder.create({
       title,
+      companyName: companyName || "",
       description,
       date,
       startTime,

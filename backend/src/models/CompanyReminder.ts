@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export interface ICompanyReminder extends Document {
   title: string;
-  companyName: string;
+  companyName?: string;
   description?: string;
   date: string;
   startTime?: string;
@@ -25,10 +25,11 @@ const companyReminderSchema = new Schema<ICompanyReminder>(
     },
 
     companyName: {
-  type: String,
-  required: true,
-  trim: true,
-},
+      type: String,
+      required: false,
+      default: "",
+      trim: true,
+    },
 
     description: {
       type: String,

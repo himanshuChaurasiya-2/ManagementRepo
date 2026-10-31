@@ -7,11 +7,22 @@ import {
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-import ReminderNotification from "../components/ReminderNotification";
 import {
   connectSocket,
   disconnectSocket,
 } from "../services/socketService";
+import {
+  Bell,
+  LayoutDashboard,
+  ClipboardList,
+  CheckCircle2,
+  Calendar,
+  Megaphone,
+  Building2,
+  Users,
+  BarChart3,
+  X,
+} from "lucide-react";
 import Navbar from "../components/Navbar";
 import "./SalesLayout.css";
 
@@ -166,17 +177,11 @@ const SalesLayout = () => {
         />
       )}
 
-      {/* Global Reminder */}
-      <ReminderNotification />
-
       {/* Instant Task Popup Toast */}
       {popupNotification && (
         <div className="task-notification">
           <div className="task-notification-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-            </svg>
+            <Bell size={20} />
           </div>
           <div className="task-notification-content">
             <strong>New Task Assigned</strong>
@@ -185,7 +190,9 @@ const SalesLayout = () => {
               <div className="task-notification-task">{popupNotification.task.title}</div>
             )}
           </div>
-          <button type="button" className="task-notification-close" onClick={closePopup}>×</button>
+          <button type="button" className="task-notification-close" onClick={closePopup}>
+            <X size={14} />
+          </button>
         </div>
       )}
 
@@ -199,7 +206,7 @@ const SalesLayout = () => {
               alt="Employee Portal Logo"
               className="app-sidebar-logo-img"
             />
-            <span>Employee portal</span>
+            {/* <span>Employee portal</span> */}
           </Link>
 
           <button
@@ -209,7 +216,7 @@ const SalesLayout = () => {
             aria-label="Close navigation"
             title="Close menu"
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -223,12 +230,7 @@ const SalesLayout = () => {
             className={`app-nav-item ${isActive("/sales/dashboard") ? "active" : ""}`}
           >
             <span className="nav-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="7" height="9" x="3" y="3" rx="1" />
-                <rect width="7" height="5" x="14" y="3" rx="1" />
-                <rect width="7" height="9" x="14" y="12" rx="1" />
-                <rect width="7" height="5" x="3" y="16" rx="1" />
-              </svg>
+              <LayoutDashboard size={17} />
             </span>
             <span>Dashboard</span>
           </Link>
@@ -241,14 +243,7 @@ const SalesLayout = () => {
             className={`app-nav-item ${isActive("/sales/tasks-my") ? "active" : ""}`}
           >
             <span className="nav-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                <path d="M12 11h4" />
-                <path d="M12 16h4" />
-                <path d="M8 11h.01" />
-                <path d="M8 16h.01" />
-              </svg>
+              <ClipboardList size={17} />
             </span>
             <span>My Tasks</span>
           </Link>
@@ -259,10 +254,7 @@ const SalesLayout = () => {
             className={`app-nav-item ${isActive("/sales/tasks") ? "active" : ""}`}
           >
             <span className="nav-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                <path d="m9 11 3 3L22 4" />
-              </svg>
+              <CheckCircle2 size={17} />
             </span>
             <span>All Tasks</span>
           </Link>
@@ -275,12 +267,7 @@ const SalesLayout = () => {
             className={`app-nav-item ${isActive("/sales/calendar") ? "active" : ""}`}
           >
             <span className="nav-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="18" height="18" x="3" y="4" rx="2" />
-                <line x1="16" x2="16" y1="2" y2="6" />
-                <line x1="8" x2="8" y1="2" y2="6" />
-                <line x1="3" x2="21" y1="10" y2="10" />
-              </svg>
+              <Calendar size={17} />
             </span>
             <span>My Calendar</span>
           </Link>
@@ -291,10 +278,7 @@ const SalesLayout = () => {
             className={`app-nav-item ${isActive("/sales/company-calendar") ? "active" : ""}`}
           >
             <span className="nav-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m3 11 18-5v12L3 14v-3z" />
-                <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
-              </svg>
+              <Megaphone size={17} />
             </span>
             <span>Company Calendar</span>
           </Link>
@@ -307,16 +291,7 @@ const SalesLayout = () => {
             className={`app-nav-item ${isActive("/sales/companies") ? "active" : ""}`}
           >
             <span className="nav-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
-                <path d="M9 22v-4h6v4" />
-                <path d="M8 6h.01" />
-                <path d="M16 6h.01" />
-                <path d="M8 10h.01" />
-                <path d="M16 10h.01" />
-                <path d="M8 14h.01" />
-                <path d="M16 14h.01" />
-              </svg>
+              <Building2 size={17} />
             </span>
             <span>Companies</span>
           </Link>
@@ -329,23 +304,8 @@ const SalesLayout = () => {
             }`}
           >
             <span className="nav-icon">
-              <svg
-                width="17"
-                height="17"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
+              <Users size={17} />
             </span>
-
             <span>Leads</span>
           </Link>
 
@@ -357,11 +317,7 @@ const SalesLayout = () => {
             className={`app-nav-item ${isActive("/sales/reports") ? "active" : ""}`}
           >
             <span className="nav-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" x2="18" y1="20" y2="10" />
-                <line x1="12" x2="12" y1="20" y2="4" />
-                <line x1="6" x2="6" y1="20" y2="14" />
-              </svg>
+              <BarChart3 size={17} />
             </span>
             <span>Meta Ads Live</span>
           </Link>
@@ -383,10 +339,7 @@ const SalesLayout = () => {
                 onClick={() => setShowNotifications((prev) => !prev)}
                 aria-label="Notifications"
               >
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-                  <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-                </svg>
+                <Bell size={19} />
                 {unreadCount > 0 && <span className="app-notif-dot" />}
               </button>
 
@@ -425,10 +378,7 @@ const SalesLayout = () => {
                           }}
                         >
                           <div className="sales-notification-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                              <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-                            </svg>
+                            <ClipboardList size={16} />
                           </div>
                           <div className="sales-notification-content">
                             <strong>New Task Assigned</strong>

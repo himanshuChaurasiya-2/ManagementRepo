@@ -8,6 +8,10 @@ export interface IUser extends Document {
   jobPosition?: string;
   status: "active" | "inactive";
   mustChangePassword: boolean;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+  invitationToken?: string;
+  invitationExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -54,6 +58,26 @@ const userSchema = new Schema<IUser>(
     mustChangePassword: {
       type: Boolean,
       default: true,
+    },
+
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
+
+    invitationToken: {
+      type: String,
+      default: null,
+    },
+
+    invitationExpires: {
+      type: Date,
+      default: null,
     },
   },
   {

@@ -14,6 +14,8 @@ import {
 import { LinkMetaAccountModal } from "./LinkMetaAccountModal";
 import { useAuth } from "../../context/AuthContext";
 import "./reports.css";
+import { RotateCw, Link2 } from 'lucide-react';
+
 
 interface CompanyItem {
   _id: string;
@@ -1613,7 +1615,9 @@ export const MonthlyReportDashboard: React.FC = () => {
               disabled={syncing || loading || isUnlinked}
               title="Fetch updated live values from the Meta dashboard"
             >
-              <span className={syncing ? "spinning-icon" : ""}>🔄</span>
+              <RotateCw 
+                className={`${syncing ? "spinning-icon" : ""}`} 
+              />
               <span>{syncing ? "Fetching Updates..." : "Refresh Live Data"}</span>
             </button>
 
@@ -1624,7 +1628,7 @@ export const MonthlyReportDashboard: React.FC = () => {
                 onClick={() => setShowLinkModal(true)}
                 title="Switch or link Meta Ad Account"
               >
-                <span>🔗</span>
+                <Link2 />
                 <span>Change Ad Account</span>
               </button>
             )}

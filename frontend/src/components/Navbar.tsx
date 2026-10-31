@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Settings, LogOut, ChevronDown } from "lucide-react";
+import { Settings, LogOut } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import AdminNotificationFloat from "./AdminNotificationFloat";
 import { useAuth } from "../context/AuthContext";

@@ -4,9 +4,11 @@ import {
   AlertTriangle,
   Check,
   Copy,
+  ExternalLink,
   Lock,
   Mail,
   Search,
+  Send,
   User as UserIcon,
   Users as UsersIcon,
   X,
@@ -36,18 +38,10 @@ interface CreateUserResponse {
     status: string;
     mustChangePassword: boolean;
   };
-  temporaryPassword: string;
-}
-
-interface ResetPasswordResponse {
-  success: boolean;
-  message: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  temporaryPassword: string;
+  temporaryPassword?: string;
+  inviteUrl?: string;
+  previewUrl?: string;
+  emailSent?: boolean;
 }
 
 interface UserTaskItem {
@@ -78,6 +72,11 @@ const Users = () => {
   const [jobPosition, setJobPosition] = useState("");
 
   const [temporaryPassword, setTemporaryPassword] = useState("");
+  const [createdInviteUrl, setCreatedInviteUrl] = useState("");
+  const [emailPreviewUrl, setEmailPreviewUrl] = useState("");
+  const [inviteEmailSent, setInviteEmailSent] = useState(true);
+  const [copiedInvite, setCopiedInvite] = useState(false);
+  const [copiedPassword, setCopiedPassword] = useState(false);
   const [createdUserName, setCreatedUserName] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
@@ -185,7 +184,16 @@ const Users = () => {
 
       if (response.data.success) {
         setTemporaryPassword(
-          response.data.temporaryPassword
+          response.data.temporaryPassword || ""
+        );
+        setCreatedInviteUrl(
+          response.data.inviteUrl || ""
+        );
+        setEmailPreviewUrl(
+          response.data.previewUrl || ""
+        );
+        setInviteEmailSent(
+          response.data.emailSent ?? true
         );
 
         setCreatedUserName(response.data.user.name);
@@ -260,51 +268,56 @@ const Users = () => {
   };
 
   // ===============================
-  // RESET PASSWORD
+  // RESEND INVITATION
   // ===============================
 
-  const handleResetPassword = async (
-    user: User
-  ) => {
-    const confirmed = window.confirm(
-      `Reset password for ${user.name}?`
-    );
-
-    if (!confirmed) return;
-
+  const handleResendInvite = async (user: User) => {
     try {
       setActionLoading(user._id);
 
-      const response =
-        await axios.patch<ResetPasswordResponse>(
-          `${API_URL}/users/${user._id}/reset-password`,
-          {},
-          getAuthConfig()
-        );
-
-      if (response.data.success) {
-        setTemporaryPassword(
-          response.data.temporaryPassword
-        );
-
-        setCreatedUserName(user.name);
-
-        setShowPasswordModal(true);
-
-        await loadUsers();
-      }
-    } catch (error: any) {
-      console.error(
-        "Reset password error:",
-        error
+      const response = await axios.post<{
+        success: boolean;
+        message: string;
+        inviteUrl?: string;
+        previewUrl?: string;
+        emailSent?: boolean;
+      }>(
+        `${API_URL}/users/${user._id}/resend-invitation`,
+        {},
+        getAuthConfig()
       );
 
+      if (response.data.success) {
+        setCreatedInviteUrl(response.data.inviteUrl || "");
+        setEmailPreviewUrl(response.data.previewUrl || "");
+        setInviteEmailSent(response.data.emailSent ?? true);
+        setCreatedUserName(user.name);
+        setTemporaryPassword("");
+        setShowPasswordModal(true);
+      }
+    } catch (error: any) {
+      console.error("Resend invite error:", error);
       alert(
         error.response?.data?.message ||
-        "Unable to reset password"
+        "Unable to resend invitation email"
       );
     } finally {
       setActionLoading(null);
+    }
+  };
+
+  // ===============================
+  // COPY INVITATION URL
+  // ===============================
+
+  const copyInviteUrl = async () => {
+    if (!createdInviteUrl) return;
+    try {
+      await navigator.clipboard.writeText(createdInviteUrl);
+      setCopiedInvite(true);
+      setTimeout(() => setCopiedInvite(false), 2000);
+    } catch {
+      alert("Unable to copy invitation link");
     }
   };
 
@@ -317,8 +330,8 @@ const Users = () => {
       await navigator.clipboard.writeText(
         temporaryPassword
       );
-
-      alert("Temporary password copied");
+      setCopiedPassword(true);
+      setTimeout(() => setCopiedPassword(false), 2000);
     } catch {
       alert("Unable to copy password");
     }
@@ -495,15 +508,22 @@ const Users = () => {
 
             {user.role === "sales" && (
               <button
-                className="user-action-btn reset-btn"
+                className="user-action-btn resend-invite-btn"
                 disabled={actionLoading === user._id}
-                onClick={() => handleResetPassword(user)}
+                onClick={() => handleResendInvite(user)}
+                title="Send password setup invitation link to user via email"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="me-1">
-                  <path d="M21 2l-2 2m-1.5 1.5L12 11l-4 4-3 3-2-2 3-3 4-4 5.5-5.5z" />
-                  <path d="M15 5l4 4" />
-                </svg>
-                Reset Password
+                {actionLoading === user._id ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-1" role="status" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send size={14} className="me-1" />
+                    Resend Invite
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -1359,98 +1379,147 @@ const Users = () => {
 
       )}
 
-      {/* ================= PASSWORD MODAL ================= */}
+      {/* ================= PASSWORD & INVITATION MODAL ================= */}
 
       {showPasswordModal && (
 
         <div
           className="user-modal-overlay"
           onClick={(e) => {
-            if (e.target === e.currentTarget) setShowPasswordModal(false);
+            if (e.target === e.currentTarget) {
+              setShowPasswordModal(false);
+              setCreatedInviteUrl("");
+              setEmailPreviewUrl("");
+              setTemporaryPassword("");
+            }
           }}
         >
-          <div className="user-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="user-modal user-invite-modal" onClick={(e) => e.stopPropagation()}>
             <div className="user-modal-header">
-              <h5>Temporary Password</h5>
+              <div className="d-flex align-items-center gap-2">
+                <Send size={18} className="text-primary" />
+                <h5>User Invitation & Setup</h5>
+              </div>
               <button
                 type="button"
                 className="user-modal-close-btn"
-                onClick={() => setShowPasswordModal(false)}
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setCreatedInviteUrl("");
+                  setEmailPreviewUrl("");
+                  setTemporaryPassword("");
+                }}
                 title="Close"
                 aria-label="Close"
               >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <X size={16} />
               </button>
             </div>
 
             <div className="user-modal-body">
-
-              <div className="alert alert-success">
-                Password generated successfully
-                for{" "}
-                <strong>
-                  {createdUserName}
-                </strong>
-                .
-              </div>
-
-              <div className="temp-password-box">
-
-                <span className="temp-password-label">
-                  Temporary Password
-                </span>
-
-                <div className="d-flex gap-2 align-items-center">
-
-                  <div className="temp-password flex-grow-1">
-                    {temporaryPassword}
-                  </div>
-
-                  <button
-                    className="btn btn-outline-primary"
-                    type="button"
-                    onClick={copyPassword}
-                  >
-                    Copy
-                  </button>
-
+              <div className="password-success-notice mb-3">
+                <Check size={20} className="flex-shrink-0" />
+                <div>
+                  <strong>Invitation Generated Successfully</strong>
+                  {inviteEmailSent ? (
+                    <span>An invitation email has been sent to <strong>{createdUserName}</strong> with their secure password creation link.</span>
+                  ) : (
+                    <span>Invitation link created for <strong>{createdUserName}</strong>.</span>
+                  )}
                 </div>
-
               </div>
 
-              <small className="text-muted d-block mt-3">
-                The user must change this password
-                after logging in.
-              </small>
+              {emailPreviewUrl && (
+                <div className="ethereal-preview-box mb-3">
+                  <div className="d-flex align-items-center gap-2">
+                    <Mail size={16} className="text-primary flex-shrink-0" />
+                    <span className="small">Ethereal Mailbox: Email ready to view</span>
+                  </div>
+                  <a
+                    href={emailPreviewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ethereal-link-btn"
+                  >
+                    <span>View in Mailbox</span>
+                    <ExternalLink size={13} />
+                  </a>
+                </div>
+              )}
 
+              {createdInviteUrl && (
+                <div className="temp-password-box mb-3">
+                  <span className="temp-password-label">Secure Invitation Link (Expires in 48 Hours)</span>
+                  <div className="invite-link-row">
+                    <div className="temp-password flex-grow-1" style={{ fontSize: "12.5px" }}>
+                      {createdInviteUrl}
+                    </div>
+                    <button
+                      className="copy-password-btn"
+                      type="button"
+                      onClick={copyInviteUrl}
+                    >
+                      {copiedInvite ? (
+                        <>
+                          <Check size={14} /> Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={14} /> Copy Link
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {temporaryPassword && (
+                <div className="temp-password-box mb-2">
+                  <span className="temp-password-label">Direct Login Fallback (Temporary Password)</span>
+                  <div className="invite-link-row">
+                    <div className="temp-password flex-grow-1">
+                      {temporaryPassword}
+                    </div>
+                    <button
+                      className="copy-password-btn"
+                      type="button"
+                      onClick={copyPassword}
+                    >
+                      {copiedPassword ? (
+                        <>
+                          <Check size={14} /> Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={14} /> Copy
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <small className="text-muted d-block mt-3" style={{ fontSize: "12px", lineHeight: "1.5" }}>
+                The user can click the invitation link to set their personal encrypted password. If they do not receive the email, you can copy and share the link above directly.
+              </small>
             </div>
 
             <div className="user-modal-footer">
               <button
                 type="button"
                 className="user-modal-btn user-modal-submit-btn"
-                onClick={() => setShowPasswordModal(false)}
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setCreatedInviteUrl("");
+                  setEmailPreviewUrl("");
+                  setTemporaryPassword("");
+                }}
               >
                 Done
               </button>
             </div>
-
           </div>
-
         </div>
-
       )}
 
     </div>

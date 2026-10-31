@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 export interface IReminder extends Document {
   userId: mongoose.Types.ObjectId;
-  companyName: string;
+  companyName?: string;
   title: string;
   description?: string;
   date: Date;
@@ -26,10 +26,11 @@ const reminderSchema = new Schema<IReminder>(
     },
 
     companyName: {
-  type: String,
-  required: true,
-  trim: true,
-},
+      type: String,
+      required: false,
+      default: "",
+      trim: true,
+    },
 
     title: {
       type: String,

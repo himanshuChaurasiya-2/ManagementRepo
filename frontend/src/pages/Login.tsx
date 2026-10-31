@@ -1,9 +1,10 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import ThemeToggle from "../components/ThemeToggle";
 import "./Login.css";
+import "./AuthPages.css";
 
 const Login = () => {
   const { user, login } = useAuth();
@@ -207,9 +208,14 @@ const Login = () => {
 
             {/* PASSWORD */}
             <div className="login-field">
-              <label htmlFor="password" className="login-label">
-                Password
-              </label>
+              <div className="auth-label-row">
+                <label htmlFor="password" className="login-label">
+                  Password
+                </label>
+                <Link to="/forgot-password" className="auth-forgot-link">
+                  Forgot password?
+                </Link>
+              </div>
 
               <div className="login-input-wrapper">
                 <input
@@ -331,4 +337,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Login;

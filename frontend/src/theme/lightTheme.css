@@ -4477,3 +4477,148 @@ body.light-mode .mobile-card-notes-footer {
 body.light-mode .mobile-card-notes-footer .notes-snippet {
   color: #4338ca;
 }
+
+/* Sales & Admin Leads Additions for Light Theme */
+[data-theme="light"] .lead-selected-file,
+body.light-mode .lead-selected-file {
+  background: #eef2ff !important;
+  border-color: #c7d2fe !important;
+  color: #1e293b !important;
+}
+
+[data-theme="light"] .lead-file-clear-btn,
+body.light-mode .lead-file-clear-btn {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-file-clear-btn:hover,
+body.light-mode .lead-file-clear-btn:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #dc2626 !important;
+}
+
+[data-theme="light"] .lead-template-btn,
+body.light-mode .lead-template-btn {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .lead-template-btn:hover,
+body.light-mode .lead-template-btn:hover {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
+[data-theme="light"] .lead-upload-btn,
+body.light-mode .lead-upload-btn {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-upload-btn:hover,
+body.light-mode .lead-upload-btn:hover {
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+}
+
+[data-theme="light"] .lead-search-clear,
+body.light-mode .lead-search-clear {
+  background: rgba(15, 23, 42, 0.08) !important;
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-search-clear:hover,
+body.light-mode .lead-search-clear:hover {
+  background: rgba(15, 23, 42, 0.16) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-import-result,
+body.light-mode .lead-import-result {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .lead-result-stat span,
+body.light-mode .lead-result-stat span {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-result-stat.total strong,
+body.light-mode .lead-result-stat.total strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-modal-overlay,
+body.light-mode .lead-modal-overlay {
+  background: rgba(15, 23, 42, 0.45) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+[data-theme="light"] .lead-modal-box,
+body.light-mode .lead-modal-box {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12) !important;
+}
+
+[data-theme="light"] .lead-modal-header h3,
+body.light-mode .lead-modal-header h3 {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-modal-header p,
+body.light-mode .lead-modal-header p {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-modal-body p,
+body.light-mode .lead-modal-body p {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .lead-btn-cancel,
+body.light-mode .lead-btn-cancel {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .lead-btn-cancel:hover,
+body.light-mode .lead-btn-cancel:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-history-modal-box,
+body.light-mode .lead-history-modal-box {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .lead-history-log-card,
+body.light-mode .lead-history-log-card {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .lead-history-log-header strong,
+body.light-mode .lead-history-log-header strong {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .lead-history-timestamp,
+body.light-mode .lead-history-timestamp {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .lead-history-chip,
+body.light-mode .lead-history-chip {
+  background: #eef2ff !important;
+  border-color: #c7d2fe !important;
+  color: #312e81 !important;
+}

@@ -1,4 +1,9 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import type { ChangeEvent } from "react";
 import axios from "axios";
@@ -10,6 +15,16 @@ import type {
 import LeadSlideDrawer, {
   getUrgencyInfo,
 } from "../../components/LeadSlideDrawer";
+import {
+  AlertCircle,
+  CheckCircle2,
+  FileSpreadsheet,
+  FileText,
+  MapPin,
+  Phone,
+  Users,
+  X,
+} from "lucide-react";
 import "../admin/Adminlead.css";
 
 // =====================================================
@@ -20,6 +35,8 @@ interface UploadedBy {
   _id?: string;
   name?: string;
   email?: string;
+  role?: string;
+  jobPosition?: string;
 }
 
 interface Lead {
@@ -33,7 +50,7 @@ interface Lead {
   status?: LeadStatus | "";
   subStatus?: LeadSubStatus | "";
   notes?: string;
-  uploadedBy?: string | UploadedBy;
+  uploadedBy?: UploadedBy | string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -77,12 +94,20 @@ interface LeadDeletionLog {
 }
 
 // =====================================================
-// CONSTANTS
+// CONSTANTS & HELPERS
 // =====================================================
 
 const API_URL = "http://localhost:5000/api";
 
-const SUB_STATUS_OPTIONS: Record<LeadStatus, LeadSubStatus[]> = {
+const statuses: LeadStatus[] = [
+  "Interested",
+  "Not Interested",
+  "No Contact",
+  "Follow up",
+  "Junk",
+];
+
+const subStatusMap: Record<LeadStatus, LeadSubStatus[]> = {
   Interested: ["Hot", "Warm", "Cold"],
   "Not Interested": [
     "Pricing Issue",
@@ -101,47 +126,66 @@ const SUB_STATUS_OPTIONS: Record<LeadStatus, LeadSubStatus[]> = {
   Junk: [""],
 };
 
+const formatTimestamp = (dateStr?: string) => {
+  if (!dateStr) return "—";
+  try {
+    const d = new Date(dateStr);
+    return `${d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })} ${d.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })}`;
+  } catch {
+    return dateStr;
+  }
+};
+
 // =====================================================
 // COMPONENT
 // =====================================================
 
 const Lead: React.FC = () => {
+  // ---------------------------------------------------
+  // STATE
+  // ---------------------------------------------------
+
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<LeadStatus | "">("");
-  const [subStatusFilter, setSubStatusFilter] = useState<LeadSubStatus | "">("");
+  const [statusFilter, setStatusFilter] = useState<"All" | LeadStatus>("All");
+  const [subStatusFilter, setSubStatusFilter] =
+    useState<"All" | LeadSubStatus>("All");
 
-  // Excel / CSV File Import state
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
 
-  const [alertMessage, setAlertMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  // Selection state for Batch Operations
+  // Batch Selection & Deletion State
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // Confirmation Modal state
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
   const [targetDeleteIds, setTargetDeleteIds] = useState<string[]>([]);
 
-  // Deletion History / Audit Logs state
+  // Deletion History / Audit Log State
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [deletionLogs, setDeletionLogs] = useState<LeadDeletionLog[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
+  const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
-  // Slide Drawer state
+  // Slide-out Drawer State
   const [selectedDrawerLead, setSelectedDrawerLead] = useState<Lead | null>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const selectAllCheckboxRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const selectAllCheckboxRef = useRef<HTMLInputElement | null>(null);
 
   const getAuthConfig = () => {
     const token =
@@ -160,16 +204,25 @@ const Lead: React.FC = () => {
   const loadLeads = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/leads`, getAuthConfig());
-      if (res.data.success) {
-        setLeads(res.data.leads || []);
+      setError("");
+
+      let fetched: Lead[] = [];
+      try {
+        const res = await axios.get(`${API_URL}/leads/my`, getAuthConfig());
+        if (Array.isArray(res.data?.leads)) {
+          fetched = res.data.leads;
+        }
+      } catch {
+        const fallbackRes = await axios.get(`${API_URL}/leads`, getAuthConfig());
+        if (Array.isArray(fallbackRes.data?.leads)) {
+          fetched = fallbackRes.data.leads;
+        }
       }
+
+      setLeads(fetched);
     } catch (err: any) {
       console.error("Failed to load leads:", err);
-      setAlertMessage({
-        type: "error",
-        text: err.response?.data?.message || "Failed to load leads.",
-      });
+      setError(err?.response?.data?.message || "Failed to load leads from server.");
     } finally {
       setLoading(false);
     }
@@ -179,7 +232,7 @@ const Lead: React.FC = () => {
     loadLeads();
   }, []);
 
-  // Sync selectedDrawerLead when leads change
+  // Sync drawer when leads state updates
   useEffect(() => {
     if (selectedDrawerLead) {
       const fresh = leads.find((l) => l._id === selectedDrawerLead._id);
@@ -190,7 +243,7 @@ const Lead: React.FC = () => {
   }, [leads]);
 
   // ===================================================
-  // IMPORT EXCEL / CSV
+  // EXCEL / CSV IMPORT
   // ===================================================
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -205,32 +258,28 @@ const Lead: React.FC = () => {
     const isValid = validExtensions.some((ext) => fileName.endsWith(ext));
 
     if (!isValid) {
-      setAlertMessage({
-        type: "error",
-        text: "Please select a valid Excel or CSV file (.xlsx, .xls, or .csv).",
-      });
+      setError("Please select a valid Excel or CSV file (.xlsx, .xls, or .csv).");
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
-    setAlertMessage(null);
+    setError("");
+    setSuccess("");
     setImportResult(null);
     setSelectedFile(file);
   };
 
   const handleImport = async () => {
     if (!selectedFile) {
-      setAlertMessage({
-        type: "error",
-        text: "Please select an Excel or CSV file first.",
-      });
+      setError("Please choose an Excel or CSV file first.");
       return;
     }
 
     try {
       setImporting(true);
-      setAlertMessage(null);
+      setError("");
+      setSuccess("");
       setImportResult(null);
 
       const formData = new FormData();
@@ -249,12 +298,11 @@ const Lead: React.FC = () => {
 
       const data: ImportResult = response.data;
       setImportResult(data);
-      setAlertMessage({
-        type: "success",
-        text: `${data.message} (${data.imported} leads imported successfully${
-          data.failed ? `, ${data.failed} failed` : ""
-        }).`,
-      });
+      setSuccess(
+        `Import completed successfully: ${data.imported} lead(s) imported${
+          data.failed ? `, ${data.failed} row(s) failed` : ""
+        }.`
+      );
 
       setSelectedFile(null);
       if (fileInputRef.current) {
@@ -264,52 +312,26 @@ const Lead: React.FC = () => {
       await loadLeads();
     } catch (err: any) {
       console.error("Import error:", err);
-      const msg =
+      setError(
         err?.response?.data?.message ||
-        "Failed to import leads. Please verify file format and columns.";
-      setAlertMessage({
-        type: "error",
-        text: msg,
-      });
+          "Failed to import leads. Please verify column headers: Name, Phone, Email, Company, Source."
+      );
     } finally {
       setImporting(false);
     }
   };
 
-  const downloadSampleTemplate = () => {
-    const csvContent =
-      "Sr No,Name,Phone,Email,Company,Source\n" +
-      "1,Rajesh Kumar,+91 98765 43210,rajesh@example.com,Apex Retail,Website\n" +
-      "2,Priya Sharma,+91 91234 56789,priya@sharma.in,Global Dynamics,Meta Ads\n" +
-      "3,Amit Patel,+91 99887 76655,amit@patelcorp.com,Patel Corp,Referral\n";
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "sample_leads_template.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
-
   // ===================================================
-  // DELETION AUDIT LOGS
+  // DELETION AUDIT TRAIL
   // ===================================================
 
   const fetchDeletionLogs = async () => {
     try {
       setLoadingLogs(true);
       const res = await axios.get(`${API_URL}/leads/deletion-logs`, getAuthConfig());
-      if (res.data.success) {
-        setDeletionLogs(res.data.logs || []);
-      }
+      setDeletionLogs(res.data?.logs || []);
     } catch (err: any) {
       console.error("Failed to fetch deletion logs:", err);
-      setAlertMessage({
-        type: "error",
-        text: err.response?.data?.message || "Failed to load audit logs.",
-      });
     } finally {
       setLoadingLogs(false);
     }
@@ -331,6 +353,7 @@ const Lead: React.FC = () => {
   ) => {
     try {
       setUpdatingId(lead._id);
+      setError("");
 
       const response = await axios.patch(
         `${API_URL}/leads/${lead._id}/status`,
@@ -341,25 +364,39 @@ const Lead: React.FC = () => {
         getAuthConfig()
       );
 
-      const updated = response.data?.lead || {
-        ...lead,
-        status,
-        subStatus,
-      };
+      const updatedLead: Lead | undefined = response.data?.lead;
 
-      setLeads((prev) =>
-        prev.map((item) => (item._id === lead._id ? { ...item, ...updated } : item))
+      setLeads((previous) =>
+        previous.map((item) =>
+          item._id === lead._id
+            ? updatedLead ?? {
+                ...item,
+                status,
+                subStatus,
+              }
+            : item
+        )
       );
 
       if (selectedDrawerLead && selectedDrawerLead._id === lead._id) {
-        setSelectedDrawerLead((prev) => (prev ? { ...prev, ...updated } : prev));
+        setSelectedDrawerLead((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: updatedLead?.status ?? status,
+                subStatus: updatedLead?.subStatus ?? subStatus,
+              }
+            : null
+        );
       }
+
+      setSuccess("Lead pipeline status updated.");
+      setTimeout(() => {
+        setSuccess("");
+      }, 2500);
     } catch (err: any) {
-      console.error("Update status error:", err);
-      setAlertMessage({
-        type: "error",
-        text: err.response?.data?.message || "Failed to update lead status.",
-      });
+      console.error("Update lead status error:", err);
+      setError(err?.response?.data?.message || "Failed to update lead status.");
     } finally {
       setUpdatingId(null);
     }
@@ -371,6 +408,7 @@ const Lead: React.FC = () => {
 
   const handleSaveNotes = async (leadId: string, notes: string) => {
     try {
+      setError("");
       const response = await axios.patch(
         `${API_URL}/leads/${leadId}/notes`,
         { notes },
@@ -390,17 +428,25 @@ const Lead: React.FC = () => {
       }
     } catch (err: any) {
       console.error("Save notes error:", err);
-      setAlertMessage({
-        type: "error",
-        text: err.response?.data?.message || "Failed to record note.",
-      });
+      setError(err?.response?.data?.message || "Failed to record lead notes.");
       throw err;
     }
   };
 
   // ===================================================
-  // SELECTION & DELETION LOGIC
+  // FILTERING & DERIVED VALUES
   // ===================================================
+
+  const availableSubStatuses = useMemo(() => {
+    if (statusFilter === "All") return [];
+    return subStatusMap[statusFilter] || [];
+  }, [statusFilter]);
+
+  const clearFilters = () => {
+    setSearch("");
+    setStatusFilter("All");
+    setSubStatusFilter("All");
+  };
 
   const filteredLeads = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -413,13 +459,17 @@ const Lead: React.FC = () => {
         lead.company?.toLowerCase().includes(q) ||
         lead.source?.toLowerCase().includes(q);
 
-      const matchesStatus = !statusFilter || lead.status === statusFilter;
-      const matchesSubStatus = !subStatusFilter || lead.subStatus === subStatusFilter;
+      const matchesStatus =
+        statusFilter === "All" || lead.status === statusFilter;
+
+      const matchesSubStatus =
+        subStatusFilter === "All" || lead.subStatus === subStatusFilter;
 
       return matchesSearch && matchesStatus && matchesSubStatus;
     });
   }, [leads, search, statusFilter, subStatusFilter]);
 
+  // Selection
   const allFilteredIds = useMemo(
     () => filteredLeads.map((l) => l._id),
     [filteredLeads]
@@ -452,6 +502,11 @@ const Lead: React.FC = () => {
     );
   };
 
+  const clearSelection = () => {
+    setSelectedIds([]);
+  };
+
+  // Deletion Prompt & Execution
   const promptSingleDelete = (leadId: string) => {
     setTargetDeleteIds([leadId]);
     setShowConfirmDeleteModal(true);
@@ -463,11 +518,16 @@ const Lead: React.FC = () => {
     setShowConfirmDeleteModal(true);
   };
 
-  const executeDelete = async () => {
+  const targetLeadsList = useMemo(() => {
+    return leads.filter((l) => targetDeleteIds.includes(l._id));
+  }, [leads, targetDeleteIds]);
+
+  const confirmExecutionDelete = async () => {
     if (targetDeleteIds.length === 0) return;
     try {
       setIsDeleting(true);
-      setAlertMessage(null);
+      setError("");
+      setSuccess("");
 
       const res = await axios.post(
         `${API_URL}/leads/batch-delete`,
@@ -475,10 +535,7 @@ const Lead: React.FC = () => {
         getAuthConfig()
       );
 
-      setAlertMessage({
-        type: "success",
-        text: res.data?.message || `Successfully deleted ${targetDeleteIds.length} lead(s).`,
-      });
+      setSuccess(res.data?.message || `Deleted ${targetDeleteIds.length} lead(s).`);
 
       setLeads((prev) => prev.filter((l) => !targetDeleteIds.includes(l._id)));
       setSelectedIds((prev) => prev.filter((id) => !targetDeleteIds.includes(id)));
@@ -491,105 +548,118 @@ const Lead: React.FC = () => {
       setTargetDeleteIds([]);
     } catch (err: any) {
       console.error("Delete failed:", err);
-      setAlertMessage({
-        type: "error",
-        text: err.response?.data?.message || "Failed to delete lead(s).",
-      });
+      setError(err?.response?.data?.message || "Failed to delete lead(s).");
     } finally {
       setIsDeleting(false);
     }
   };
 
-  // ===================================================
-  // STATS CALCULATIONS
-  // ===================================================
-
+  // Stats calculation
   const stats = useMemo(() => {
     const total = leads.length;
-    const interested = leads.filter((l) => l.status === "Interested");
-    const followUp = leads.filter((l) => l.status === "Follow up");
-    const noContact = leads.filter((l) => l.status === "No Contact");
-    const notInterested = leads.filter((l) => l.status === "Not Interested");
-    const junk = leads.filter((l) => l.status === "Junk");
-
-    const hot = interested.filter((l) => l.subStatus === "Hot").length;
-    const warm = interested.filter((l) => l.subStatus === "Warm").length;
-    const cold = interested.filter((l) => l.subStatus === "Cold").length;
-    const callLater = followUp.filter((l) => l.subStatus === "Call Me Later").length;
-
-    return {
-      total,
-      interested: interested.length,
-      followUp: followUp.length,
-      noContact: noContact.length,
-      notInterested: notInterested.length,
-      junk: junk.length,
-      unreached: noContact.length + junk.length,
-      hot,
-      warm,
-      cold,
-      callLater,
-    };
+    const interested = leads.filter((l) => l.status === "Interested").length;
+    const followUp = leads.filter((l) => l.status === "Follow up").length;
+    const noContact = leads.filter((l) => l.status === "No Contact").length;
+    return { total, interested, followUp, noContact };
   }, [leads]);
 
   return (
     <div className="lead-page">
-      {/* HEADER */}
+      {/* =================================================
+          PAGE HEADER
+      ================================================= */}
       <div className="lead-page-header">
         <div>
-          <div className="lead-breadcrumb">Sales Portal / Leads Management</div>
+          <div className="lead-breadcrumb">Sales / Leads Pipeline</div>
           <h1>Leads Management</h1>
-          <p>Manage, track, and convert sales prospects across all channels.</p>
+          <p>
+            Master grid overview of your assigned leads, status updates, and pipeline progression
+          </p>
         </div>
 
         <div className="lead-header-actions">
           <button
             type="button"
-            className="lead-refresh-btn"
-            onClick={() => loadLeads()}
-            disabled={loading}
-            title="Refresh lead data"
+            className="lead-history-btn"
+            onClick={openHistoryModal}
+            title="View audit trail of deleted leads"
           >
-            <span className={loading ? "lead-spin-icon" : ""}>🔄</span> Refresh
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+            Deletion History
           </button>
 
           <button
             type="button"
-            className="lead-history-btn"
-            onClick={openHistoryModal}
-            title="View deletion audit trail"
+            className="lead-refresh-btn"
+            onClick={loadLeads}
+            disabled={loading}
+            title="Refresh lead data"
           >
-            <span>📜</span> Audit Log
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={loading ? "lead-spin-icon" : ""}
+            >
+              <path d="M21 2v6h-6" />
+              <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+              <path d="M3 22v-6h6" />
+              <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+            </svg>
+            {loading ? "Refreshing..." : "Refresh"}
           </button>
         </div>
       </div>
 
-      {/* ALERT BANNER */}
-      {alertMessage && (
-        <div className={`lead-alert ${alertMessage.type}`}>
-          <span>{alertMessage.type === "success" ? "✓" : "⚠️"}</span>
-          <span style={{ flex: 1 }}>{alertMessage.text}</span>
-          <button
-            type="button"
-            className="lead-alert-close"
-            onClick={() => setAlertMessage(null)}
-            title="Dismiss message"
-          >
-            ✕
+      {/* =================================================
+          ALERTS
+      ================================================= */}
+      {error && (
+        <div className="lead-alert lead-alert-error">
+          <AlertCircle size={16} />
+          <span>{error}</span>
+          <button type="button" onClick={() => setError("")} style={{ display: "inline-flex", alignItems: "center" }}>
+            <X size={14} />
           </button>
         </div>
       )}
 
-      {/* DEDICATED EXCEL / CSV IMPORT CARD */}
+      {success && (
+        <div className="lead-alert lead-alert-success">
+          <CheckCircle2 size={16} />
+          <span>{success}</span>
+          <button type="button" onClick={() => setSuccess("")} style={{ display: "inline-flex", alignItems: "center" }}>
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* =================================================
+          EXCEL IMPORT CARD
+      ================================================= */}
       <section className="lead-import-card">
         <div className="lead-import-info">
-          <div className="lead-import-icon">📥</div>
-          <div>
-            <h3>Import Leads via Excel / CSV</h3>
-            <p>
-              Upload your client or campaign leads (.xlsx, .xls, .csv). Supported columns: <strong>Name</strong>, <strong>Phone</strong>, Email, Company, Source.
-            </p>
-          </div>
+          <h3>Import Leads via Excel</h3>
+          <p>
+            Upload .xlsx, .xls or .csv file. Expected columns: Name, Phone, Email, Company, Source.
+          </p>
         </div>
 
         <div className="lead-import-actions">
@@ -599,35 +669,12 @@ const Lead: React.FC = () => {
             accept=".xlsx,.xls,.csv"
             onChange={handleFileChange}
             className="lead-file-input"
-            style={{ display: "none" }}
           />
 
           {selectedFile && (
             <div className="lead-selected-file">
-              <span>📄</span>
-              <span style={{ maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {selectedFile.name}
-              </span>
-              <button
-                type="button"
-                className="lead-file-remove-btn"
-                onClick={() => {
-                  setSelectedFile(null);
-                  if (fileInputRef.current) fileInputRef.current.value = "";
-                }}
-                title="Remove selected file"
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "inherit",
-                  cursor: "pointer",
-                  marginLeft: "6px",
-                  fontSize: "13px",
-                  opacity: 0.7,
-                }}
-              >
-                ✕
-              </button>
+              <FileSpreadsheet size={15} />
+              <span>{selectedFile.name}</span>
             </div>
           )}
 
@@ -637,7 +684,7 @@ const Lead: React.FC = () => {
             onClick={() => fileInputRef.current?.click()}
             disabled={importing}
           >
-            <span>📁</span> Choose Excel / CSV
+            Choose Excel
           </button>
 
           <button
@@ -646,290 +693,358 @@ const Lead: React.FC = () => {
             onClick={handleImport}
             disabled={!selectedFile || importing}
           >
-            {importing ? "Importing Leads..." : "Import Leads"}
-          </button>
-
-          <button
-            type="button"
-            className="lead-refresh-btn"
-            onClick={downloadSampleTemplate}
-            title="Download sample formatted spreadsheet"
-          >
-            <span>📥</span> Sample Template
+            {importing ? "Importing..." : "Import Leads"}
           </button>
         </div>
       </section>
 
-      {/* IMPORT RESULT DETAILED CARD */}
+      {/* IMPORT RESULT */}
       {importResult && (
-        <div className="lead-import-result">
-          <div className="lead-import-stats">
-            <div className="lead-import-stat">
-              <span className="label">Total Rows</span>
-              <strong>{importResult.totalRows}</strong>
-            </div>
-            <div className="lead-import-stat success">
-              <span className="label">Imported</span>
-              <strong>{importResult.imported}</strong>
-            </div>
-            {importResult.failed > 0 && (
-              <div className="lead-import-stat danger">
-                <span className="label">Failed</span>
-                <strong>{importResult.failed}</strong>
-              </div>
-            )}
+        <section className="lead-import-result">
+          <div className="lead-result-stat">
+            <span>Total Rows</span>
+            <strong>{importResult.totalRows}</strong>
           </div>
 
-          {importResult.failedRows && importResult.failedRows.length > 0 && (
-            <div className="lead-failed-rows-box" style={{ marginTop: "10px", fontSize: "12.5px" }}>
-              <strong style={{ color: "#f87171" }}>
-                Issues Detected ({importResult.failedRows.length} rows):
-              </strong>
-              <ul style={{ margin: "6px 0 0", paddingLeft: "18px", color: "rgba(255, 255, 255, 0.7)" }}>
-                {importResult.failedRows.slice(0, 5).map((f, i) => (
-                  <li key={i}>Row #{f.row}: {f.reason}</li>
-                ))}
-                {importResult.failedRows.length > 5 && (
-                  <li>...and {importResult.failedRows.length - 5} more</li>
-                )}
-              </ul>
+          <div className="lead-result-stat success">
+            <span>Imported</span>
+            <strong>{importResult.imported}</strong>
+          </div>
+
+          <div className="lead-result-stat failed">
+            <span>Failed</span>
+            <strong>{importResult.failed}</strong>
+          </div>
+
+          {importResult.failedRows.length > 0 && (
+            <div className="lead-failed-rows">
+              <strong>Failed Rows</strong>
+              {importResult.failedRows.map((item) => (
+                <div
+                  key={`${item.row}-${item.reason}`}
+                  className="lead-failed-row"
+                >
+                  Row {item.row}: {item.reason}
+                </div>
+              ))}
             </div>
           )}
+        </section>
+      )}
 
-          <button
-            type="button"
-            className="lead-alert-close"
-            onClick={() => setImportResult(null)}
-            title="Dismiss import results"
-            style={{ position: "absolute", top: "12px", right: "14px" }}
-          >
-            ✕
-          </button>
+      {/* =================================================
+          DYNAMIC STATS COUNTERS
+      ================================================= */}
+      <div className="lead-stats-grid">
+        <div className="lead-stat-card">
+          <div className="lead-stat-label">Total Leads</div>
+          <div className="lead-stat-value">{stats.total}</div>
+        </div>
+
+        <div className="lead-stat-card">
+          <div className="lead-stat-label">Interested</div>
+          <div className="lead-stat-value" style={{ color: "#10b981" }}>
+            {stats.interested}
+          </div>
+        </div>
+
+        <div className="lead-stat-card">
+          <div className="lead-stat-label">Follow Up</div>
+          <div className="lead-stat-value" style={{ color: "#f59e0b" }}>
+            {stats.followUp}
+          </div>
+        </div>
+
+        <div className="lead-stat-card">
+          <div className="lead-stat-label">No Contact</div>
+          <div className="lead-stat-value" style={{ color: "#3b82f6" }}>
+            {stats.noContact}
+          </div>
+        </div>
+      </div>
+
+      {/* =================================================
+          BATCH ACTION BAR (MATCHING ADMIN REFERENCE)
+      ================================================= */}
+      {selectedIds.length > 0 && (
+        <div className="admin-lead-batch-bar">
+          <div className="admin-lead-batch-info">
+            <span className="admin-lead-batch-badge">{selectedIds.length}</span>
+            <span>lead{selectedIds.length > 1 ? "s" : ""} selected</span>
+          </div>
+
+          <div className="admin-lead-batch-actions">
+            <button
+              type="button"
+              className="admin-lead-batch-delete-btn"
+              onClick={promptBatchDelete}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 6h18" />
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                <line x1="10" y1="11" x2="10" y2="17" />
+                <line x1="14" y1="11" x2="14" y2="17" />
+              </svg>
+              Delete Selected ({selectedIds.length})
+            </button>
+
+            <button
+              type="button"
+              className="admin-lead-batch-cancel-btn"
+              onClick={clearSelection}
+            >
+              Deselect All
+            </button>
+          </div>
         </div>
       )}
 
-      {/* STATS OVERVIEW CARDS */}
-      <div className="lead-stats-grid">
-        <div className="lead-stat-card">
-          <span className="stat-label">Total Leads</span>
-          <strong className="stat-value">{stats.total}</strong>
-          <span className="stat-subtext">Registered contacts</span>
-        </div>
-
-        <div className="lead-stat-card stat-interested">
-          <span className="stat-label">Interested</span>
-          <strong className="stat-value">{stats.interested}</strong>
-          <div className="stat-chip-row">
-            <span className="stat-chip hot">🔥 Hot {stats.hot}</span>
-            <span className="stat-chip warm">⚡ Warm {stats.warm}</span>
-            <span className="stat-chip cold">❄️ Cold {stats.cold}</span>
-          </div>
-        </div>
-
-        <div className="lead-stat-card stat-followup">
-          <span className="stat-label">Follow Up</span>
-          <strong className="stat-value">{stats.followUp}</strong>
-          <div className="stat-chip-row">
-            <span className="stat-chip call-later">📞 Call Later {stats.callLater}</span>
-          </div>
-        </div>
-
-        <div className="lead-stat-card stat-unreached">
-          <span className="stat-label">Unreached</span>
-          <strong className="stat-value">{stats.unreached}</strong>
-          <span className="stat-subtext">
-            {stats.noContact} No Contact &bull; {stats.junk} Junk
-          </span>
-        </div>
-      </div>
-
-      {/* FILTER BAR */}
-      <div className="lead-filter-bar">
-        <div className="lead-search-box">
-          <span className="search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder="Search leads by name, phone, email, company..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="lead-search-input"
-          />
-          {search && (
-            <button
-              type="button"
-              className="search-clear-btn"
-              onClick={() => setSearch("")}
-              title="Clear search"
+      {/* =================================================
+          MAIN MASTER GRID & TABLE CARD
+      ================================================= */}
+      <section className="lead-table-card">
+        {/* RESPONSIVE FILTER BAR */}
+        <div className="lead-filter-bar">
+          <div className="lead-search">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              ✕
-            </button>
-          )}
-        </div>
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
 
-        <div className="lead-status-pills">
-          <button
-            type="button"
-            className={`status-pill ${statusFilter === "" ? "active" : ""}`}
-            onClick={() => {
-              setStatusFilter("");
-              setSubStatusFilter("");
-            }}
-          >
-            All <span className="pill-count">{stats.total}</span>
-          </button>
+            <input
+              type="text"
+              placeholder="Search name, phone, email, company, source..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </div>
 
-          <button
-            type="button"
-            className={`status-pill status-interested ${
-              statusFilter === "Interested" ? "active" : ""
-            }`}
-            onClick={() => {
-              setStatusFilter("Interested");
-              setSubStatusFilter("");
-            }}
-          >
-            Interested <span className="pill-count">{stats.interested}</span>
-          </button>
-
-          <button
-            type="button"
-            className={`status-pill status-follow-up ${
-              statusFilter === "Follow up" ? "active" : ""
-            }`}
-            onClick={() => {
-              setStatusFilter("Follow up");
-              setSubStatusFilter("");
-            }}
-          >
-            Follow Up <span className="pill-count">{stats.followUp}</span>
-          </button>
-
-          <button
-            type="button"
-            className={`status-pill status-no-contact ${
-              statusFilter === "No Contact" ? "active" : ""
-            }`}
-            onClick={() => {
-              setStatusFilter("No Contact");
-              setSubStatusFilter("");
-            }}
-          >
-            No Contact <span className="pill-count">{stats.noContact}</span>
-          </button>
-
-          <button
-            type="button"
-            className={`status-pill status-not-interested ${
-              statusFilter === "Not Interested" ? "active" : ""
-            }`}
-            onClick={() => {
-              setStatusFilter("Not Interested");
-              setSubStatusFilter("");
-            }}
-          >
-            Not Interested <span className="pill-count">{stats.notInterested}</span>
-          </button>
-
-          <button
-            type="button"
-            className={`status-pill status-junk ${
-              statusFilter === "Junk" ? "active" : ""
-            }`}
-            onClick={() => {
-              setStatusFilter("Junk");
-              setSubStatusFilter("");
-            }}
-          >
-            Junk <span className="pill-count">{stats.junk}</span>
-          </button>
-        </div>
-
-        {statusFilter && SUB_STATUS_OPTIONS[statusFilter]?.length > 1 && (
-          <div className="lead-substatus-dropdown-wrap">
+          <div className="lead-filter-dropdowns">
             <select
-              value={subStatusFilter}
-              onChange={(e) => setSubStatusFilter(e.target.value as LeadSubStatus)}
-              className="lead-substatus-filter-select"
+              value={statusFilter}
+              onChange={(event) => {
+                const value = event.target.value as "All" | LeadStatus;
+                setStatusFilter(value);
+                setSubStatusFilter("All");
+              }}
+              className="lead-filter-select"
             >
-              <option value="">All Sub-Statuses</option>
-              {SUB_STATUS_OPTIONS[statusFilter].map((sub) => (
-                <option key={sub} value={sub}>
-                  {sub}
+              <option value="All">All Pipeline Stages</option>
+              {statuses.map((status) => (
+                <option key={status} value={status}>
+                  {status}
                 </option>
               ))}
             </select>
-          </div>
-        )}
-      </div>
 
-      {/* MASTER DATA TABLE CARD */}
-      <div className="lead-table-card">
-        {loading ? (
-          <div className="lead-table-wrapper">
-            <table className="lead-master-table">
-              <thead>
-                <tr>
-                  <th style={{ width: "40px", textAlign: "center" }}>
-                    <div className="lead-shimmer lead-shimmer-checkbox" />
-                  </th>
-                  <th style={{ width: "280px" }}>Lead & Contact Vector</th>
-                  <th style={{ width: "230px" }}>Context & Urgency</th>
-                  <th style={{ width: "250px" }}>Chained Pipeline Status</th>
-                  <th style={{ width: "120px", textAlign: "right" }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[1, 2, 3, 4, 5].map((idx) => (
-                  <tr key={idx} className="lead-shimmer-row">
-                    <td style={{ textAlign: "center" }}>
-                      <div className="lead-shimmer lead-shimmer-checkbox" />
-                    </td>
-                    <td>
-                      <div className="lead-shimmer lead-shimmer-line lg" />
-                      <div className="lead-shimmer lead-shimmer-line md" />
-                    </td>
-                    <td>
-                      <div className="lead-shimmer lead-shimmer-line md" />
-                      <div className="lead-shimmer lead-shimmer-line sm" />
-                    </td>
-                    <td>
-                      <div className="lead-shimmer lead-shimmer-badge" />
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      <div className="lead-shimmer lead-shimmer-btn" />
-                    </td>
-                  </tr>
+            <select
+              value={subStatusFilter}
+              onChange={(event) =>
+                setSubStatusFilter(event.target.value as "All" | LeadSubStatus)
+              }
+              className="lead-filter-select"
+            >
+              <option value="All">All Sub-Statuses</option>
+              {availableSubStatuses
+                .filter((value) => value !== "")
+                .map((subStatus) => (
+                  <option key={subStatus} value={subStatus}>
+                    {subStatus}
+                  </option>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        ) : filteredLeads.length === 0 ? (
-          <div className="lead-empty">
-            <div className="lead-empty-icon">👥</div>
-            <h3>No leads found</h3>
-            <p>
-              {search || statusFilter
-                ? "No leads matched your current filters. Try resetting search or status."
-                : "Import an Excel / CSV spreadsheet or start adding leads to your pipeline."}
-            </p>
-            {(search || statusFilter) && (
+            </select>
+
+            {(search || statusFilter !== "All" || subStatusFilter !== "All") && (
               <button
                 type="button"
-                className="lead-upload-btn"
-                onClick={() => {
-                  setSearch("");
-                  setStatusFilter("");
-                  setSubStatusFilter("");
-                }}
+                className="lead-clear-btn"
+                onClick={clearFilters}
               >
-                Reset Filters
+                Clear
               </button>
             )}
           </div>
+        </div>
+
+        {/* HEADER SUMMARY ROW */}
+        <div className="lead-table-header">
+          <div>
+            <strong>My Assigned Leads</strong>
+            <span>
+              {filteredLeads.length} of {leads.length}
+            </span>
+            {selectedIds.length > 0 && (
+              <span style={{ color: "#818cf8", fontWeight: 700 }}>
+                • {selectedIds.length} selected
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* LOADING & EMPTY STATES */}
+        {loading ? (
+          <div className="lead-shimmer-container" aria-label="Loading leads">
+            {/* 1. DESKTOP SHIMMER TABLE */}
+            <div className="lead-table-wrap lead-shimmer-table-wrap">
+              <div className="table-responsive">
+                <table className="lead-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: "42px", textAlign: "center" }}>
+                        <div className="lead-shimmer lead-shimmer-checkbox" />
+                      </th>
+                      <th style={{ width: "260px" }}>Lead & Contact Vector</th>
+                      <th style={{ width: "210px" }}>Context & Urgency</th>
+                      <th style={{ width: "240px" }}>Chained Pipeline Status</th>
+                      <th style={{ width: "130px", textAlign: "right" }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                      <tr key={i} className="lead-shimmer-row">
+                        <td style={{ textAlign: "center" }}>
+                          <div className="lead-shimmer lead-shimmer-checkbox" />
+                        </td>
+                        <td>
+                          <div className="lead-vector-contact">
+                            <div className="vector-person-row">
+                              <div className="lead-shimmer lead-shimmer-avatar" />
+                              <div className="lead-shimmer lead-shimmer-line lead-shimmer-name" />
+                            </div>
+                            <div className="lead-shimmer lead-shimmer-line lead-shimmer-phone" />
+                            <div className="lead-shimmer lead-shimmer-line lead-shimmer-email" />
+                          </div>
+                        </td>
+                        <td>
+                          <div className="lead-context-block">
+                            <div className="lead-shimmer lead-shimmer-line lead-shimmer-company" />
+                            <div className="lead-context-pills">
+                              <div className="lead-shimmer lead-shimmer-badge" />
+                              <div className="lead-shimmer lead-shimmer-urgency" />
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="lead-shimmer lead-shimmer-status-pill" />
+                        </td>
+                        <td style={{ textAlign: "right" }}>
+                          <div
+                            className="lead-actions-cell"
+                            style={{ justifyContent: "flex-end" }}
+                          >
+                            <div className="lead-shimmer lead-shimmer-action-btn" />
+                            <div className="lead-shimmer lead-shimmer-action-btn" />
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 2. MOBILE SHIMMER CARD STREAM */}
+            <div className="lead-mobile-card-stream lead-shimmer-card-stream">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="lead-mobile-card lead-shimmer-card">
+                  {/* ROW 1: HEADER */}
+                  <div className="mobile-card-header">
+                    <div className="mobile-card-identity">
+                      <div className="lead-shimmer lead-shimmer-checkbox" />
+                      <div className="mobile-names-wrap">
+                        <div
+                          className="lead-shimmer lead-shimmer-line lead-shimmer-name"
+                          style={{ width: "130px", height: "16px" }}
+                        />
+                        <div
+                          className="lead-shimmer lead-shimmer-line lead-shimmer-company"
+                          style={{
+                            width: "90px",
+                            height: "12px",
+                            marginTop: "4px",
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className="mobile-card-quick-actions">
+                      <div className="lead-shimmer lead-shimmer-action-btn" />
+                      <div className="lead-shimmer lead-shimmer-action-btn" />
+                    </div>
+                  </div>
+
+                  {/* ROW 2: CONTACT */}
+                  <div className="mobile-card-contact-row">
+                    <div
+                      className="lead-shimmer lead-shimmer-line"
+                      style={{ width: "110px", height: "14px" }}
+                    />
+                    <div
+                      className="lead-shimmer lead-shimmer-line"
+                      style={{ width: "160px", height: "13px" }}
+                    />
+                  </div>
+
+                  {/* ROW 3: BADGES */}
+                  <div className="mobile-card-tags-row">
+                    <div
+                      className="lead-shimmer lead-shimmer-badge"
+                      style={{ width: "65px", height: "20px" }}
+                    />
+                    <div
+                      className="lead-shimmer lead-shimmer-badge"
+                      style={{ width: "80px", height: "20px" }}
+                    />
+                  </div>
+
+                  {/* ROW 4: PIPELINE STAGE */}
+                  <div className="mobile-card-pipeline-row">
+                    <div
+                      className="lead-shimmer lead-shimmer-status-pill"
+                      style={{ width: "100%", height: "36px" }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : filteredLeads.length === 0 ? (
+          <div className="lead-empty">
+            <div className="lead-empty-icon" style={{ display: "inline-flex", justifyContent: "center", alignItems: "center" }}>
+              <Users size={44} strokeWidth={1.5} />
+            </div>
+            <h3>No leads found</h3>
+            <p>
+              {leads.length === 0
+                ? "Import an Excel file to populate leads."
+                : "Try adjusting your search keywords or pipeline status filters."}
+            </p>
+          </div>
         ) : (
           <>
-            {/* 1. DESKTOP/TABLET MASTER DATA TABLE */}
-            <div className="lead-table-wrapper">
+            {/* =============================================
+                1. DESKTOP / TABLET MASTER-DETAIL TABLE
+                (Fluid width, no 1250px bottleneck)
+            ============================================= */}
+            <div className="lead-desktop-table-view">
               <table className="lead-master-table">
                 <thead>
                   <tr>
@@ -943,10 +1058,10 @@ const Lead: React.FC = () => {
                         title="Select / Deselect all"
                       />
                     </th>
-                    <th style={{ width: "280px" }}>Lead & Contact Vector</th>
-                    <th style={{ width: "230px" }}>Context & Urgency</th>
-                    <th style={{ width: "250px" }}>Chained Pipeline Status</th>
-                    <th style={{ width: "120px", textAlign: "right" }}>Actions</th>
+                    <th style={{ width: "260px" }}>Lead & Contact Vector</th>
+                    <th style={{ width: "210px" }}>Context & Urgency</th>
+                    <th style={{ width: "240px" }}>Chained Pipeline Status</th>
+                    <th style={{ width: "130px", textAlign: "right" }}>Actions</th>
                   </tr>
                 </thead>
 
@@ -990,7 +1105,6 @@ const Lead: React.FC = () => {
                                     href={`mailto:${lead.email}`}
                                     className="vector-email-link"
                                     title={`Send email to ${lead.email}`}
-                                    onClick={(e) => e.stopPropagation()}
                                   >
                                     {lead.email}
                                   </a>
@@ -1003,9 +1117,9 @@ const Lead: React.FC = () => {
                                 href={`tel:${lead.phone}`}
                                 className="vector-phone-link"
                                 title={`Call ${lead.phone}`}
-                                onClick={(e) => e.stopPropagation()}
+                                style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                               >
-                                📞 {lead.phone}
+                                <Phone size={12} /> {lead.phone}
                               </a>
                             </div>
                           </div>
@@ -1027,6 +1141,7 @@ const Lead: React.FC = () => {
                                 </span>
                               )}
 
+                              {/* REAL-TIME URGENCY INDICATOR */}
                               <span
                                 className={`urgency-badge urgency-${urgency.level}`}
                                 title={urgency.text}
@@ -1041,9 +1156,9 @@ const Lead: React.FC = () => {
                           </div>
                         </td>
 
-                        {/* 4. CHAINED PIPELINE STATUS BADGE */}
+                        {/* 4. CHAINED PIPELINE STATUS */}
                         <td>
-                          <div className="lead-status-cell">
+                          <div className="lead-status-column-cell">
                             <LeadStatusBadgePopover
                               currentStatus={lead.status as any}
                               currentSubStatus={lead.subStatus as any}
@@ -1057,35 +1172,42 @@ const Lead: React.FC = () => {
                           </div>
                         </td>
 
-                        {/* 5. ACTIONS: DRAWER TRIGGER & DELETE */}
+                        {/* 5. ACTIONS & NOTES DRAWER TRIGGER */}
                         <td style={{ textAlign: "right" }}>
-                          <div className="lead-row-actions">
+                          <div className="lead-row-actions-group">
+                            {/* SLIDE-OUT DRAWER BUTTON */}
                             <button
                               type="button"
-                              className="lead-drawer-trigger-btn"
+                              className={`lead-drawer-trigger-btn ${
+                                lead.notes && lead.notes.trim() ? "has-notes" : ""
+                              }`}
                               onClick={() => setSelectedDrawerLead(lead)}
-                              title="Open touchpoints & conversation history"
-                              aria-label="Open Lead Details"
+                              title={
+                                lead.notes ? lead.notes : "Open Slide Drawer & Notes"
+                              }
                             >
-                              📝
+                              <span className="drawer-btn-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                                <FileText size={14} />
+                              </span>
+                              <span className="drawer-btn-label">
+                                {lead.notes && lead.notes.trim() ? "Notes" : "Drawer"}
+                              </span>
                             </button>
 
+                            {/* DELETE BUTTON */}
                             <button
                               type="button"
-                              className="lead-row-delete-btn"
+                              className="admin-lead-row-delete-btn"
                               onClick={() => promptSingleDelete(lead._id)}
-                              title="Delete lead"
-                              aria-label="Delete Lead"
+                              title="Delete this lead"
                             >
                               <svg
-                                width="15"
-                                height="15"
+                                width="14"
+                                height="14"
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
                               >
                                 <path d="M3 6h18" />
                                 <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
@@ -1101,8 +1223,11 @@ const Lead: React.FC = () => {
               </table>
             </div>
 
-            {/* 2. MOBILE CARD DECK (RESPONSIVE VIEW FOR SMALL SCREENS) */}
-            <div className="lead-mobile-card-deck">
+            {/* =============================================
+                2. MOBILE TOUCH-FRIENDLY CARD STREAM
+                (Shown automatically on <= 768px viewport)
+            ============================================= */}
+            <div className="lead-mobile-card-stream">
               {filteredLeads.map((lead) => {
                 const isSelected = selectedIds.includes(lead._id);
                 const urgency = getUrgencyInfo(lead);
@@ -1112,7 +1237,7 @@ const Lead: React.FC = () => {
                     key={lead._id}
                     className={`lead-mobile-card ${isSelected ? "selected" : ""}`}
                   >
-                    {/* ROW 1: HEADER (CHECKBOX, NAME, COMPANY, DELETE BUTTON) */}
+                    {/* ROW 1: HEADER (CHECKBOX, SR NO, AVATAR, NAME, COMPANY & DELETE BUTTON) */}
                     <div className="mobile-card-header">
                       <div className="mobile-card-identity">
                         <input
@@ -1144,12 +1269,13 @@ const Lead: React.FC = () => {
                         onClick={() => promptSingleDelete(lead._id)}
                         title="Delete Lead"
                         aria-label="Delete Lead"
+                        style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                       >
-                        ✕
+                        <X size={14} />
                       </button>
                     </div>
 
-                    {/* ROW 2: CONTACT BOX */}
+                    {/* ROW 2: CONTACT INFORMATION */}
                     <div className="mobile-card-contact-box">
                       <div className="mobile-contact-item">
                         <div className="mobile-contact-info">
@@ -1172,10 +1298,12 @@ const Lead: React.FC = () => {
                       )}
                     </div>
 
-                    {/* ROW 3: TAGS & URGENCY */}
+                    {/* ROW 3: SOURCE & REAL-TIME URGENCY PILLS */}
                     <div className="mobile-card-tags-row">
                       {lead.source && (
-                        <span className="mobile-source-tag">📍 {lead.source}</span>
+                        <span className="mobile-source-tag" style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                          <MapPin size={11} /> {lead.source}
+                        </span>
                       )}
                       <span
                         className={`urgency-badge urgency-${urgency.level}`}
@@ -1189,7 +1317,7 @@ const Lead: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* ROW 4: PIPELINE STATUS */}
+                    {/* ROW 4: PIPELINE STAGE (CHAINED STATUS BADGE) */}
                     <div className="mobile-card-pipeline-row">
                       <div className="mobile-status-container">
                         <LeadStatusBadgePopover
@@ -1204,57 +1332,37 @@ const Lead: React.FC = () => {
                         />
                       </div>
                     </div>
+
+                    {/* ROW 5: NOTES & SLIDE-OUT DRAWER TRIGGER */}
+                    {/* <div
+                      className="mobile-card-notes-footer"
+                      onClick={() => setSelectedDrawerLead(lead)}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className="notes-left">
+                        <span className="notes-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                          <FileText size={14} />
+                        </span>
+                        <span className="notes-snippet">
+                          {lead.notes && lead.notes.trim()
+                            ? lead.notes
+                            : "Tap to open details & notes..."}
+                        </span>
+                      </div>
+                      <span className="notes-arrow">→</span>
+                    </div> */}
                   </div>
                 );
               })}
             </div>
           </>
         )}
-      </div>
+      </section>
 
-      {/* FOOTER COUNTER */}
-      {!loading && filteredLeads.length > 0 && (
-        <div className="lead-table-footer">
-          Showing <strong>{filteredLeads.length}</strong> of{" "}
-          <strong>{leads.length}</strong> leads
-          {selectedIds.length > 0 && (
-            <span style={{ marginLeft: "12px", color: "var(--accent-primary, #6366f1)" }}>
-              ({selectedIds.length} selected)
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* FLOATING BATCH ACTIONS BAR */}
-      {selectedIds.length > 0 && (
-        <div className="lead-batch-actions-bar">
-          <div className="batch-info">
-            <span className="batch-count-badge">{selectedIds.length}</span>
-            <span>Leads Selected</span>
-          </div>
-
-          <div className="batch-buttons">
-            <button
-              type="button"
-              className="batch-btn batch-btn-secondary"
-              onClick={handleSelectAll}
-            >
-              {isAllSelected ? "Deselect All" : "Select All"}
-            </button>
-
-            <button
-              type="button"
-              className="batch-btn batch-btn-danger"
-              onClick={promptBatchDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Deleting..." : `Delete Selected (${selectedIds.length})`}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* SLIDE-OUT DETAIL DRAWER (WITH TOUCHPOINTS & PERMANENT TIMESTAMPS) */}
+      {/* =================================================
+          RIGHT-SIDE SLIDE-OUT DRAWER (MOBILE BOTTOM SHEET)
+      ================================================= */}
       <LeadSlideDrawer
         lead={selectedDrawerLead}
         isOpen={!!selectedDrawerLead}
@@ -1264,45 +1372,86 @@ const Lead: React.FC = () => {
         isAdmin={false}
       />
 
-      {/* CONFIRM DELETE MODAL */}
+      {/* =================================================
+          CONFIRM DELETE MODAL
+      ================================================= */}
       {showConfirmDeleteModal &&
         createPortal(
-          <div className="lead-modal-overlay" onClick={() => setShowConfirmDeleteModal(false)}>
-            <div className="lead-modal-box" onClick={(e) => e.stopPropagation()}>
+          <div className="lead-modal-overlay">
+            <div className="lead-modal-box">
               <div className="lead-modal-header danger">
-                <div className="lead-modal-icon-danger">⚠️</div>
+                <div className="lead-modal-icon-danger">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                  </svg>
+                </div>
                 <div>
-                  <h3>Confirm Lead Deletion</h3>
-                  <p>
-                    Are you sure you want to delete{" "}
-                    <strong>{targetDeleteIds.length}</strong> lead(s)?
-                  </p>
+                  <h3>
+                    Delete {targetDeleteIds.length} Lead
+                    {targetDeleteIds.length > 1 ? "s" : ""}?
+                  </h3>
+                  <p>This action will permanently remove the lead(s).</p>
                 </div>
               </div>
 
               <div className="lead-modal-body">
-                <p style={{ color: "rgba(255, 255, 255, 0.7)", fontSize: "14px", lineHeight: "1.6" }}>
-                  This action is permanent and will remove the selected lead(s) from your active pipeline.
-                  A snapshot will be recorded in the audit log for compliance.
+                <p className="lead-modal-desc">
+                  You are about to delete{" "}
+                  <strong>{targetDeleteIds.length}</strong> lead
+                  {targetDeleteIds.length > 1 ? "s" : ""}. A permanent audit entry
+                  with a timestamp, your user account details, and full deleted lead
+                  data will be stored in the deletion history.
                 </p>
+
+                <div className="lead-delete-preview-list">
+                  {targetLeadsList.slice(0, 5).map((l) => (
+                    <div key={l._id} className="lead-preview-item">
+                      <span className="lead-preview-name">{l.name}</span>
+                      <span className="lead-preview-phone">{l.phone}</span>
+                      {l.company && (
+                        <span className="lead-preview-company">({l.company})</span>
+                      )}
+                    </div>
+                  ))}
+                  {targetLeadsList.length > 5 && (
+                    <div className="lead-preview-more">
+                      + {targetLeadsList.length - 5} more leads
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="lead-modal-footer">
                 <button
                   type="button"
-                  className="lead-btn-cancel"
-                  onClick={() => setShowConfirmDeleteModal(false)}
+                  className="lead-modal-btn cancel"
+                  onClick={() => {
+                    setShowConfirmDeleteModal(false);
+                    setTargetDeleteIds([]);
+                  }}
                   disabled={isDeleting}
                 >
                   Cancel
                 </button>
+
                 <button
                   type="button"
-                  className="lead-btn-confirm-delete"
-                  onClick={executeDelete}
+                  className="lead-modal-btn confirm-delete"
+                  onClick={confirmExecutionDelete}
                   disabled={isDeleting}
                 >
-                  {isDeleting ? "Deleting..." : "Yes, Delete"}
+                  {isDeleting ? "Deleting..." : "Yes, Delete Permanently"}
                 </button>
               </div>
             </div>
@@ -1310,73 +1459,195 @@ const Lead: React.FC = () => {
           document.body
         )}
 
-      {/* DELETION HISTORY / AUDIT LOG MODAL */}
+      {/* =================================================
+          DELETION HISTORY (AUDIT TRAIL) MODAL
+      ================================================= */}
       {showHistoryModal &&
         createPortal(
-          <div className="lead-modal-overlay" onClick={() => setShowHistoryModal(false)}>
-            <div
-              className="lead-modal-box lead-history-modal-box"
-              onClick={(e) => e.stopPropagation()}
-            >
+          <div className="lead-modal-overlay">
+            <div className="lead-modal-box large">
               <div className="lead-modal-header">
+                <div className="lead-modal-icon-info">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
                 <div>
-                  <h3>Deletion Audit Log</h3>
-                  <p>Permanent ledger of deleted lead records and author timestamps.</p>
+                  <h3>Lead Deletion Audit Trail</h3>
+                  <p>Comprehensive logs of who deleted leads, timestamp, and deleted details</p>
                 </div>
                 <button
                   type="button"
                   className="lead-modal-close-btn"
                   onClick={() => setShowHistoryModal(false)}
-                  title="Close log"
                 >
-                  ✕
+                  ×
                 </button>
               </div>
 
-              <div className="lead-modal-body" style={{ maxHeight: "460px", overflowY: "auto" }}>
+              <div className="lead-modal-body history-body">
                 {loadingLogs ? (
-                  <div style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>
-                    Loading audit trail...
+                  <div className="lead-history-loading" style={{ padding: "12px 0" }}>
+                    {[1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className="lead-shimmer"
+                        style={{
+                          height: "56px",
+                          borderRadius: "12px",
+                          marginBottom: "12px",
+                        }}
+                      />
+                    ))}
                   </div>
                 ) : deletionLogs.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>
-                    No deletion records found.
+                  <div className="lead-history-empty">
+                    <svg
+                      width="44"
+                      height="44"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#9ca3af"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    <h4>No Deletion Logs</h4>
+                    <p>No leads have been deleted yet.</p>
                   </div>
                 ) : (
-                  <div className="lead-history-log-list">
-                    {deletionLogs.map((log) => (
-                      <div key={log._id} className="lead-history-log-card">
-                        <div className="lead-history-log-header">
-                          <div>
-                            <strong>{log.deletedByName}</strong>
-                            <span className="lead-history-role-tag">
-                              {log.deletedByRole}
-                            </span>
-                            <span className="lead-history-count-tag">
-                              {log.count} lead{log.count > 1 ? "s" : ""}
-                            </span>
-                          </div>
-                          <span className="lead-history-timestamp">
-                            {new Date(log.deletedAt || log.createdAt).toLocaleString()}
-                          </span>
-                        </div>
+                  <div className="lead-history-list">
+                    {deletionLogs.map((log) => {
+                      const isExpanded = expandedLogId === log._id;
 
-                        {log.deletedLeads && log.deletedLeads.length > 0 && (
-                          <div className="lead-history-preview-list">
-                            {log.deletedLeads.slice(0, 5).map((snap, i) => (
-                              <span key={i} className="lead-history-chip">
-                                {snap.name} ({snap.phone})
+                      return (
+                        <div key={log._id} className="lead-history-card">
+                          <div
+                            className="lead-history-card-header"
+                            onClick={() =>
+                              setExpandedLogId(isExpanded ? null : log._id)
+                            }
+                          >
+                            <div className="lead-history-meta">
+                              <div className="lead-history-user">
+                                <span className="lead-user-avatar">
+                                  {log.deletedByName
+                                    ? log.deletedByName.charAt(0).toUpperCase()
+                                    : "U"}
+                                </span>
+                                <div>
+                                  <strong>{log.deletedByName}</strong>
+                                  <span className="lead-user-email">
+                                    {log.deletedByEmail}
+                                  </span>
+                                </div>
+                                <span className={`lead-role-tag ${log.deletedByRole}`}>
+                                  {log.deletedByRole}
+                                </span>
+                              </div>
+
+                              <div className="lead-history-time">
+                                <svg
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                >
+                                  <circle cx="12" cy="12" r="10" />
+                                  <polyline points="12 6 12 12 16 14" />
+                                </svg>
+                                <span>{formatTimestamp(log.deletedAt)}</span>
+                              </div>
+                            </div>
+
+                            <div className="lead-history-actions-col">
+                              <span className="lead-count-badge">
+                                {log.count} Lead{log.count > 1 ? "s" : ""} Deleted
                               </span>
-                            ))}
-                            {log.deletedLeads.length > 5 && (
-                              <span className="lead-history-chip more">
-                                +{log.deletedLeads.length - 5} more
-                              </span>
-                            )}
+                              <button
+                                type="button"
+                                className="lead-history-toggle-btn"
+                              >
+                                {isExpanded ? "Hide Details ▲" : "View Deleted Items ▼"}
+                              </button>
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    ))}
+
+                          {/* EXPANDED DETAILS */}
+                          {isExpanded && (
+                            <div className="lead-history-details">
+                              <div className="lead-history-details-title">
+                                Deleted Leads Breakdown ({log.deletedLeads.length})
+                              </div>
+                              <div className="lead-history-table-wrapper">
+                                <table className="lead-history-table">
+                                  <thead>
+                                    <tr>
+                                      <th>#</th>
+                                      <th>Lead Name</th>
+                                      <th>Phone</th>
+                                      <th>Email</th>
+                                      <th>Company</th>
+                                      <th>Source</th>
+                                      <th>Previous Status</th>
+                                      <th>Notes</th>
+                                      <th>Original Uploader</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {log.deletedLeads.map((item, idx) => (
+                                      <tr key={`${log._id}-${idx}`}>
+                                        <td>{idx + 1}</td>
+                                        <td>
+                                          <strong>{item.name}</strong>
+                                        </td>
+                                        <td>{item.phone}</td>
+                                        <td>{item.email || "—"}</td>
+                                        <td>{item.company || "—"}</td>
+                                        <td>{item.source || "—"}</td>
+                                        <td>
+                                          <span className="lead-status-pill">
+                                            {item.status}
+                                            {item.subStatus ? ` / ${item.subStatus}` : ""}
+                                          </span>
+                                        </td>
+                                        <td>
+                                          {item.notes ? (
+                                            <span className="lead-deleted-notes-preview" title={item.notes}>
+                                              {item.notes.length > 25 ? `${item.notes.slice(0, 25)}...` : item.notes}
+                                            </span>
+                                          ) : (
+                                            "—"
+                                          )}
+                                        </td>
+                                        <td>{item.uploadedByName || "—"}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -1384,10 +1655,18 @@ const Lead: React.FC = () => {
               <div className="lead-modal-footer">
                 <button
                   type="button"
-                  className="lead-btn-cancel"
+                  className="lead-modal-btn cancel"
                   onClick={() => setShowHistoryModal(false)}
                 >
                   Close
+                </button>
+                <button
+                  type="button"
+                  className="lead-modal-btn secondary"
+                  onClick={fetchDeletionLogs}
+                  disabled={loadingLogs}
+                >
+                  {loadingLogs ? "Refreshing..." : "Refresh Logs"}
                 </button>
               </div>
             </div>

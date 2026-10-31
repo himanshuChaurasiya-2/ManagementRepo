@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { AlertCircle, Check, Clock } from "lucide-react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -235,14 +236,27 @@ const CompanyCalendarView: React.FC = () => {
                 <h3 className="reminder-view-title">{selectedReminder.title}</h3>
                 <div className="reminder-view-badges">
                   {selectedReminder.priority && (
-                    <span className={`badge-priority badge-priority-${selectedReminder.priority}`}>
-                      {selectedReminder.priority === "high" && "🔴 High Priority"}
-                      {selectedReminder.priority === "medium" && "🟡 Medium Priority"}
-                      {selectedReminder.priority === "low" && "🟢 Low Priority"}
+                    <span className={`badge-priority badge-priority-${selectedReminder.priority}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <AlertCircle size={12} />
+                      <span>
+                        {selectedReminder.priority === "high" && "High Priority"}
+                        {selectedReminder.priority === "medium" && "Medium Priority"}
+                        {selectedReminder.priority === "low" && "Low Priority"}
+                      </span>
                     </span>
                   )}
-                  <span className={`badge-status badge-status-${selectedReminder.status || "pending"}`}>
-                    {selectedReminder.status === "completed" ? "✓ Completed" : "⏳ Pending"}
+                  <span className={`badge-status badge-status-${selectedReminder.status || "pending"}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    {selectedReminder.status === "completed" ? (
+                      <>
+                        <Check size={12} />
+                        <span>Completed</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock size={12} />
+                        <span>Pending</span>
+                      </>
+                    )}
                   </span>
                 </div>
               </div>

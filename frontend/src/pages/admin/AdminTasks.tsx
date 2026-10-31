@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
+import { Building2, ClipboardList, MousePointerClick, X } from "lucide-react";
 import api from "../../services/api";
 import "./admindasboard.css";
 
@@ -437,7 +438,7 @@ const AdminTasks = () => {
           <div className="task-detail-badges-row">
             <span className={`priority-badge ${task.priority}`}>
               <span className="badge-dot" />
-              {task.priority} Priority
+              {task.priority}
             </span>
             <span className={`status-badge ${task.status}`}>
               <span className="badge-dot" />
@@ -549,7 +550,9 @@ const AdminTasks = () => {
           <div className="task-detail-meta-card">
             <span className="task-detail-card-subtitle">Company</span>
             <div className="task-detail-company-row">
-              <div className="task-detail-company-icon">🏢</div>
+              <div className="task-detail-company-icon" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                <Building2 size={16} />
+              </div>
               <div className="task-detail-company-info">
                 <span className="task-detail-company-name">
                   {task.company?.companyName || "No Company"}
@@ -1172,7 +1175,9 @@ const AdminTasks = () => {
                 <>
                   <div className="tasks-detail-panel-header">
                     <div className="d-flex align-items-center gap-2">
-                      <span className="tasks-detail-header-icon">📋</span>
+                      <span className="tasks-detail-header-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                        <ClipboardList size={16} />
+                      </span>
                       <h3 className="m-0">Task Details</h3>
                     </div>
                     <button
@@ -1181,20 +1186,9 @@ const AdminTasks = () => {
                       onClick={handleCloseDetail}
                       title="Close details panel"
                       aria-label="Close details"
+                      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                     >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                      </svg>
+                      <X size={16} />
                     </button>
                   </div>
 
@@ -1204,7 +1198,9 @@ const AdminTasks = () => {
                 </>
               ) : (
                 <div className="tasks-detail-empty-prompt">
-                  <div className="prompt-icon">👈</div>
+                  <div className="prompt-icon" style={{ display: "inline-flex", justifyContent: "center", alignItems: "center" }}>
+                    <MousePointerClick size={36} strokeWidth={1.5} />
+                  </div>
                   <h4>No Task Selected</h4>
                   <p>Click on any task row in the table to view its full details and actions.</p>
                 </div>
@@ -1248,8 +1244,9 @@ const AdminTasks = () => {
                   onClick={handleCloseDetail}
                   title="Close task details"
                   aria-label="Close"
+                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                 >
-                  ✕
+                  <X size={15} />
                 </button>
               </div>
             </div>

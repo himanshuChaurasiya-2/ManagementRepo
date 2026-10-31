@@ -1,5 +1,19 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import {
+  Building2,
+  Check,
+  Copy,
+  ExternalLink,
+  FileText,
+  Globe,
+  Link2Off,
+  MoreHorizontal,
+  Search,
+  TrendingUp,
+  User,
+  X,
+} from "lucide-react";
 import "../pages.css";
 
 interface CompanyData {
@@ -77,10 +91,10 @@ const SalesCompanies = () => {
     loadCompanies();
   }, []);
 
-  const copyToClipboard = (text: string, label: string) => {
+  const copyToClipboard = (text: string, key: string, label: string) => {
     if (!text) return;
     navigator.clipboard.writeText(text);
-    setCopySuccess(label);
+    setCopySuccess(key);
     showToast(`Copied ${label} to clipboard`);
     setTimeout(() => setCopySuccess(null), 2000);
   };
@@ -121,7 +135,7 @@ const SalesCompanies = () => {
       {/* TOAST FEEDBACK */}
       {toastMessage && (
         <div className="company-toast">
-          <span>✓</span>
+          <Check size={16} style={{ color: "#10b981", flexShrink: 0 }} />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -209,7 +223,9 @@ const SalesCompanies = () => {
 
             {/* Search Input */}
             <div className="company-search-wrapper">
-              <span className="company-search-icon">🔍</span>
+              <span className="company-search-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                <Search size={15} />
+              </span>
               <input
                 type="text"
                 placeholder="Search companies, contacts, emails..."
@@ -225,8 +241,9 @@ const SalesCompanies = () => {
                   onClick={() => setSearch("")}
                   title="Clear search"
                   aria-label="Clear search"
+                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                 >
-                  ✕
+                  <X size={14} />
                 </button>
               )}
             </div>
@@ -260,7 +277,9 @@ const SalesCompanies = () => {
         ) : filteredCompanies.length === 0 ? (
           /* EMPTY STATE */
           <div className="company-empty">
-            <div className="company-empty-icon">🏢</div>
+            <div className="company-empty-icon" style={{ display: "inline-flex", justifyContent: "center", alignItems: "center", color: "rgba(255, 255, 255, 0.4)", marginBottom: "12px" }}>
+              <Building2 size={46} strokeWidth={1.5} />
+            </div>
             <h3>No companies found</h3>
             <p>
               {search || statusFilter !== "all"
@@ -281,7 +300,7 @@ const SalesCompanies = () => {
             )}
           </div>
         ) : (
-          /* FLOATING ACCORDION CARDS LIST (IDENTICAL TO ADMIN DESIGN) */
+          /* FLOATING ACCORDION CARDS LIST */
           <div className="company-cards-list">
             {filteredCompanies.map((company) => {
               const isExpanded = expandedCompanyId === company._id;
@@ -364,8 +383,9 @@ const SalesCompanies = () => {
                       }}
                       title={isExpanded ? "Collapse details" : "Expand details"}
                       aria-label={isExpanded ? "Collapse details" : "Expand details"}
+                      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                     >
-                      <span>···</span>
+                      <MoreHorizontal size={18} />
                     </button>
                   </div>
 
@@ -380,21 +400,24 @@ const SalesCompanies = () => {
                             target="_blank"
                             rel="noreferrer"
                             className="btn-action-more"
-                            style={{ textDecoration: "none" }}
+                            style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px" }}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <span>🌐</span>
+                            <Globe size={14} />
                             <span>Visit Official Website</span>
+                            <ExternalLink size={12} style={{ opacity: 0.7 }} />
                           </a>
                         </div>
                       )}
 
-                      {/* FOUR COMPREHENSIVE DETAIL CARDS (PREVIOUS DETAILS IN MODERN STYLING) */}
+                      {/* FOUR COMPREHENSIVE DETAIL CARDS */}
                       <div className="company-details-grid">
                         {/* Card 1: Primary Contact */}
                         <div className="company-detail-card">
                           <div className="company-detail-card-title">
-                            <span className="detail-icon">👤</span>
+                            <span className="detail-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                              <User size={15} />
+                            </span>
                             <span>Primary Contact</span>
                           </div>
 
@@ -418,14 +441,25 @@ const SalesCompanies = () => {
                               {company.email && (
                                 <button
                                   type="button"
-                                  className="detail-copy-btn"
+                                  className="btn-copy-chip"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    copyToClipboard(company.email, "email");
+                                    copyToClipboard(company.email, `email-${company._id}`, "email");
                                   }}
                                   title="Copy Email"
+                                  style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                                 >
-                                  {copySuccess === "email" ? "✓" : "📋"}
+                                  {copySuccess === `email-${company._id}` ? (
+                                    <>
+                                      <Check size={12} style={{ color: "#10b981" }} />
+                                      <span>Copied</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy size={12} />
+                                      <span>Copy</span>
+                                    </>
+                                  )}
                                 </button>
                               )}
                             </div>
@@ -444,14 +478,25 @@ const SalesCompanies = () => {
                               {company.phone && (
                                 <button
                                   type="button"
-                                  className="detail-copy-btn"
+                                  className="btn-copy-chip"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    copyToClipboard(company.phone, "phone");
+                                    copyToClipboard(company.phone, `phone-${company._id}`, "phone");
                                   }}
                                   title="Copy Phone"
+                                  style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                                 >
-                                  {copySuccess === "phone" ? "✓" : "📋"}
+                                  {copySuccess === `phone-${company._id}` ? (
+                                    <>
+                                      <Check size={12} style={{ color: "#10b981" }} />
+                                      <span>Copied</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy size={12} />
+                                      <span>Copy</span>
+                                    </>
+                                  )}
                                 </button>
                               )}
                             </div>
@@ -470,14 +515,25 @@ const SalesCompanies = () => {
                                 </a>
                                 <button
                                   type="button"
-                                  className="detail-copy-btn"
+                                  className="btn-copy-chip"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    copyToClipboard(company.alternatePhone, "alternate phone");
+                                    copyToClipboard(company.alternatePhone, `alt-${company._id}`, "alternate phone");
                                   }}
                                   title="Copy Alternate Phone"
+                                  style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                                 >
-                                  {copySuccess === "alternate phone" ? "✓" : "📋"}
+                                  {copySuccess === `alt-${company._id}` ? (
+                                    <>
+                                      <Check size={12} style={{ color: "#10b981" }} />
+                                      <span>Copied</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy size={12} />
+                                      <span>Copy</span>
+                                    </>
+                                  )}
                                 </button>
                               </div>
                             </div>
@@ -491,9 +547,11 @@ const SalesCompanies = () => {
                                 target="_blank"
                                 rel="noreferrer"
                                 className="detail-link"
+                                style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                {company.website.replace(/^https?:\/\//, "")} ↗
+                                <span>{company.website.replace(/^https?:\/\//, "")}</span>
+                                <ExternalLink size={12} style={{ opacity: 0.8 }} />
                               </a>
                             </div>
                           )}
@@ -502,7 +560,9 @@ const SalesCompanies = () => {
                         {/* Card 2: Company Details */}
                         <div className="company-detail-card">
                           <div className="company-detail-card-title">
-                            <span className="detail-icon">🏢</span>
+                            <span className="detail-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                              <Building2 size={15} />
+                            </span>
                             <span>Company Details</span>
                           </div>
 
@@ -522,14 +582,25 @@ const SalesCompanies = () => {
                               {company.address && (
                                 <button
                                   type="button"
-                                  className="detail-copy-btn"
+                                  className="btn-copy-chip"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    copyToClipboard(company.address, "address");
+                                    copyToClipboard(company.address, `addr-${company._id}`, "address");
                                   }}
                                   title="Copy Address"
+                                  style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                                 >
-                                  {copySuccess === "address" ? "✓" : "📋"}
+                                  {copySuccess === `addr-${company._id}` ? (
+                                    <>
+                                      <Check size={12} style={{ color: "#10b981" }} />
+                                      <span>Copied</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy size={12} />
+                                      <span>Copy</span>
+                                    </>
+                                  )}
                                 </button>
                               )}
                             </div>
@@ -560,7 +631,9 @@ const SalesCompanies = () => {
                         {/* Card 3: Meta Marketing & Ads */}
                         <div className="company-detail-card">
                           <div className="company-detail-card-title">
-                            <span className="detail-icon">📈</span>
+                            <span className="detail-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                              <TrendingUp size={15} />
+                            </span>
                             <span>Meta Marketing & Ads</span>
                           </div>
 
@@ -581,14 +654,29 @@ const SalesCompanies = () => {
                                   </span>
                                   <button
                                     type="button"
-                                    className="detail-copy-btn"
+                                    className="btn-copy-chip"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      copyToClipboard(company.metaAdsConfig!.adAccountId!, "account ID");
+                                      copyToClipboard(
+                                        company.metaAdsConfig!.adAccountId!,
+                                        `meta-${company._id}`,
+                                        "account ID"
+                                      );
                                     }}
                                     title="Copy Ad Account ID"
+                                    style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                                   >
-                                    {copySuccess === "account ID" ? "✓" : "📋"}
+                                    {copySuccess === `meta-${company._id}` ? (
+                                      <>
+                                        <Check size={12} style={{ color: "#10b981" }} />
+                                        <span>Copied</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy size={12} />
+                                        <span>Copy</span>
+                                      </>
+                                    )}
                                   </button>
                                 </div>
                               </div>
@@ -611,7 +699,9 @@ const SalesCompanies = () => {
                             </>
                           ) : (
                             <div className="company-detail-empty">
-                              <span className="empty-icon">🔗</span>
+                              <span className="empty-icon" style={{ display: "inline-flex", alignItems: "center", opacity: 0.6 }}>
+                                <Link2Off size={22} />
+                              </span>
                               <p>No Meta Ad Account is linked yet.</p>
                             </div>
                           )}
@@ -620,7 +710,9 @@ const SalesCompanies = () => {
                         {/* Card 4: Internal Remarks & Notes */}
                         <div className="company-detail-card">
                           <div className="company-detail-card-title">
-                            <span className="detail-icon">📝</span>
+                            <span className="detail-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                              <FileText size={15} />
+                            </span>
                             <span>Internal Remarks</span>
                           </div>
 

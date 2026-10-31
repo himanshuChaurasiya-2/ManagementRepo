@@ -16,6 +16,19 @@ import type {
 import LeadSlideDrawer, {
   getUrgencyInfo,
 } from "../../components/LeadSlideDrawer";
+import {
+  AlertCircle,
+  ArrowRight,
+  ArrowRightLeft,
+  CheckCircle2,
+  FileSpreadsheet,
+  FileText,
+  MapPin,
+  Phone,
+  Search,
+  Users,
+  X,
+} from "lucide-react";
 import "./Adminlead.css";
 
 // =====================================================
@@ -1063,20 +1076,20 @@ const AdminLeads: React.FC = () => {
       ================================================= */}
       {error && (
         <div className="lead-alert lead-alert-error">
-          <span>⚠️</span>
+          <AlertCircle size={16} />
           <span>{error}</span>
-          <button type="button" onClick={() => setError("")}>
-            ✕
+          <button type="button" onClick={() => setError("")} style={{ display: "inline-flex", alignItems: "center" }}>
+            <X size={14} />
           </button>
         </div>
       )}
 
       {success && (
         <div className="lead-alert lead-alert-success">
-          <span>✅</span>
+          <CheckCircle2 size={16} />
           <span>{success}</span>
-          <button type="button" onClick={() => setSuccess("")}>
-            ✕
+          <button type="button" onClick={() => setSuccess("")} style={{ display: "inline-flex", alignItems: "center" }}>
+            <X size={14} />
           </button>
         </div>
       )}
@@ -1122,8 +1135,9 @@ const AdminLeads: React.FC = () => {
                   type="button"
                   className="lead-users-search-clear"
                   onClick={() => setUserSearchQuery("")}
+                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                 >
-                  ✕
+                  <X size={13} />
                 </button>
               )}
             </div>
@@ -1381,7 +1395,7 @@ const AdminLeads: React.FC = () => {
 
           {selectedFile && (
             <div className="lead-selected-file">
-              <span>📄</span>
+              <FileSpreadsheet size={15} />
               <span>{selectedFile.name}</span>
             </div>
           )}
@@ -1538,8 +1552,10 @@ const AdminLeads: React.FC = () => {
             className="lead-active-user-clear-btn"
             onClick={handleResetUserFilter}
             title="Reset filter and show all team leads"
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
           >
-            <span>✕</span> View All Team Leads
+            <X size={14} />
+            <span>View All Team Leads</span>
           </button>
         </div>
       )}
@@ -1802,7 +1818,9 @@ const AdminLeads: React.FC = () => {
           </div>
         ) : filteredLeads.length === 0 ? (
           <div className="lead-empty">
-            <div className="lead-empty-icon">👥</div>
+            <div className="lead-empty-icon" style={{ display: "inline-flex", justifyContent: "center", alignItems: "center" }}>
+              <Users size={44} strokeWidth={1.5} />
+            </div>
             <h3>
               {selectedUserId !== "all"
                 ? `No leads found for ${selectedUserObj?.name || "this user"}`
@@ -1924,8 +1942,9 @@ const AdminLeads: React.FC = () => {
                                 href={`tel:${lead.phone}`}
                                 className="vector-phone-link"
                                 title={`Call ${lead.phone}`}
+                                style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                               >
-                                📞 {lead.phone}
+                                <Phone size={12} /> {lead.phone}
                               </a>
                             </div>
                           </div>
@@ -2027,7 +2046,7 @@ const AdminLeads: React.FC = () => {
                                       setActiveReassignPopoverLeadId(null)
                                     }
                                   >
-                                    ✕
+                                    <X size={13} />
                                   </button>
                                 </div>
                                 <div className="reassign-popover-list">
@@ -2084,7 +2103,9 @@ const AdminLeads: React.FC = () => {
                                 lead.notes ? lead.notes : "Open Slide Drawer & Notes"
                               }
                             >
-                              <span className="drawer-btn-icon">📝</span>
+                              <span className="drawer-btn-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                                <FileText size={14} />
+                              </span>
                               <span className="drawer-btn-label">
                                 {lead.notes && lead.notes.trim() ? "Notes" : "Drawer"}
                               </span>
@@ -2194,8 +2215,9 @@ const AdminLeads: React.FC = () => {
                         onClick={() => promptSingleDelete(lead._id)}
                         title="Delete Lead"
                         aria-label="Delete Lead"
+                        style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                       >
-                        ✕
+                        <X size={14} />
                       </button>
                     </div>
 
@@ -2208,13 +2230,6 @@ const AdminLeads: React.FC = () => {
                             {lead.phone}
                           </a>
                         </div>
-                        {/* <a
-                          href={`tel:${lead.phone}`}
-                          className="mobile-quick-cta call"
-                          title="Call Lead"
-                        >
-                          📞 Call
-                        </a> */}
                       </div>
 
                       {lead.email && (
@@ -2225,13 +2240,6 @@ const AdminLeads: React.FC = () => {
                               {lead.email}
                             </a>
                           </div>
-                          {/* <a
-                            href={`mailto:${lead.email}`}
-                            className="mobile-quick-cta email"
-                            title="Send Email"
-                          >
-                            ✉️ Mail
-                          </a> */}
                         </div>
                       )}
                     </div>
@@ -2239,7 +2247,9 @@ const AdminLeads: React.FC = () => {
                     {/* ROW 3: SOURCE & REAL-TIME URGENCY PILLS */}
                     <div className="mobile-card-tags-row">
                       {lead.source && (
-                        <span className="mobile-source-tag">📍 {lead.source}</span>
+                        <span className="mobile-source-tag" style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                          <MapPin size={11} /> {lead.source}
+                        </span>
                       )}
                       <span
                         className={`urgency-badge urgency-${urgency.level}`}
@@ -2286,8 +2296,19 @@ const AdminLeads: React.FC = () => {
                             isReassignOpen ? null : lead._id
                           )
                         }
+                        style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                       >
-                        {isReassignOpen ? "Close ✕" : "Reassign ⇄"}
+                        {isReassignOpen ? (
+                          <>
+                            <span>Close</span>
+                            <X size={12} />
+                          </>
+                        ) : (
+                          <>
+                            <span>Reassign</span>
+                            <ArrowRightLeft size={12} />
+                          </>
+                        )}
                       </button>
                     </div>
 
@@ -2312,7 +2333,9 @@ const AdminLeads: React.FC = () => {
                                   <strong>{user.name}</strong>
                                   <small>{user.jobPosition || user.role}</small>
                                 </div>
-                                <span className="opt-action">Assign →</span>
+                                <span className="opt-action" style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+                                  Assign <ArrowRight size={12} />
+                                </span>
                               </button>
                             ))}
                         </div>
@@ -2327,7 +2350,9 @@ const AdminLeads: React.FC = () => {
                       tabIndex={0}
                     >
                       <div className="notes-left">
-                        <span className="notes-icon">📝</span>
+                        <span className="notes-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                          <FileText size={14} />
+                        </span>
                         <span className="notes-snippet">
                           {lead.notes && lead.notes.trim()
                             ? lead.notes

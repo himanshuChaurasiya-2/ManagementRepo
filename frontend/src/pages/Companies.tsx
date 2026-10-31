@@ -4,6 +4,28 @@ import React, {
 } from "react";
 
 import axios from "axios";
+import {
+  Building2,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  Circle,
+  Copy,
+  ExternalLink,
+  FileText,
+  Globe,
+  Link2,
+  MoreHorizontal,
+  PauseCircle,
+  Pencil,
+  PlayCircle,
+  Plus,
+  Search,
+  Trash2,
+  User,
+  X,
+  Zap,
+} from "lucide-react";
 import { fetchAvailableMetaAccounts, type MetaAdAccount } from "../services/metaAdsService";
 import "./pages.css";
 
@@ -266,7 +288,7 @@ const Company = () => {
         authConfig()
       );
       setTaskModalCompany(null);
-      showToast("✓ Task created successfully!");
+      showToast("Task created successfully!");
     } catch (err: any) {
       console.error("Create task error:", err);
       alert(err.response?.data?.message || "Failed to create task");
@@ -379,8 +401,8 @@ const Company = () => {
       await loadCompanies();
       showToast(
         editingCompany
-          ? "✓ Company updated successfully"
-          : "✓ Company created successfully"
+          ? "Company updated successfully"
+          : "Company created successfully"
       );
     } catch (error: any) {
       console.error(
@@ -430,7 +452,7 @@ const Company = () => {
 
       await loadCompanies();
       showToast(
-        `✓ Company ${
+        `Company ${
           newStatus === "active" ? "activated" : "deactivated"
         } successfully`
       );
@@ -467,7 +489,7 @@ const Company = () => {
       );
 
       await loadCompanies();
-      showToast("✓ Company deleted successfully");
+      showToast("Company deleted successfully");
     } catch (error: any) {
       console.error(
         "Delete company error:",
@@ -514,10 +536,7 @@ const Company = () => {
           className="company-add-btn"
           onClick={openAddModal}
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 6 }}>
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+          <Plus size={15} style={{ marginRight: 6 }} />
           Add Company
         </button>
       </div>
@@ -595,7 +614,9 @@ const Company = () => {
 
             {/* Search Input */}
             <div className="company-search-wrapper">
-              <span className="company-search-icon">🔍</span>
+              <span className="company-search-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                <Search size={15} />
+              </span>
               <input
                 type="text"
                 placeholder="Search companies, contacts, emails..."
@@ -611,8 +632,9 @@ const Company = () => {
                   onClick={() => setSearch("")}
                   title="Clear search"
                   aria-label="Clear search"
+                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                 >
-                  ✕
+                  <X size={14} />
                 </button>
               )}
             </div>
@@ -646,7 +668,9 @@ const Company = () => {
         ) : filteredCompanies.length === 0 ? (
           /* EMPTY STATE */
           <div className="company-empty">
-            <div className="company-empty-icon">🏢</div>
+            <div className="company-empty-icon" style={{ display: "inline-flex", justifyContent: "center", alignItems: "center", color: "rgba(255, 255, 255, 0.4)", marginBottom: "12px" }}>
+              <Building2 size={46} strokeWidth={1.5} />
+            </div>
             <h3>No companies found</h3>
             <p>
               {search || statusFilter !== "all"
@@ -755,8 +779,9 @@ const Company = () => {
                       }}
                       title={isExpanded ? "Collapse details" : "Expand details"}
                       aria-label={isExpanded ? "Collapse details" : "Expand details"}
+                      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                     >
-                      <span>···</span>
+                      <MoreHorizontal size={18} />
                     </button>
                   </div>
 
@@ -772,10 +797,7 @@ const Company = () => {
                           onClick={(e) => openCreateTaskModal(company, e)}
                           title="Create a new task for this company"
                         >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>
+                          <Plus size={14} style={{ marginRight: 4 }} />
                           <span>Create Task</span>
                         </button>
 
@@ -792,9 +814,7 @@ const Company = () => {
                             aria-expanded={isMoreOpen}
                           >
                             <span>More</span>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="6 9 12 15 18 9" />
-                            </svg>
+                            <ChevronDown size={12} />
                           </button>
 
                           {/* MORE DROPDOWN MENU */}
@@ -808,7 +828,7 @@ const Company = () => {
                                   openEditModal(company);
                                 }}
                               >
-                                <span>✏️</span>
+                                <Pencil size={14} />
                                 <span>Edit Company Details</span>
                               </button>
 
@@ -820,7 +840,7 @@ const Company = () => {
                                   toggleStatus(company);
                                 }}
                               >
-                                <span>{company.status === "active" ? "⏸️" : "▶️"}</span>
+                                {company.status === "active" ? <PauseCircle size={14} /> : <PlayCircle size={14} />}
                                 <span>{company.status === "active" ? "Deactivate Company" : "Activate Company"}</span>
                               </button>
 
@@ -832,7 +852,7 @@ const Company = () => {
                                   className="company-dropdown-item"
                                   onClick={() => setMoreDropdownId(null)}
                                 >
-                                  <span>🌐</span>
+                                  <Globe size={14} />
                                   <span>Visit Official Website</span>
                                 </a>
                               )}
@@ -847,7 +867,7 @@ const Company = () => {
                                   deleteCompany(company);
                                 }}
                               >
-                                <span>🗑️</span>
+                                <Trash2 size={14} />
                                 <span>Delete Company</span>
                               </button>
                             </div>
@@ -860,7 +880,9 @@ const Company = () => {
                         {/* Card 1: Primary Contact */}
                         <div className="company-detail-card">
                           <div className="company-detail-card-title">
-                            <span className="detail-icon">👤</span>
+                            <span className="detail-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                              <User size={15} />
+                            </span>
                             <span>Primary Contact</span>
                           </div>
 
@@ -892,10 +914,19 @@ const Company = () => {
                                   )
                                 }
                                 title="Copy email address"
+                                style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                               >
-                                {copySuccess === `email-${company._id}`
-                                  ? "✓ Copied"
-                                  : "📋 Copy"}
+                                {copySuccess === `email-${company._id}` ? (
+                                  <>
+                                    <Check size={12} style={{ color: "#10b981" }} />
+                                    <span>Copied</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy size={12} />
+                                    <span>Copy</span>
+                                  </>
+                                )}
                               </button>
                             </div>
                           </div>
@@ -921,10 +952,19 @@ const Company = () => {
                                   )
                                 }
                                 title="Copy phone number"
+                                style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                               >
-                                {copySuccess === `phone-${company._id}`
-                                  ? "✓ Copied"
-                                  : "📋 Copy"}
+                                {copySuccess === `phone-${company._id}` ? (
+                                  <>
+                                    <Check size={12} style={{ color: "#10b981" }} />
+                                    <span>Copied</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy size={12} />
+                                    <span>Copy</span>
+                                  </>
+                                )}
                               </button>
                             </div>
                           </div>
@@ -951,10 +991,19 @@ const Company = () => {
                                     )
                                   }
                                   title="Copy alternate phone"
+                                  style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                                 >
-                                  {copySuccess === `alt-${company._id}`
-                                    ? "✓ Copied"
-                                    : "📋 Copy"}
+                                  {copySuccess === `alt-${company._id}` ? (
+                                    <>
+                                      <Check size={12} style={{ color: "#10b981" }} />
+                                      <span>Copied</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy size={12} />
+                                      <span>Copy</span>
+                                    </>
+                                  )}
                                 </button>
                               </div>
                             </div>
@@ -964,7 +1013,9 @@ const Company = () => {
                         {/* Card 2: Company & Address */}
                         <div className="company-detail-card">
                           <div className="company-detail-card-title">
-                            <span className="detail-icon">🏢</span>
+                            <span className="detail-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                              <Building2 size={15} />
+                            </span>
                             <span>Company & Location</span>
                           </div>
 
@@ -986,10 +1037,19 @@ const Company = () => {
                                     )
                                   }
                                   title="Copy address"
+                                  style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                                 >
-                                  {copySuccess === `addr-${company._id}`
-                                    ? "✓ Copied"
-                                    : "📋 Copy"}
+                                  {copySuccess === `addr-${company._id}` ? (
+                                    <>
+                                      <Check size={12} style={{ color: "#10b981" }} />
+                                      <span>Copied</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy size={12} />
+                                      <span>Copy</span>
+                                    </>
+                                  )}
                                 </button>
                               )}
                             </div>
@@ -1007,9 +1067,11 @@ const Company = () => {
                                 target="_blank"
                                 rel="noreferrer"
                                 className="detail-external-link"
+                                style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                {company.website} ↗
+                                <span>{company.website}</span>
+                                <ExternalLink size={12} style={{ opacity: 0.8 }} />
                               </a>
                             ) : (
                               <span className="detail-value muted">Not provided</span>
@@ -1027,7 +1089,9 @@ const Company = () => {
                         {/* Card 3: Meta Ads Marketing Integration */}
                         <div className="company-detail-card">
                           <div className="company-detail-card-title">
-                            <span className="detail-icon">⚡</span>
+                            <span className="detail-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                              <Zap size={15} />
+                            </span>
                             <span>Meta Marketing Ads</span>
                           </div>
 
@@ -1058,7 +1122,9 @@ const Company = () => {
                             </div>
                           ) : (
                             <div className="meta-ads-empty-box">
-                              <span className="meta-unlinked-icon">⚪</span>
+                              <span className="meta-unlinked-icon" style={{ display: "inline-flex", alignItems: "center", opacity: 0.5 }}>
+                                <Circle size={16} />
+                              </span>
                               <div>
                                 <div className="meta-unlinked-title">No Meta Account Connected</div>
                                 <p className="meta-unlinked-desc">
@@ -1072,7 +1138,9 @@ const Company = () => {
                         {/* Card 4: Company Notes */}
                         <div className="company-detail-card">
                           <div className="company-detail-card-title">
-                            <span className="detail-icon">📝</span>
+                            <span className="detail-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                              <FileText size={15} />
+                            </span>
                             <span>Company Notes</span>
                           </div>
 
@@ -1134,20 +1202,9 @@ const Company = () => {
                 onClick={() => setShowModal(false)}
                 title="Close modal"
                 aria-label="Close"
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
               >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
+                <X size={18} />
               </button>
             </div>
 
@@ -1297,7 +1354,9 @@ const Company = () => {
                 {/* SEARCHABLE META AD ACCOUNT SELECTION */}
                 <div className="form-field full-width" style={{ position: "relative" }}>
                   <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span>🔗 Meta Marketing Ad Account (Optional)</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                      <Link2 size={14} /> Meta Marketing Ad Account (Optional)
+                    </span>
                     {form.adAccountId && (
                       <span
                         onClick={() => {
@@ -1358,10 +1417,12 @@ const Company = () => {
                           border: "none",
                           color: "#94a3b8",
                           cursor: "pointer",
-                          fontSize: "13px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                       >
-                        ✕
+                        <X size={13} />
                       </button>
                     )}
                   </div>
@@ -1382,7 +1443,9 @@ const Company = () => {
                         gap: "6px",
                       }}
                     >
-                      <span>✅ Linked:</span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                        <CheckCircle2 size={13} style={{ color: "#10b981" }} /> Linked:
+                      </span>
                       <strong>
                         {(() => {
                           const acc = metaAccounts.find((a) => a.id === form.adAccountId);
@@ -1426,7 +1489,7 @@ const Company = () => {
                         onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)")}
                         onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                       >
-                        ⚪ None (Don't connect Meta Ad Account now)
+                        None (Don't connect Meta Ad Account now)
                       </div>
 
                       {metaAccounts
@@ -1558,8 +1621,9 @@ const Company = () => {
                 type="button"
                 className="company-close-btn"
                 onClick={() => setTaskModalCompany(null)}
+                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 
@@ -1647,8 +1711,9 @@ const Company = () => {
 
       {/* FLOATING TOAST NOTIFICATION */}
       {toastMessage && (
-        <div className="company-floating-toast">
-          {toastMessage}
+        <div className="company-floating-toast" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+          <Check size={16} style={{ color: "#10b981", flexShrink: 0 }} />
+          <span>{toastMessage}</span>
         </div>
       )}
 

@@ -1,5 +1,16 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import {
+  AlertTriangle,
+  Check,
+  Copy,
+  Lock,
+  Mail,
+  Search,
+  User as UserIcon,
+  Users as UsersIcon,
+  X,
+} from "lucide-react";
 import "../admin/admindasboard.css";
 
 interface User {
@@ -503,7 +514,9 @@ const Users = () => {
           {/* Card 1: Contact & Identification */}
           <div className="user-detail-card">
             <div className="user-detail-card-header">
-              {/* <span className="card-header-icon">📧</span> */}
+              <span className="card-header-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                <Mail size={15} />
+              </span>
               <h5>Contact & Role</h5>
             </div>
 
@@ -519,8 +532,19 @@ const Users = () => {
                     className="btn-copy-mini"
                     onClick={() => handleCopyEmail(user.email)}
                     title="Copy email address"
+                    style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
                   >
-                    {copyEmailSuccess === user.email ? "✓ Copied" : "Copy"}
+                    {copyEmailSuccess === user.email ? (
+                      <>
+                        <Check size={12} style={{ color: "#10b981" }} />
+                        <span>Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={12} />
+                        <span>Copy</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -544,7 +568,9 @@ const Users = () => {
           {/* Card 2: Security & Credentials */}
           <div className="user-detail-card">
             <div className="user-detail-card-header">
-              {/* <span className="card-header-icon">🔒</span> */}
+              <span className="card-header-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                <Lock size={15} />
+              </span>
               <h5>Security & Credentials</h5>
             </div>
 
@@ -553,8 +579,8 @@ const Users = () => {
                 <span className="detail-field-label">Password Status</span>
                 <div>
                   {user.mustChangePassword ? (
-                    <span className="password-status-badge password-required">
-                      ⚠️Temporary Password
+                    <span className="password-status-badge password-required" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <AlertTriangle size={13} /> Temporary Password
                     </span>
                   ) : (
                     <span className="password-status-badge password-set">
@@ -912,7 +938,9 @@ const Users = () => {
           <div className="master-panel-header">
             {/* Search Input */}
             <div className="master-search-box">
-              <span className="master-search-icon">🔍</span>
+              <span className="master-search-icon" style={{ display: "inline-flex", alignItems: "center" }}>
+                <Search size={14} />
+              </span>
               <input
                 type="text"
                 className="master-search-input"
@@ -928,8 +956,9 @@ const Users = () => {
                   onClick={() => setSearchQuery("")}
                   title="Clear search"
                   aria-label="Clear search"
+                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                 >
-                  ✕
+                  <X size={13} />
                 </button>
               )}
             </div>
@@ -983,7 +1012,9 @@ const Users = () => {
               </div>
             ) : filteredUsers.length === 0 ? (
               <div className="users-empty">
-                <div className="users-empty-icon">👥</div>
+                <div className="users-empty-icon" style={{ display: "inline-flex", justifyContent: "center", alignItems: "center" }}>
+                  <UsersIcon size={36} strokeWidth={1.5} />
+                </div>
                 <h5>No users found</h5>
                 <p>No user matches your search or filter.</p>
                 {searchQuery || statusFilter !== "all" ? (
@@ -1104,7 +1135,9 @@ const Users = () => {
             renderUserProfile(selectedUser, false)
           ) : (
             <div className="users-empty">
-              <div className="users-empty-icon">👤</div>
+              <div className="users-empty-icon" style={{ display: "inline-flex", justifyContent: "center", alignItems: "center" }}>
+                <UserIcon size={36} strokeWidth={1.5} />
+              </div>
               <h5>Select a user</h5>
               <p>Choose any user from the list to view their complete profile.</p>
             </div>
@@ -1148,8 +1181,9 @@ const Users = () => {
                   onClick={() => setMobileDrawerOpen(false)}
                   title="Close profile"
                   aria-label="Close profile"
+                  style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                 >
-                  ✕
+                  <X size={15} />
                 </button>
               </div>
             </div>

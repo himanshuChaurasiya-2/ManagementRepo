@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
+import { AlertCircle, Check, Clock } from "lucide-react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -332,10 +332,7 @@ useEffect(() => {
 
     return {
       id: reminder._id,
-      title:
-        reminder.status === "completed"
-          ? `✓ ${reminder.title}`
-          : reminder.title,
+      title: reminder.title,
       start,
       allDay: !reminder.startTime,
       className:
@@ -433,13 +430,26 @@ useEffect(() => {
               <div className="reminder-view-hero">
                 <h3 className="reminder-view-title">{viewingReminder.title}</h3>
                 <div className="reminder-view-badges">
-                  <span className={`badge-priority badge-priority-${viewingReminder.priority}`}>
-                    {viewingReminder.priority === "high" && "🔴 High Priority"}
-                    {viewingReminder.priority === "medium" && "🟡 Medium Priority"}
-                    {viewingReminder.priority === "low" && "🟢 Low Priority"}
+                  <span className={`badge-priority badge-priority-${viewingReminder.priority}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <AlertCircle size={12} />
+                    <span>
+                      {viewingReminder.priority === "high" && "High Priority"}
+                      {viewingReminder.priority === "medium" && "Medium Priority"}
+                      {viewingReminder.priority === "low" && "Low Priority"}
+                    </span>
                   </span>
-                  <span className={`badge-status badge-status-${viewingReminder.status}`}>
-                    {viewingReminder.status === "completed" ? "✓ Completed" : "⏳ Pending"}
+                  <span className={`badge-status badge-status-${viewingReminder.status}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    {viewingReminder.status === "completed" ? (
+                      <>
+                        <Check size={12} />
+                        <span>Completed</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock size={12} />
+                        <span>Pending</span>
+                      </>
+                    )}
                   </span>
                 </div>
               </div>

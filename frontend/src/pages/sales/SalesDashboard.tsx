@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import {
+  BarChart3,
+  Building2,
+  CheckCircle2,
+  PauseCircle,
+  Users,
+} from "lucide-react";
 import "./SalesDashboard.css";
 
 interface CompanyData {
@@ -77,8 +84,8 @@ const SalesDashboard = () => {
       <div className="sales-stats">
 
         <div className="sales-stat-card">
-          <div className="sales-stat-icon">
-            🏢
+          <div className="sales-stat-icon" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <Building2 size={24} />
           </div>
 
           <div>
@@ -91,8 +98,8 @@ const SalesDashboard = () => {
         </div>
 
         <div className="sales-stat-card">
-          <div className="sales-stat-icon">
-            ✓
+          <div className="sales-stat-icon" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <CheckCircle2 size={24} />
           </div>
 
           <div>
@@ -105,8 +112,8 @@ const SalesDashboard = () => {
         </div>
 
         <div className="sales-stat-card">
-          <div className="sales-stat-icon">
-            ○
+          <div className="sales-stat-icon" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <PauseCircle size={24} />
           </div>
 
           <div>
@@ -139,8 +146,8 @@ const SalesDashboard = () => {
             to="/sales/companies"
             className="sales-quick-card"
           >
-            <div className="sales-quick-icon">
-              🏢
+            <div className="sales-quick-icon" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+              <Building2 size={26} />
             </div>
 
             <div>
@@ -155,8 +162,8 @@ const SalesDashboard = () => {
           </Link>
 
           <div className="sales-quick-card disabled">
-            <div className="sales-quick-icon">
-              👥
+            <div className="sales-quick-icon" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+              <Users size={26} />
             </div>
 
             <div>
@@ -173,8 +180,8 @@ const SalesDashboard = () => {
           </div>
 
           <div className="sales-quick-card disabled">
-            <div className="sales-quick-icon">
-              📊
+            <div className="sales-quick-icon" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+              <BarChart3 size={26} />
             </div>
 
             <div>

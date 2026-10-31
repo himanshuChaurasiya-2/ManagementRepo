@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Alert, Spinner } from "react-bootstrap";
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Link2,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import {
   fetchAvailableMetaAccounts,
@@ -143,9 +151,17 @@ export const LinkMetaAccountModal: React.FC<LinkMetaAccountModalProps> = ({
       <div className="report-modal-card" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="report-modal-header">
-          <h3>🔗 Connect Meta Ad Account — {companyName}</h3>
-          <button type="button" className="report-modal-close" onClick={onHide} title="Close">
-            ✕
+          <h3 style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
+            <Link2 size={18} /> Connect Meta Ad Account — {companyName}
+          </h3>
+          <button
+            type="button"
+            className="report-modal-close"
+            onClick={onHide}
+            title="Close"
+            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+          >
+            <X size={15} />
           </button>
         </div>
 
@@ -182,8 +198,8 @@ export const LinkMetaAccountModal: React.FC<LinkMetaAccountModalProps> = ({
                 borderRadius: "10px",
               }}
             >
-              <p style={{ margin: 0, fontSize: "13px", color: "#fca5a5" }}>
-                ⚠️ No ad accounts found. Please ensure <code>META_ACCESS_TOKEN</code> is set in <code>backend/.env</code> with <code>ads_read</code> permissions.
+              <p style={{ margin: 0, fontSize: "13px", color: "#fca5a5", display: "flex", alignItems: "center", gap: "6px" }}>
+                <AlertCircle size={15} style={{ flexShrink: 0 }} /> No ad accounts found. Please ensure <code>META_ACCESS_TOKEN</code> is set in <code>backend/.env</code> with <code>ads_read</code> permissions.
               </p>
             </div>
           ) : (
@@ -226,8 +242,9 @@ export const LinkMetaAccountModal: React.FC<LinkMetaAccountModalProps> = ({
                       className="filter-clear-btn"
                       title="Clear search"
                       aria-label="Clear search query"
+                      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                     >
-                      ✕
+                      <X size={13} />
                     </button>
                   )}
                 </div>
@@ -283,8 +300,16 @@ export const LinkMetaAccountModal: React.FC<LinkMetaAccountModalProps> = ({
                   </div>
                   <div>
                     <span className="link-account-info-label">Status: </span>
-                    <span style={{ color: selectedAccountInfo.account_status === 1 ? "#10b981" : "#ef4444", fontWeight: 700 }}>
-                      {selectedAccountInfo.account_status === 1 ? "🟢 Active" : "⚠️ Disabled"}
+                    <span style={{ color: selectedAccountInfo.account_status === 1 ? "#10b981" : "#ef4444", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      {selectedAccountInfo.account_status === 1 ? (
+                        <>
+                          <CheckCircle2 size={13} /> Active
+                        </>
+                      ) : (
+                        <>
+                          <AlertTriangle size={13} /> Disabled
+                        </>
+                      )}
                     </span>
                   </div>
                 </div>
@@ -301,19 +326,18 @@ export const LinkMetaAccountModal: React.FC<LinkMetaAccountModalProps> = ({
               className="btn-unlink-account"
               onClick={handleUnlink}
               disabled={saving}
+              style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
             >
-              <span>🗑️</span>
+              <Trash2 size={14} />
               <span>Unlink Account</span>
             </button>
           )}
-          {/* <button type="button" className="btn btn-secondary" onClick={onHide} disabled={saving}>
-            Cancel
-          </button> */}
           <button
             type="button"
             className="btn-link-ad-account"
             onClick={handleLink}
             disabled={saving || accounts.length === 0}
+            style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
           >
             {saving ? (
               <>
@@ -322,7 +346,7 @@ export const LinkMetaAccountModal: React.FC<LinkMetaAccountModalProps> = ({
               </>
             ) : (
               <>
-                <span>🔗</span>
+                <Link2 size={14} />
                 <span>Link Ad Account</span>
               </>
             )}

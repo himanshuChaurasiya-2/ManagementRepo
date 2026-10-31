@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import {
   Building2,
-  CheckCircle2,
   ClipboardList,
   MousePointerClick,
   X,

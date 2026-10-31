@@ -25,7 +25,6 @@ import {
   FileText,
   MapPin,
   Phone,
-  Search,
   Users,
   X,
 } from "lucide-react";

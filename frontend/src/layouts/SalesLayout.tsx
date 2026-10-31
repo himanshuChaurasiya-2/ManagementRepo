@@ -12,7 +12,7 @@ import {
   connectSocket,
   disconnectSocket,
 } from "../services/socketService";
-import ThemeToggle from "../components/ThemeToggle";
+import Navbar from "../components/Navbar";
 import "./SalesLayout.css";
 
 // NOTIFICATION TYPE
@@ -36,7 +36,7 @@ const getNotificationStorageKey = (userId?: string) => {
 
 // SALES LAYOUT
 const SalesLayout = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -141,17 +141,6 @@ const SalesLayout = () => {
   const closePopup = () => {
     setPopupNotification(null);
   };
-
-  const handleLogout = () => {
-    disconnectSocket();
-    logout();
-    navigate("/login", { replace: true });
-  };
-
-  const userName =
-    user?.name || user?.email?.split("@")[0] || "Sales User";
-
-  const userInitial = userName.charAt(0).toUpperCase();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -377,63 +366,16 @@ const SalesLayout = () => {
             <span>Meta Ads Live</span>
           </Link>
         </nav>
-
-        {/* BOTTOM SECTION: SETTING & LOGOUT */}
-        <div className="app-sidebar-bottom">
-          <button
-            type="button"
-            className="app-sidebar-bottom-btn"
-            onClick={() => navigate("/change-password")}
-          >
-            <span className="nav-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-            </span>
-            <span>Setting</span>
-          </button>
-
-          <button
-            type="button"
-            className="app-sidebar-bottom-btn"
-            onClick={handleLogout}
-          >
-            <span className="nav-icon">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" x2="9" y1="12" y2="12" />
-              </svg>
-            </span>
-            <span>Log Out</span>
-          </button>
-        </div>
       </aside>
 
       {/* MAIN WRAPPER (TOPBAR + CANVAS) */}
       <div className="app-main-wrapper">
-        {/* NAVBAR */}
-        <header className="app-topbar">
-          <div className="app-topbar-left">
-            <button
-              type="button"
-              className={`app-navbar-toggle ${mobileNavOpen ? "open" : ""}`}
-              onClick={() => setMobileNavOpen((prev) => !prev)}
-              aria-label={mobileNavOpen ? "Close navigation menu" : "Open navigation menu"}
-              title={mobileNavOpen ? "Close menu" : "Open menu"}
-            >
-              <span className="navbar-toggle-bar bar-1"></span>
-              <span className="navbar-toggle-bar bar-2"></span>
-              <span className="navbar-toggle-bar bar-3"></span>
-            </button>
-            {/* <h1 className="app-topbar-title">Dashboard</h1> */}
-          </div>
-
-          {/* RIGHT SIDE: THEME TOGGLE, NOTIFICATION & USER PROFILE */}
-          <div className="app-topbar-right">
-            <ThemeToggle compact />
-
+        {/* RESPONSIVE TOPBAR / NAVBAR */}
+        <Navbar
+          mobileNavOpen={mobileNavOpen}
+          onToggleMobileNav={() => setMobileNavOpen((prev) => !prev)}
+          showAdminNotifications={false}
+          rightExtra={
             <div style={{ position: "relative" }}>
               <button
                 type="button"
@@ -500,17 +442,8 @@ const SalesLayout = () => {
                 </div>
               )}
             </div>
-
-            {/* USER PROFILE */}
-            <div className="app-user-profile">
-              <div className="app-user-text">
-                <span className="app-user-name">{userName}</span>
-                <span className="app-user-role">{user?.jobPosition || "Sales Representative"}</span>
-              </div>
-              <div className="app-user-avatar">{userInitial}</div>
-            </div>
-          </div>
-        </header>
+          }
+        />
 
         {/* MAIN CANVAS */}
         <main className="app-canvas">

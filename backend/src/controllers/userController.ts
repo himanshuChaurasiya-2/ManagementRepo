@@ -6,6 +6,23 @@ import { sendUserInvitationEmail } from "../services/emailService.js";
 
 const CLIENT_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
+export const getClientBaseUrl = (req?: Request): string => {
+  const origin = req?.headers?.origin;
+  if (origin && typeof origin === "string" && !origin.includes("localhost") && !origin.includes("127.0.0.1")) {
+    return origin.replace(/\/+$/, "");
+  }
+  if (process.env.FRONTEND_URL) {
+    return process.env.FRONTEND_URL.replace(/\/+$/, "");
+  }
+  if (process.env.CLIENT_URL) {
+    return process.env.CLIENT_URL.replace(/\/+$/, "");
+  }
+  if (origin && typeof origin === "string") {
+    return origin.replace(/\/+$/, "");
+  }
+  return CLIENT_URL;
+};
+
 export const createUser = async (
   req: Request,
   res: Response
@@ -70,14 +87,16 @@ export const createUser = async (
       invitationExpires: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48 hours
     });
 
-    const inviteUrl = `${CLIENT_URL}/set-password/${rawInvitationToken}`;
+    const clientUrl = getClientBaseUrl(req);
+    const inviteUrl = `${clientUrl}/set-password/${rawInvitationToken}`;
 
     // Send invitation email
     const inviteEmailResult = await sendUserInvitationEmail(
       user.email,
       user.name,
       rawInvitationToken,
-      user.jobPosition
+      user.jobPosition,
+      clientUrl
     );
 
     res.status(201).json({
@@ -409,13 +428,15 @@ export const resendInvitation = async (
 
     await user.save();
 
-    const inviteUrl = `${CLIENT_URL}/set-password/${rawInvitationToken}`;
+    const clientUrl = getClientBaseUrl(req);
+    const inviteUrl = `${clientUrl}/set-password/${rawInvitationToken}`;
 
     const inviteEmailResult = await sendUserInvitationEmail(
       user.email,
       user.name,
       rawInvitationToken,
-      user.jobPosition
+      user.jobPosition,
+      clientUrl
     );
 
     res.status(200).json({

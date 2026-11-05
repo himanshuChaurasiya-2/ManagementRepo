@@ -23,12 +23,13 @@ const app = express();
 const httpServer = createServer(app);
 
 // SOCKET.IO
+const clientOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
 export const io = new Server(httpServer, {
   cors: {
     origin: [
+      clientOrigin,
       "http://localhost:5173",
-      "http://localhost:5174",
-      "http://localhost:3000",
+      "http://localhost:3000"
     ],
     methods: ["GET", "POST", "PATCH", "DELETE"],
     credentials: true,
@@ -61,7 +62,9 @@ io.on("connection", (socket) => {
 });
 
 // MIDDLEWARE
-app.use(cors());
+// app.use(cors());
+app.use(cors({ origin: [clientOrigin, "http://localhost:5173", "http://localhost:3000"], credentials: true }));
+
 app.use(express.json());
 
 // DATABASE

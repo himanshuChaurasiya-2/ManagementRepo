@@ -407,7 +407,12 @@ export const forgotPassword = async (
     await user.save();
 
     // Send email
-    const emailResult = await sendPasswordResetEmail(user.email, user.name, rawToken);
+    const clientUrl =
+      (req.headers.origin as string) ||
+      process.env.FRONTEND_URL ||
+      process.env.CLIENT_URL ||
+      "http://localhost:5173";
+    const emailResult = await sendPasswordResetEmail(user.email, user.name, rawToken, clientUrl);
 
     res.status(200).json({
       success: true,

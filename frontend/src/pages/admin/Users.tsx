@@ -57,7 +57,7 @@ interface UserTaskItem {
   dueDate?: string | Date;
 }
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const Users = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -186,9 +186,11 @@ const Users = () => {
         setTemporaryPassword(
           response.data.temporaryPassword || ""
         );
-        setCreatedInviteUrl(
-          response.data.inviteUrl || ""
-        );
+        const rawInviteUrl = response.data.inviteUrl || "";
+        const finalInviteUrl = rawInviteUrl.includes("/set-password/")
+          ? `${window.location.origin}/set-password/${rawInviteUrl.split("/set-password/")[1]}`
+          : rawInviteUrl;
+        setCreatedInviteUrl(finalInviteUrl);
         setEmailPreviewUrl(
           response.data.previewUrl || ""
         );
@@ -288,7 +290,11 @@ const Users = () => {
       );
 
       if (response.data.success) {
-        setCreatedInviteUrl(response.data.inviteUrl || "");
+        const rawInviteUrl = response.data.inviteUrl || "";
+        const finalInviteUrl = rawInviteUrl.includes("/set-password/")
+          ? `${window.location.origin}/set-password/${rawInviteUrl.split("/set-password/")[1]}`
+          : rawInviteUrl;
+        setCreatedInviteUrl(finalInviteUrl);
         setEmailPreviewUrl(response.data.previewUrl || "");
         setInviteEmailSent(response.data.emailSent ?? true);
         setCreatedUserName(user.name);
@@ -1500,7 +1506,7 @@ const Users = () => {
               )}
 
               <small className="text-muted d-block mt-3" style={{ fontSize: "12px", lineHeight: "1.5" }}>
-                The user can click the invitation link to set their personal encrypted password. If they do not receive the email, you can copy and share the link above directly.
+                Share this secure invitation link with <strong>{createdUserName || "the user"}</strong> (via WhatsApp, Slack, or Email). Once they open the link, they will create their password and can immediately log in to the CRM.
               </small>
             </div>
 

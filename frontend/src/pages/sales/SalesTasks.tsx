@@ -1,5 +1,18 @@
 import { useEffect, useState, useMemo } from "react";
-import { Building2, ClipboardList, MousePointerClick, X } from "lucide-react";
+import {
+  Building2,
+  ClipboardList,
+  MousePointerClick,
+  X,
+  Clock,
+  Play,
+  CheckCircle2,
+  Calendar,
+  Eye,
+  ArrowRight,
+  ArrowLeft,
+  RotateCcw,
+} from "lucide-react";
 import api from "../../services/api";
 import "../admin/admindasboard.css";
 
@@ -42,6 +55,9 @@ const SalesTasks = () => {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeMobileTab, setActiveMobileTab] = useState<
+    "all" | "pending" | "in-progress" | "completed"
+  >("all");
 
   // Mobile Bottom Sheet Swipe-to-Dismiss gesture state
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
@@ -91,6 +107,20 @@ const SalesTasks = () => {
       return matchStatus && matchPriority && matchSearch;
     });
   }, [tasks, selectedStatus, selectedPriority, searchQuery]);
+
+  // Status column groups for Kanban board
+  const pendingTasks = useMemo(
+    () => filteredTasks.filter((t) => t.status === "pending"),
+    [filteredTasks]
+  );
+  const inProgressTasks = useMemo(
+    () => filteredTasks.filter((t) => t.status === "in-progress"),
+    [filteredTasks]
+  );
+  const completedTasks = useMemo(
+    () => filteredTasks.filter((t) => t.status === "completed"),
+    [filteredTasks]
+  );
 
   // Selected task object
   const selectedTask = useMemo(() => {
@@ -389,6 +419,126 @@ const SalesTasks = () => {
     );
   };
 
+  // Render individual card for the 3-column status board (Sales: No delete button)
+  const renderTaskCard = (task: Task) => {
+    const isSelected = selectedTaskId === task._id;
+    const due = formatDueDate(task.dueDate);
+    const isUpdating = quickUpdatingId === task._id;
+
+    return (
+      <div
+        key={task._id}
+        className={`task-board-card ${isSelected ? "selected-task-card" : ""}`}
+        onClick={() => handleSelectTask(task)}
+      >
+        <div className="task-board-card-header">
+          <div className="task-board-badges">
+            <span className={`priority-badge ${task.priority}`}>
+              <span className="badge-dot" />
+              {task.priority}
+            </span>
+          </div>
+
+          <div
+            className={`task-board-due-pill task-board-due ${
+              due.isOverdue ? "overdue" : due.isToday ? "today" : ""
+            }`}
+          >
+            <Calendar size={12} className="flex-shrink-0" />
+            <span>{due.text}</span>
+          </div>
+        </div>
+
+        <div className="task-board-card-body">
+          <h4 className="task-board-card-title task-board-title">{task.title}</h4>
+          {task.description && (
+            <p className="task-board-card-desc task-board-desc">{task.description}</p>
+          )}
+        </div>
+
+        <div className="task-board-card-meta task-board-meta">
+          <span className="task-card-company-tag company-tag">
+            <Building2 size={12} className="flex-shrink-0" />
+            <span>{task.company?.companyName || "No company"}</span>
+          </span>
+        </div>
+
+        <div
+          className="task-board-card-actions task-board-actions"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Status Stepper Progression Buttons */}
+          <div className="task-status-steppers">
+            {task.status === "pending" && (
+              <button
+                type="button"
+                className="task-status-move-btn in-progress-btn"
+                disabled={isUpdating}
+                onClick={() => handleQuickStatusUpdate(task._id, "in-progress")}
+                title="Start working on this task"
+              >
+                <Play size={11} />
+                <span>Start</span>
+                <ArrowRight size={11} />
+              </button>
+            )}
+
+            {task.status === "in-progress" && (
+              <>
+                <button
+                  type="button"
+                  className="task-status-move-btn pending-btn"
+                  disabled={isUpdating}
+                  onClick={() => handleQuickStatusUpdate(task._id, "pending")}
+                  title="Move back to Pending"
+                >
+                  <ArrowLeft size={11} />
+                  <span>Pending</span>
+                </button>
+                <button
+                  type="button"
+                  className="task-status-move-btn complete-btn"
+                  disabled={isUpdating}
+                  onClick={() => handleQuickStatusUpdate(task._id, "completed")}
+                  title="Mark task as Completed"
+                >
+                  <CheckCircle2 size={11} />
+                  <span>Done</span>
+                </button>
+              </>
+            )}
+
+            {task.status === "completed" && (
+              <button
+                type="button"
+                className="task-status-move-btn reopen-btn"
+                disabled={isUpdating}
+                onClick={() => handleQuickStatusUpdate(task._id, "in-progress")}
+                title="Reopen task (move to In Progress)"
+              >
+                <RotateCcw size={11} />
+                <span>Reopen</span>
+              </button>
+            )}
+          </div>
+
+          {/* Action buttons (View only - sales cannot delete) */}
+          <div className="task-board-crud-actions">
+            <button
+              type="button"
+              className="action-btn-view"
+              title="View Details"
+              onClick={() => handleSelectTask(task)}
+            >
+              <Eye size={12} />
+              <span>Details</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="admin-tasks">
       {/* Header */}
@@ -572,217 +722,116 @@ const SalesTasks = () => {
               selectedTask ? "panel-open" : ""
             }`}
           >
-            {/* MASTER VIEW (Desktop Table + Mobile Cards) */}
-            <div className="tasks-master-view">
-              {/* Desktop / Tablet Table */}
-              <div className="tasks-table-wrapper">
-                <table className="tasks-table">
-                  <thead>
-                    <tr>
-                      <th className="col-title">Task Title</th>
-                      <th className="col-company">Company</th>
-                      <th className="col-priority">Priority</th>
-                      <th className="col-status">Status</th>
-                      <th className="col-due">Due Date</th>
-                      <th className="col-actions text-end">Action</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {filteredTasks.map((task) => {
-                      const isSelected = selectedTaskId === task._id;
-                      const due = formatDueDate(task.dueDate);
-
-                      return (
-                        <tr
-                          key={task._id}
-                          className={`task-table-row ${
-                            isSelected ? "selected-task-row" : ""
-                          }`}
-                          onClick={() => handleSelectTask(task)}
-                          title="Click to view details"
-                        >
-                          <td className="col-title">
-                            <div className="task-title-cell">
-                              <span className="task-title">{task.title}</span>
-                              {task.description && (
-                                <span className="task-description">
-                                  {task.description}
-                                </span>
-                              )}
-                            </div>
-                          </td>
-
-                          <td className="col-company">
-                            <span className="company-tag">
-                              {task.company?.companyName || "No company"}
-                            </span>
-                          </td>
-
-                          <td className="col-priority">
-                            <span className={`priority-badge ${task.priority}`}>
-                              <span className="badge-dot" />
-                              {task.priority}
-                            </span>
-                          </td>
-
-                          <td className="col-status">
-                            <span className={`status-badge ${task.status}`}>
-                              <span className="badge-dot" />
-                              {task.status === "in-progress"
-                                ? "In Progress"
-                                : task.status}
-                            </span>
-                          </td>
-
-                          <td className="col-due">
-                            <span
-                              className={`due-date-text ${
-                                due.isOverdue
-                                  ? "text-danger fw-bold"
-                                  : due.isToday
-                                  ? "text-warning fw-bold"
-                                  : ""
-                              }`}
-                            >
-                              {due.text}
-                            </span>
-                          </td>
-
-                          <td className="col-actions text-end">
-                            <div
-                              className="task-action-buttons"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <button
-                                type="button"
-                                className="action-btn-view"
-                                title="View Details"
-                                onClick={() => handleSelectTask(task)}
-                              >
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                >
-                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                  <circle cx="12" cy="12" r="3" />
-                                </svg>
-                                {isSelected ? "Active" : "View"}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+            {/* MASTER VIEW - 3 COLUMN STATUS KANBAN BOARD */}
+            <div className="tasks-board-layout">
+              {/* Mobile Column Switcher Tabs */}
+              <div className="tasks-mobile-column-tabs">
+                <button
+                  type="button"
+                  className={`tasks-col-tab ${activeMobileTab === "all" ? "active" : ""}`}
+                  onClick={() => setActiveMobileTab("all")}
+                >
+                  All Columns ({filteredTasks.length})
+                </button>
+                <button
+                  type="button"
+                  className={`tasks-col-tab ${activeMobileTab === "pending" ? "active" : ""}`}
+                  onClick={() => setActiveMobileTab("pending")}
+                >
+                  <Clock size={13} />
+                  Pending ({pendingTasks.length})
+                </button>
+                <button
+                  type="button"
+                  className={`tasks-col-tab ${activeMobileTab === "in-progress" ? "active" : ""}`}
+                  onClick={() => setActiveMobileTab("in-progress")}
+                >
+                  <Play size={13} />
+                  In Progress ({inProgressTasks.length})
+                </button>
+                <button
+                  type="button"
+                  className={`tasks-col-tab ${activeMobileTab === "completed" ? "active" : ""}`}
+                  onClick={() => setActiveMobileTab("completed")}
+                >
+                  <CheckCircle2 size={13} />
+                  Completed ({completedTasks.length})
+                </button>
               </div>
 
-              {/* Mobile Stacked Card List (< 769px) */}
-              <div className="tasks-mobile-card-list">
-                {filteredTasks.map((task) => {
-                  const isSelected = selectedTaskId === task._id;
-                  const due = formatDueDate(task.dueDate);
-
-                  return (
-                    <div
-                      key={task._id}
-                      className={`task-mobile-card ${
-                        isSelected ? "selected-task-card" : ""
-                      }`}
-                      onClick={() => handleSelectTask(task)}
-                    >
-                      {/* Top Badges & Due Row */}
-                      <div className="task-mobile-card-header">
-                        <div className="task-mobile-badges">
-                          <span className={`priority-badge ${task.priority}`}>
-                            <span className="badge-dot" />
-                            {task.priority}
-                          </span>
-                          <span className={`status-badge ${task.status}`}>
-                            <span className="badge-dot" />
-                            {task.status === "in-progress"
-                              ? "In Progress"
-                              : task.status}
-                          </span>
-                        </div>
-
-                        <div
-                          className={`task-mobile-due-tag ${
-                            due.isOverdue
-                              ? "overdue"
-                              : due.isToday
-                              ? "today"
-                              : ""
-                          }`}
-                        >
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <rect
-                              x="3"
-                              y="4"
-                              width="18"
-                              height="18"
-                              rx="2"
-                              ry="2"
-                            />
-                            <line x1="16" y1="2" x2="16" y2="6" />
-                            <line x1="8" y1="2" x2="8" y2="6" />
-                            <line x1="3" y1="10" x2="21" y2="10" />
-                          </svg>
-                          <span>{due.text}</span>
-                        </div>
-                      </div>
-
-                      {/* Title & Description */}
-                      <div className="task-mobile-card-body">
-                        <h3 className="task-mobile-title">{task.title}</h3>
-                        {task.description && (
-                          <p className="task-mobile-desc">
-                            {task.description}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Footer Meta & Actions */}
-                      <div className="task-mobile-card-footer">
-                        <div className="task-mobile-meta-chips">
-                          <span className="company-tag">
-                            {task.company?.companyName || "No company"}
-                          </span>
-                        </div>
-
-                        <div
-                          className="task-mobile-actions"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <button
-                            type="button"
-                            className="action-btn-view"
-                            title="View Details"
-                            onClick={() => handleSelectTask(task)}
-                          >
-                            Details
-                          </button>
-                        </div>
-                      </div>
+              {/* 3 Status Columns */}
+              <div className="tasks-status-board">
+                {/* Column 1: Pending */}
+                <div
+                  className={`task-status-col col-pending ${
+                    activeMobileTab === "pending" || activeMobileTab === "all" ? "mobile-visible" : "mobile-hidden"
+                  }`}
+                >
+                  <div className="task-col-header">
+                    <div className="task-col-header-left">
+                      <span className="task-col-dot dot-pending" />
+                      <h4 className="task-col-title">Pending</h4>
                     </div>
-                  );
-                })}
+                    <span className="task-col-badge badge-pending">
+                      {pendingTasks.length}
+                    </span>
+                  </div>
+                  <div className="task-col-cards">
+                    {pendingTasks.length === 0 ? (
+                      <div className="task-col-empty">No pending tasks</div>
+                    ) : (
+                      pendingTasks.map((task) => renderTaskCard(task))
+                    )}
+                  </div>
+                </div>
+
+                {/* Column 2: In Progress */}
+                <div
+                  className={`task-status-col col-in-progress ${
+                    activeMobileTab === "in-progress" || activeMobileTab === "all" ? "mobile-visible" : "mobile-hidden"
+                  }`}
+                >
+                  <div className="task-col-header">
+                    <div className="task-col-header-left">
+                      <span className="task-col-dot dot-in-progress" />
+                      <h4 className="task-col-title">In Progress</h4>
+                    </div>
+                    <span className="task-col-badge badge-in-progress">
+                      {inProgressTasks.length}
+                    </span>
+                  </div>
+                  <div className="task-col-cards">
+                    {inProgressTasks.length === 0 ? (
+                      <div className="task-col-empty">No in-progress tasks</div>
+                    ) : (
+                      inProgressTasks.map((task) => renderTaskCard(task))
+                    )}
+                  </div>
+                </div>
+
+                {/* Column 3: Completed */}
+                <div
+                  className={`task-status-col col-completed ${
+                    activeMobileTab === "completed" || activeMobileTab === "all" ? "mobile-visible" : "mobile-hidden"
+                  }`}
+                >
+                  <div className="task-col-header">
+                    <div className="task-col-header-left">
+                      <span className="task-col-dot dot-completed" />
+                      <h4 className="task-col-title">Completed</h4>
+                    </div>
+                    <span className="task-col-badge badge-completed">
+                      {completedTasks.length}
+                    </span>
+                  </div>
+                  <div className="task-col-cards">
+                    {completedTasks.length === 0 ? (
+                      <div className="task-col-empty">No completed tasks</div>
+                    ) : (
+                      completedTasks.map((task) => renderTaskCard(task))
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 

@@ -1840,6 +1840,11 @@ body.light-mode .company-shimmer {
   background-size: 200% 100% !important;
 }
 
+[data-theme="light"] .company-empty-icon,
+body.light-mode .company-empty-icon {
+  color: #64748b !important;
+}
+
 [data-theme="light"] .company-empty h3,
 body.light-mode .company-empty h3 {
   color: #0f172a !important;
@@ -1848,6 +1853,20 @@ body.light-mode .company-empty h3 {
 [data-theme="light"] .company-empty p,
 body.light-mode .company-empty p {
   color: #64748b !important;
+}
+
+[data-theme="light"] .company-add-btn,
+body.light-mode .company-add-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35) !important;
+}
+
+[data-theme="light"] .company-add-btn:hover,
+body.light-mode .company-add-btn:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%) !important;
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45) !important;
+  transform: translateY(-2px) !important;
 }
 
 [data-theme="light"] .call-dial-box,
@@ -3325,6 +3344,11 @@ body.light-mode .reminder-view-title {
   color: #0f172a !important;
 }
 
+[data-theme="light"] .company-modal-header p,
+body.light-mode .company-modal-header p {
+  color: #64748b !important;
+}
+
 [data-theme="light"] .modal-body,
 body.light-mode .modal-body,
 [data-theme="light"] .task-modal-body,
@@ -3425,19 +3449,165 @@ body.light-mode .user-modal-cancel-btn:hover {
 }
 
 [data-theme="light"] .user-modal-submit-btn,
-body.light-mode .user-modal-submit-btn {
+body.light-mode .user-modal-submit-btn,
+[data-theme="light"] .company-save-btn,
+body.light-mode .company-save-btn {
   background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
   border: 1px solid #4338ca !important;
   color: #ffffff !important;
   font-weight: 700 !important;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3) !important;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35) !important;
 }
 
 [data-theme="light"] .user-modal-submit-btn:hover:not(:disabled),
-body.light-mode .user-modal-submit-btn:hover:not(:disabled) {
+body.light-mode .user-modal-submit-btn:hover:not(:disabled),
+[data-theme="light"] .company-save-btn:hover:not(:disabled),
+body.light-mode .company-save-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%) !important;
   box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45) !important;
   transform: translateY(-1px) !important;
+}
+
+/* Company & Modal Form Fields (Light Mode) */
+[data-theme="light"] .company-form .form-field label,
+body.light-mode .company-form .form-field label,
+[data-theme="light"] .form-field label,
+body.light-mode .form-field label {
+  color: #334155 !important;
+  font-weight: 600 !important;
+}
+
+[data-theme="light"] .form-field input,
+body.light-mode .form-field input,
+[data-theme="light"] .form-field select,
+body.light-mode .form-field select,
+[data-theme="light"] .form-field textarea,
+body.light-mode .form-field textarea {
+  background: #f8fafc !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.16) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .form-field input::placeholder,
+body.light-mode .form-field input::placeholder,
+[data-theme="light"] .form-field textarea::placeholder,
+body.light-mode .form-field textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .form-field input:hover,
+body.light-mode .form-field input:hover,
+[data-theme="light"] .form-field select:hover,
+body.light-mode .form-field select:hover,
+[data-theme="light"] .form-field textarea:hover,
+body.light-mode .form-field textarea:hover {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.3) !important;
+}
+
+[data-theme="light"] .form-field input:focus,
+body.light-mode .form-field input:focus,
+[data-theme="light"] .form-field select:focus,
+body.light-mode .form-field select:focus,
+[data-theme="light"] .form-field textarea:focus,
+body.light-mode .form-field textarea:focus {
+  background: #ffffff !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
+  outline: none !important;
+}
+
+[data-theme="light"] .form-field select option,
+body.light-mode .form-field select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* Company Meta Ad Account Selector (Light Mode) */
+[data-theme="light"] .company-meta-input,
+body.light-mode .company-meta-input {
+  background: #f8fafc !important;
+  border: 1.5px solid rgba(15, 23, 42, 0.16) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .company-meta-input:focus,
+body.light-mode .company-meta-input:focus {
+  background: #ffffff !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18) !important;
+}
+
+[data-theme="light"] .company-meta-input.is-linked,
+body.light-mode .company-meta-input.is-linked {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25) !important;
+}
+
+[data-theme="light"] .company-meta-clear-btn,
+body.light-mode .company-meta-clear-btn {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .company-meta-clear-btn:hover,
+body.light-mode .company-meta-clear-btn:hover {
+  color: #dc2626 !important;
+}
+
+[data-theme="light"] .company-meta-linked-badge,
+body.light-mode .company-meta-linked-badge {
+  background: rgba(37, 99, 235, 0.08) !important;
+  border: 1px solid rgba(37, 99, 235, 0.22) !important;
+  color: #1d4ed8 !important;
+}
+
+[data-theme="light"] .company-meta-dropdown,
+body.light-mode .company-meta-dropdown {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.14) !important;
+  box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.18) !important;
+}
+
+[data-theme="light"] .company-meta-dropdown-item,
+body.light-mode .company-meta-dropdown-item {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+
+[data-theme="light"] .company-meta-dropdown-item:hover,
+body.light-mode .company-meta-dropdown-item:hover {
+  background: #f1f5f9 !important;
+}
+
+[data-theme="light"] .company-meta-dropdown-item.is-selected,
+body.light-mode .company-meta-dropdown-item.is-selected {
+  background: rgba(37, 99, 235, 0.08) !important;
+}
+
+[data-theme="light"] .company-meta-dropdown-item.is-none,
+body.light-mode .company-meta-dropdown-item.is-none {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .company-meta-item-title,
+body.light-mode .company-meta-item-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .company-meta-item-sub,
+body.light-mode .company-meta-item-sub {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .company-meta-currency-tag,
+body.light-mode .company-meta-currency-tag {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border: 1px solid rgba(37, 99, 235, 0.18) !important;
+}
+
+[data-theme="light"] .company-meta-empty,
+body.light-mode .company-meta-empty {
+  color: #64748b !important;
 }
 
 /* Modal Priority/Status Capsules */
@@ -3944,15 +4114,74 @@ body.light-mode .reminder-btn-edit {
   color: #ffffff !important;
   border: none !important;
   font-weight: 700 !important;
-  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3) !important;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35) !important;
+}
+
+[data-theme="light"] .reminder-btn-edit:hover,
+body.light-mode .reminder-btn-edit:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%) !important;
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45) !important;
+  color: #ffffff !important;
 }
 
 [data-theme="light"] .btn-danger-custom,
-body.light-mode .btn-danger-custom {
+body.light-mode .btn-danger-custom,
+[data-theme="light"] .reminder-modal .btn-danger,
+body.light-mode .reminder-modal .btn-danger {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #dc2626 !important;
+  border: 1.5px solid rgba(239, 68, 68, 0.35) !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .btn-danger-custom:hover,
+body.light-mode .btn-danger-custom:hover,
+[data-theme="light"] .reminder-modal .btn-danger:hover,
+body.light-mode .reminder-modal .btn-danger:hover {
   background: #ef4444 !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3) !important;
+}
+
+[data-theme="light"] .btn-success-custom,
+body.light-mode .btn-success-custom,
+[data-theme="light"] .reminder-modal .btn-success,
+body.light-mode .reminder-modal .btn-success {
+  background: rgba(22, 163, 74, 0.12) !important;
+  color: #15803d !important;
+  border: 1.5px solid rgba(22, 163, 74, 0.35) !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="light"] .btn-success-custom:hover,
+body.light-mode .btn-success-custom:hover,
+[data-theme="light"] .reminder-modal .btn-success:hover,
+body.light-mode .reminder-modal .btn-success:hover {
+  background: #16a34a !important;
+  border-color: #16a34a !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3) !important;
+}
+
+[data-theme="light"] .btn-primary-custom,
+body.light-mode .btn-primary-custom,
+[data-theme="light"] .reminder-modal .btn-primary,
+body.light-mode .reminder-modal .btn-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
   color: #ffffff !important;
   border: none !important;
   font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35) !important;
+}
+
+[data-theme="light"] .btn-primary-custom:hover,
+body.light-mode .btn-primary-custom:hover,
+[data-theme="light"] .reminder-modal .btn-primary:hover,
+body.light-mode .reminder-modal .btn-primary:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%) !important;
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45) !important;
+  color: #ffffff !important;
 }
 
 /* ==========================================================================
@@ -4044,8 +4273,12 @@ body.light-mode .reminder-modal .form-select:focus {
 
 [data-theme="light"] .company-reminder-modal .modal-footer,
 body.light-mode .company-reminder-modal .modal-footer,
+[data-theme="light"] .company-reminder-modal-footer,
+body.light-mode .company-reminder-modal-footer,
 [data-theme="light"] .reminder-modal .modal-footer,
-body.light-mode .reminder-modal .modal-footer {
+body.light-mode .reminder-modal .modal-footer,
+[data-theme="light"] .reminder-modal-footer,
+body.light-mode .reminder-modal-footer {
   border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
   background: #f8fafc !important;
 }

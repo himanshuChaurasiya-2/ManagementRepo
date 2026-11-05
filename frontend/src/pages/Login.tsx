@@ -3,6 +3,16 @@ import type { FormEvent } from "react";
 import { Navigate, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import ThemeToggle from "../components/ThemeToggle";
+import {
+  TrendingUp,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  ArrowRight,
+  Loader2,
+} from "lucide-react";
 import "./Login.css";
 import "./AuthPages.css";
 
@@ -20,7 +30,6 @@ const Login = () => {
   // ============================================
   // REDIRECT ALREADY LOGGED-IN USER
   // ============================================
-
   if (user) {
     if (user.mustChangePassword) {
       return <Navigate to="/change-password" replace />;
@@ -38,14 +47,10 @@ const Login = () => {
   }
 
   // ============================================
-  // LOGIN
+  // LOGIN SUBMISSION
   // ============================================
-
-  const handleSubmit = async (
-    event: FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     setError("");
 
     if (!email || !password) {
@@ -55,52 +60,24 @@ const Login = () => {
 
     try {
       setLoading(true);
-
-      const loggedInUser = await login(
-        email,
-        password
-      );
-
-      // ========================================
-      // FORCE PASSWORD CHANGE
-      // ========================================
+      const loggedInUser = await login(email, password);
 
       if (loggedInUser.mustChangePassword) {
-        navigate("/change-password", {
-          replace: true,
-        });
+        navigate("/change-password", { replace: true });
         return;
       }
-
-      // ========================================
-      // ADMIN
-      // ========================================
 
       if (loggedInUser.role === "admin") {
-        navigate("/admin/dashboard", {
-          replace: true,
-        });
+        navigate("/admin/dashboard", { replace: true });
         return;
       }
-
-      // ========================================
-      // SALES
-      // ========================================
 
       if (loggedInUser.role === "sales") {
-        navigate("/sales/dashboard", {
-          replace: true,
-        });
+        navigate("/sales/dashboard", { replace: true });
         return;
       }
 
-      // ========================================
-      // OTHER USERS
-      // ========================================
-
-      navigate("/dashboard", {
-        replace: true,
-      });
+      navigate("/dashboard", { replace: true });
     } catch (error: any) {
       if (error?.response?.data?.message) {
         setError(error.response.data.message);
@@ -114,70 +91,41 @@ const Login = () => {
     }
   };
 
-  // ============================================
-  // UI
-  // ============================================
-
   return (
-    <div className="login-page-wrapper">
+    <div className="login-page-wrapper d-flex align-items-center justify-content-center p-3">
       <ThemeToggle className="theme-toggle-floating" showLabel />
-      <div className="login-card-container">
+
+      <div className="login-card-container w-100">
         <div className="login-card">
-          
+
           {/* HEADER & BRANDING */}
-          <div className="login-header">
-            <div className="login-logo-badge">
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3 3v18h18" />
-                <path d="m19 9-5 5-4-4-3 3" />
-              </svg>
+          <div className="login-header text-center mb-4">
+            <div className="login-logo-badge d-inline-flex align-items-center justify-content-center mb-3">
+              <TrendingUp size={28} strokeWidth={2.2} />
             </div>
 
-            <h1 className="login-title">Sales Dashboard</h1>
-            <p className="login-subtitle">Sign in to access your sales portal</p>
+            <h1 className="login-title mb-2">Sales Dashboard</h1>
+            <p className="login-subtitle mb-0">Sign in to access your sales portal</p>
           </div>
 
           {/* ERROR ALERT */}
           {error && (
-            <div className="login-error-alert" role="alert">
-              <svg
-                className="login-error-icon"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
+            <div className="login-error-alert d-flex align-items-center gap-2 mb-3" role="alert">
+              <AlertCircle size={18} className="flex-shrink-0 text-danger" />
               <span>{error}</span>
             </div>
           )}
 
           {/* LOGIN FORM */}
-          <form onSubmit={handleSubmit} className="login-form">
+          <form onSubmit={handleSubmit} className="login-form d-flex flex-column gap-3">
 
             {/* EMAIL */}
             <div className="login-field">
-              <label htmlFor="email" className="login-label">
+              <label htmlFor="email" className="login-label mb-1">
                 Email Address
               </label>
 
-              <div className="login-input-wrapper">
+              <div className="login-input-wrapper position-relative">
                 <input
                   id="email"
                   type="email"
@@ -185,31 +133,19 @@ const Login = () => {
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="name@company.com"
                   autoComplete="email"
-                  className="login-input"
+                  className="login-input w-100"
                   disabled={loading}
                 />
-                <span className="login-input-icon">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect width="20" height="16" x="2" y="4" rx="2" />
-                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                  </svg>
+                <span className="login-input-icon position-absolute d-flex align-items-center">
+                  <Mail size={18} />
                 </span>
               </div>
             </div>
 
             {/* PASSWORD */}
             <div className="login-field">
-              <div className="auth-label-row">
-                <label htmlFor="password" className="login-label">
+              <div className="auth-label-row d-flex justify-content-between align-items-center mb-1">
+                <label htmlFor="password" className="login-label mb-0">
                   Password
                 </label>
                 <Link to="/forgot-password" className="auth-forgot-link">
@@ -217,7 +153,7 @@ const Login = () => {
                 </Link>
               </div>
 
-              <div className="login-input-wrapper">
+              <div className="login-input-wrapper position-relative">
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -225,63 +161,21 @@ const Login = () => {
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Enter your password"
                   autoComplete="current-password"
-                  className="login-input has-toggle"
+                  className="login-input login-input-password w-100"
                   disabled={loading}
                 />
-                <span className="login-input-icon">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
+                <span className="login-input-icon position-absolute d-flex align-items-center">
+                  <Lock size={18} />
                 </span>
 
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="login-toggle-password"
+                  className="login-toggle-password position-absolute d-flex align-items-center justify-content-center p-0 border-0 bg-transparent"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   tabIndex={-1}
                 >
-                  {showPassword ? (
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                      <line x1="2" y1="2" x2="22" y2="22" />
-                    </svg>
-                  ) : (
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
@@ -290,41 +184,17 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="login-submit-btn"
+              className="login-submit-btn d-flex align-items-center justify-content-center gap-2 w-100 mt-2"
             >
               {loading ? (
                 <>
-                  <svg
-                    className="login-spinner"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                  </svg>
+                  <Loader2 size={18} className="login-spinner flex-shrink-0" />
                   <span>Signing in...</span>
                 </>
               ) : (
                 <>
                   <span>Sign In</span>
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M5 12h14" />
-                    <path d="m12 5 7 7-7 7" />
-                  </svg>
+                  <ArrowRight size={18} className="flex-shrink-0" />
                 </>
               )}
             </button>

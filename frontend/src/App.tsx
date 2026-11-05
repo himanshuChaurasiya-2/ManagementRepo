@@ -34,6 +34,7 @@ import ReminderNotification from "./components/ReminderNotification";
 import Lead from "./pages/sales/Lead";
 import AdminLeads from "./pages/admin/AdminLeads";
 import MonthlyReportDashboard from "./pages/reports/MonthlyReportDashboard";
+import CrmDashboard from "./components/CrmDashboard/CrmDashboard";
 
 function App() {
   return (
@@ -123,6 +124,12 @@ function App() {
                 <Route
                   path="/reports"
                   element={<MonthlyReportDashboard />}
+                />
+
+                {/* Standalone Modern CRM Dashboard (Custom Sidebar & Top Navigation) */}
+                <Route
+                  path="/crm-dashboard"
+                  element={<CrmDashboard embedded={false} />}
                 />
 
               </Route>

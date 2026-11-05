@@ -61,14 +61,35 @@ export const protect = async (
     }
 
     // VERIFY TOKEN
-    const decoded = jwt.verify(
-      token,
-      secret
-    ) as JwtPayload;
+    let decoded: JwtPayload;
+    try {
+      decoded = jwt.verify(
+        token,
+        secret
+      ) as JwtPayload;
+    } catch (err: any) {
+      if (err instanceof jwt.TokenExpiredError) {
+        // Normal lifecycle expiration - return TOKEN_EXPIRED code for silent refresh
+        res.status(401).json({
+          success: false,
+          code: "TOKEN_EXPIRED",
+          message: "Session token has expired. Please refresh your session.",
+        });
+        return;
+      }
+
+      res.status(401).json({
+        success: false,
+        code: "INVALID_TOKEN",
+        message: "Invalid authentication token",
+      });
+      return;
+    }
 
     if (!decoded.userId) {
       res.status(401).json({
         success: false,
+        code: "INVALID_TOKEN_PAYLOAD",
         message: "Invalid token payload",
       });
 
@@ -80,13 +101,14 @@ export const protect = async (
 
     // GET USER FROM DATABASE
     const user = await User.findById(decoded.userId).select(
-      "_id name email role"
+      "_id name email role status"
     );
 
-    if (!user) {
+    if (!user || user.status === "inactive") {
       res.status(401).json({
         success: false,
-        message: "User not found",
+        code: "USER_NOT_FOUND",
+        message: "User not found or account inactive",
       });
 
       return;
@@ -103,11 +125,11 @@ export const protect = async (
 
     next();
   } catch (error) {
-    console.error("Authentication error:", error);
+    console.error("Unexpected authentication error:", error);
 
-    res.status(401).json({
+    res.status(500).json({
       success: false,
-      message: "Invalid or expired token",
+      message: "Internal authentication error",
     });
   }
 };

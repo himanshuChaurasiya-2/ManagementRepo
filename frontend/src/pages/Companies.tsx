@@ -668,7 +668,7 @@ const Company = () => {
         ) : filteredCompanies.length === 0 ? (
           /* EMPTY STATE */
           <div className="company-empty">
-            <div className="company-empty-icon" style={{ display: "inline-flex", justifyContent: "center", alignItems: "center", color: "rgba(255, 255, 255, 0.4)", marginBottom: "12px" }}>
+            <div className="company-empty-icon" style={{ display: "inline-flex", justifyContent: "center", alignItems: "center", marginBottom: "12px" }}>
               <Building2 size={46} strokeWidth={1.5} />
             </div>
             <h3>No companies found</h3>
@@ -689,8 +689,9 @@ const Company = () => {
                 Reset Search & Filters
               </button>
             ) : (
-              <button className="company-add-btn" onClick={openAddModal}>
-                + Add Company
+              <button type="button" className="company-add-btn" onClick={openAddModal}>
+                <Plus size={15} style={{ marginRight: 6 }} />
+                Add Company
               </button>
             )}
           </div>
@@ -1373,6 +1374,7 @@ const Company = () => {
                   <div style={{ position: "relative" }}>
                     <input
                       type="text"
+                      className={`company-meta-input ${form.adAccountId ? "is-linked" : ""}`}
                       placeholder={
                         metaAccounts.length === 0
                           ? "Loading accessible Meta ad accounts..."
@@ -1389,60 +1391,27 @@ const Company = () => {
                         setShowMetaDropdown(true);
                       }}
                       onFocus={() => setShowMetaDropdown(true)}
-                      style={{
-                        width: "100%",
-                        padding: "10px 14px",
-                        background: "var(--input-bg, #0f172a)",
-                        border: form.adAccountId ? "1px solid #3b82f6" : "1px solid var(--border-color, rgba(255, 255, 255, 0.15))",
-                        borderRadius: "8px",
-                        color: "var(--text-primary, #f8fafc)",
-                        fontSize: "13.5px",
-                      }}
                     />
 
                     {/* Clear search icon button if typing */}
                     {metaSearch && (
                       <button
                         type="button"
+                        className="company-meta-clear-btn"
                         onClick={() => {
                           setMetaSearch("");
                           setShowMetaDropdown(false);
                         }}
-                        style={{
-                          position: "absolute",
-                          right: "10px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          background: "transparent",
-                          border: "none",
-                          color: "#94a3b8",
-                          cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
+                        title="Clear search"
                       >
-                        <X size={13} />
+                        <X size={14} />
                       </button>
                     )}
                   </div>
 
                   {/* Selected Account Badge */}
                   {form.adAccountId && (
-                    <div
-                      style={{
-                        marginTop: "6px",
-                        padding: "6px 10px",
-                        background: "rgba(59, 130, 246, 0.1)",
-                        border: "1px solid rgba(59, 130, 246, 0.25)",
-                        borderRadius: "6px",
-                        fontSize: "12px",
-                        color: "#93c5fd",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                      }}
-                    >
+                    <div className="company-meta-linked-badge">
                       <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
                         <CheckCircle2 size={13} style={{ color: "#10b981" }} /> Linked:
                       </span>
@@ -1457,37 +1426,14 @@ const Company = () => {
 
                   {/* Dropdown Suggestions List */}
                   {showMetaDropdown && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "100%",
-                        left: 0,
-                        right: 0,
-                        background: "#0f172a",
-                        border: "1px solid rgba(255, 255, 255, 0.15)",
-                        borderRadius: "8px",
-                        marginTop: "4px",
-                        maxHeight: "220px",
-                        overflowY: "auto",
-                        zIndex: 9999,
-                        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.5)",
-                      }}
-                    >
+                    <div className="company-meta-dropdown">
                       <div
+                        className="company-meta-dropdown-item is-none"
                         onClick={() => {
                           setForm((prev) => ({ ...prev, adAccountId: "" }));
                           setMetaSearch("");
                           setShowMetaDropdown(false);
                         }}
-                        style={{
-                          padding: "10px 14px",
-                          fontSize: "12.5px",
-                          color: "#94a3b8",
-                          cursor: "pointer",
-                          borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                       >
                         None (Don't connect Meta Ad Account now)
                       </div>
@@ -1505,32 +1451,19 @@ const Company = () => {
                         .map((acc) => (
                           <div
                             key={acc.id}
+                            className={`company-meta-dropdown-item ${form.adAccountId === acc.id ? "is-selected" : ""}`}
                             onClick={() => {
                               setForm((prev) => ({ ...prev, adAccountId: acc.id }));
                               setMetaSearch("");
                               setShowMetaDropdown(false);
                             }}
-                            style={{
-                              padding: "10px 14px",
-                              fontSize: "13px",
-                              cursor: "pointer",
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              background: form.adAccountId === acc.id ? "rgba(59, 130, 246, 0.15)" : "transparent",
-                              borderBottom: "1px solid rgba(255, 255, 255, 0.04)",
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(59, 130, 246, 0.1)")}
-                            onMouseLeave={(e) =>
-                              (e.currentTarget.style.background = form.adAccountId === acc.id ? "rgba(59, 130, 246, 0.15)" : "transparent")
-                            }
                           >
                             <div>
-                              <div style={{ fontWeight: 600, color: "#f8fafc" }}>{acc.name}</div>
-                              <div style={{ fontSize: "11px", color: "#64748b" }}>ID: {acc.id}</div>
+                              <div className="company-meta-item-title">{acc.name}</div>
+                              <div className="company-meta-item-sub">ID: {acc.id}</div>
                             </div>
-                            <div style={{ textAlign: "right" }}>
-                              <span style={{ fontSize: "11px", background: "#1e293b", padding: "2px 6px", borderRadius: "4px", color: "#93c5fd" }}>
+                            <div>
+                              <span className="company-meta-currency-tag">
                                 {acc.currency}
                               </span>
                             </div>
@@ -1545,7 +1478,7 @@ const Company = () => {
                           acc.id.toLowerCase().includes(q)
                         );
                       }).length === 0 && (
-                        <div style={{ padding: "14px", fontSize: "12.5px", color: "#94a3b8", textAlign: "center" }}>
+                        <div className="company-meta-empty">
                           No matching Meta Ad Account found for "{metaSearch}".
                         </div>
                       )}

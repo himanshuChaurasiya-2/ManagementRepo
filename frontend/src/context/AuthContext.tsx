@@ -10,6 +10,7 @@ import {
   loginUser,
   changePassword as changePasswordApi,
 } from "../services/authService";
+import api from "../services/api";
 
 import type { User } from "../types/auth";
 
@@ -66,6 +67,13 @@ export const AuthProvider = ({
 
     localStorage.setItem("token", response.token);
     localStorage.setItem(
+      "accessToken",
+      response.accessToken || response.token
+    );
+    if (response.refreshToken) {
+      localStorage.setItem("refreshToken", response.refreshToken);
+    }
+    localStorage.setItem(
       "user",
       JSON.stringify(response.user)
     );
@@ -76,7 +84,14 @@ export const AuthProvider = ({
   };
 
   const logout = () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (refreshToken) {
+      api.post("/auth/logout", { refreshToken }).catch(() => {});
+    }
+
     localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
 
     setUser(null);

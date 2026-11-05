@@ -54,6 +54,14 @@
   font-weight: 400;
 }
 
+/* Header Actions Container */
+.company-calendar-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 /* Add Reminder Button */
 .company-calendar-add-btn {
   display: inline-flex !important;
@@ -71,12 +79,19 @@
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
   box-shadow: 0 4px 14px -2px rgba(99, 102, 241, 0.4) !important;
   text-decoration: none !important;
+  white-space: nowrap !important;
 }
 
-.company-calendar-add-btn:hover {
+.company-calendar-add-btn:hover:not(:disabled) {
   transform: translateY(-2px) !important;
   box-shadow: 0 8px 22px 0 rgba(99, 102, 241, 0.5) !important;
   background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%) !important;
+}
+
+.company-calendar-add-btn:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
 }
 
 /* Calendar Single Main Card Container */
@@ -476,21 +491,39 @@
 }
 
 .company-reminder-modal .modal-header .btn-close {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 1 !important;
+  padding: 0 !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  flex-shrink: 0 !important;
+}
+
+.company-reminder-modal .modal-header .btn-close::before {
+  content: "✕" !important;
+  font-size: 13.5px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  line-height: 1 !important;
 }
 
 .company-reminder-modal .modal-header .btn-close:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(239, 68, 68, 0.2) !important;
+  border-color: rgba(239, 68, 68, 0.5) !important;
+  color: #fca5a5 !important;
+  transform: rotate(90deg) !important;
+}
+
+.company-reminder-modal .modal-header .btn-close:hover::before {
+  color: #fca5a5 !important;
 }
 
 .company-reminder-modal .modal-body {
@@ -616,14 +649,22 @@
 }
 
 /* Modal Footer & Action Buttons */
-.company-reminder-modal .modal-footer {
-  padding: 18px 26px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: transparent;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 10px;
+.company-reminder-modal .modal-footer,
+.company-reminder-modal-footer {
+  padding: 18px 26px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: transparent !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.company-reminder-footer-left,
+.company-reminder-footer-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
 }
 
 .btn-primary-custom {
@@ -636,13 +677,23 @@
   font-size: 13.5px !important;
   cursor: pointer !important;
   box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4) !important;
-  transition: all 0.2s ease !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  letter-spacing: 0.2px !important;
 }
 
 .btn-primary-custom:hover {
   background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%) !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5) !important;
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.55) !important;
+  color: #ffffff !important;
+}
+
+.btn-primary-custom:active {
+  transform: translateY(0) !important;
 }
 
 .btn-light-custom {
@@ -655,6 +706,9 @@
   font-size: 13.5px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .btn-light-custom:hover {
@@ -663,20 +717,59 @@
 }
 
 .btn-danger-custom {
-  background: rgba(239, 68, 68, 0.15) !important;
+  background: rgba(239, 68, 68, 0.16) !important;
   color: #f87171 !important;
-  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  border: 1px solid rgba(239, 68, 68, 0.35) !important;
   padding: 10px 20px !important;
   border-radius: 12px !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   font-size: 13.5px !important;
   cursor: pointer !important;
-  transition: all 0.2s ease !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  letter-spacing: 0.2px !important;
 }
 
 .btn-danger-custom:hover {
-  background: rgba(239, 68, 68, 0.25) !important;
+  background: rgba(239, 68, 68, 0.28) !important;
+  border-color: rgba(239, 68, 68, 0.6) !important;
   color: #ffffff !important;
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35) !important;
+}
+
+.btn-danger-custom:active {
+  transform: translateY(0) !important;
+}
+
+.btn-success-custom {
+  background: rgba(34, 197, 94, 0.16) !important;
+  color: #4ade80 !important;
+  border: 1px solid rgba(34, 197, 94, 0.35) !important;
+  padding: 10px 20px !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  font-size: 13.5px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  letter-spacing: 0.2px !important;
+}
+
+.btn-success-custom:hover {
+  background: rgba(34, 197, 94, 0.28) !important;
+  border-color: rgba(34, 197, 94, 0.6) !important;
+  color: #ffffff !important;
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35) !important;
+}
+
+.btn-success-custom:active {
+  transform: translateY(0) !important;
 }
 
 /* Responsive */
@@ -839,7 +932,7 @@
   font-weight: 800;
   color: #ffffff;
   line-height: 1.35;
-  margin: 0 0 10px;
+  /* margin: 0 0 10px; */
   letter-spacing: -0.02em;
   word-break: break-word;
 }
@@ -912,8 +1005,8 @@
 }
 
 .reminder-view-card {
-  background: #f8fafc;
-  border: 1px solid #edf2f7;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   padding: 11px 13px;
   display: flex;
@@ -923,23 +1016,23 @@
 }
 
 .reminder-view-card:hover {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .reminder-view-card-icon {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  color: #4f46e5;
+  color: #818cf8;
   flex-shrink: 0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .reminder-view-card-content {
@@ -951,7 +1044,7 @@
 .reminder-view-card-label {
   font-size: 11px;
   font-weight: 600;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-bottom: 2px;
@@ -960,14 +1053,14 @@
 .reminder-view-card-value {
   font-size: 13px;
   font-weight: 700;
-  color: #1e293b;
+  color: #f8fafc;
   word-break: break-word;
 }
 
 /* Description Section */
 .reminder-view-desc-section {
-  background: #f8fafc;
-  border: 1px solid #edf2f7;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   padding: 14px 16px;
 }
@@ -978,7 +1071,7 @@
   gap: 6px;
   font-size: 11.5px;
   font-weight: 700;
-  color: #475569;
+  color: #cbd5e1;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-bottom: 6px;
@@ -987,7 +1080,7 @@
 .reminder-view-desc-content {
   font-size: 13.5px;
   line-height: 1.55;
-  color: #334155;
+  color: rgba(255, 255, 255, 0.88);
   white-space: pre-wrap;
   word-break: break-word;
   margin: 0;
@@ -996,49 +1089,110 @@
 .reminder-view-desc-empty {
   font-size: 13px;
   font-style: italic;
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.45);
   margin: 0;
 }
 
 /* Footer & Buttons */
 .reminder-view-modal .modal-footer {
-  padding: 15px 24px !important;
-  border-top: 1px solid #f1f5f9 !important;
-  background: #f8fafc !important;
+  padding: 16px 24px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: transparent !important;
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  gap: 10px !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
 }
 
 .reminder-view-footer-left,
 .reminder-view-footer-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
 }
 
 .reminder-btn-edit {
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
   border: none !important;
   color: #ffffff !important;
-  padding: 9px 18px !important;
-  border-radius: 10px !important;
+  padding: 10px 22px !important;
+  border-radius: 12px !important;
   font-size: 13.5px !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   font-family: inherit !important;
   display: inline-flex !important;
   align-items: center !important;
+  justify-content: center !important;
   gap: 6px !important;
-  box-shadow: 0 4px 12px -2px rgba(79, 70, 229, 0.35) !important;
-  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer !important;
+  letter-spacing: 0.2px !important;
+  text-decoration: none !important;
 }
 
 .reminder-btn-edit:hover {
-  background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%) !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 6px 16px 0 rgba(79, 70, 229, 0.45) !important;
+  background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%) !important;
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.55) !important;
   color: #ffffff !important;
+}
+
+.reminder-btn-edit:active {
+  transform: translateY(0) !important;
+}
+
+/* Responsive Rules for Calendar View and Modal */
+@media (max-width: 768px) {
+  .company-calendar-card {
+    padding: 14px 12px 10px;
+    border-radius: 18px;
+  }
+
+  .fc .fc-toolbar.fc-header-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .fc .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .fc .fc-button {
+    font-size: 11.5px !important;
+    height: 32px !important;
+    padding: 3px 10px !important;
+  }
+
+  .fc-theme-standard th {
+    font-size: 10px;
+    padding: 6px 0 !important;
+  }
+
+  .fc .fc-daygrid-day-number {
+    font-size: 11px !important;
+    padding: 2px 4px !important;
+  }
+
+  .fc .fc-daygrid-day-frame {
+    min-height: 52px !important;
+  }
+
+  .fc-event,
+  .fc-daygrid-event {
+    font-size: 10px !important;
+    padding: 1.5px 4px !important;
+  }
 }
 
 @media (max-width: 576px) {
@@ -1046,13 +1200,64 @@
     grid-template-columns: 1fr;
     gap: 10px;
   }
-  .reminder-view-modal .modal-footer {
+
+  .reminder-view-modal .modal-footer,
+  .company-reminder-modal .modal-footer,
+  .company-reminder-modal-footer {
+    flex-direction: column-reverse !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 14px 16px !important;
+  }
+
+  .reminder-view-footer-left,
+  .reminder-view-footer-right,
+  .company-reminder-footer-left,
+  .company-reminder-footer-right {
+    display: flex !important;
     flex-direction: column !important;
     align-items: stretch !important;
+    width: 100% !important;
+    gap: 10px !important;
   }
-  .reminder-view-footer-left,
-  .reminder-view-footer-right {
-    justify-content: space-between;
-    width: 100%;
+
+  .reminder-view-modal .modal-footer .btn,
+  .company-reminder-modal .modal-footer .btn,
+  .company-reminder-modal-footer .btn,
+  .reminder-btn-edit,
+  .btn-primary-custom,
+  .btn-danger-custom,
+  .btn-success-custom,
+  .btn-light-custom {
+    width: 100% !important;
+    min-height: 44px !important;
+    font-size: 14px !important;
+    justify-content: center !important;
+    margin: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .company-calendar-card {
+    padding: 10px 8px 8px;
+    border-radius: 14px;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 15px;
+  }
+
+  .fc .fc-button {
+    font-size: 10.5px !important;
+    height: 30px !important;
+    padding: 2px 8px !important;
+  }
+
+  .fc-theme-standard th {
+    font-size: 9.5px;
+  }
+
+  .fc .fc-daygrid-day-frame {
+    min-height: 44px !important;
   }
 }

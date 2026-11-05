@@ -277,7 +277,7 @@ const SalesCompanies = () => {
         ) : filteredCompanies.length === 0 ? (
           /* EMPTY STATE */
           <div className="company-empty">
-            <div className="company-empty-icon" style={{ display: "inline-flex", justifyContent: "center", alignItems: "center", color: "rgba(255, 255, 255, 0.4)", marginBottom: "12px" }}>
+            <div className="company-empty-icon" style={{ display: "inline-flex", justifyContent: "center", alignItems: "center", marginBottom: "12px" }}>
               <Building2 size={46} strokeWidth={1.5} />
             </div>
             <h3>No companies found</h3>

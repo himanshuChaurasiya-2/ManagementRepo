@@ -12,6 +12,7 @@ export interface IUser extends Document {
   resetPasswordExpires?: Date;
   invitationToken?: string;
   invitationExpires?: Date;
+  refreshToken?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -77,6 +78,11 @@ const userSchema = new Schema<IUser>(
 
     invitationExpires: {
       type: Date,
+      default: null,
+    },
+
+    refreshToken: {
+      type: String,
       default: null,
     },
   },

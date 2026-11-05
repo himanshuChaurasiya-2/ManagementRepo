@@ -2,6 +2,21 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import ThemeToggle from "../components/ThemeToggle";
+import {
+  Lock,
+  KeyRound,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  Dot,
+  Loader2,
+} from "lucide-react";
 import "./ChangePassword.css";
 
 const ChangePassword = () => {
@@ -25,16 +40,14 @@ const ChangePassword = () => {
   }
 
   // ============================================
-  // PASSWORD STRENGTH & VALIDATION CALCULATIONS
+  // PASSWORD STRENGTH & VALIDATION
   // ============================================
-
   const hasMinLength = newPassword.length >= 8;
   const hasUpperLower = /[a-z]/.test(newPassword) && /[A-Z]/.test(newPassword);
   const hasNumberOrSymbol = /[0-9]/.test(newPassword) || /[^A-Za-z0-9]/.test(newPassword);
   const isDifferentFromCurrent = currentPassword ? newPassword !== currentPassword : true;
   const isMatch = confirmPassword.length > 0 && newPassword === confirmPassword;
 
-  // Calculate score 0 to 4
   const calculateStrength = () => {
     if (!newPassword) return { score: 0, label: "None", level: "weak" };
     let score = 0;
@@ -54,10 +67,8 @@ const ChangePassword = () => {
   // ============================================
   // SUBMISSION
   // ============================================
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     setError("");
     setSuccess("");
 
@@ -83,9 +94,7 @@ const ChangePassword = () => {
 
     try {
       setLoading(true);
-
       await changePassword(currentPassword, newPassword);
-
       setSuccess("Password changed successfully! Redirecting to your dashboard...");
 
       setTimeout(() => {
@@ -121,100 +130,64 @@ const ChangePassword = () => {
   const userInitial = userName.charAt(0).toUpperCase();
 
   return (
-    <div className="cp-page-wrapper">
-      <div className="cp-card-container">
+    <div className="cp-page-wrapper d-flex align-items-center justify-content-center p-3">
+      <ThemeToggle className="theme-toggle-floating" showLabel />
+
+      <div className="cp-card-container w-100">
         <div className="cp-card">
-          
+
           {/* HEADER & BRANDING */}
-          <div className="cp-header">
-            <div className="cp-logo-badge">
-              <svg
-                width="28"
-                height="28"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                <circle cx="12" cy="16" r="1.5" />
-              </svg>
+          <div className="cp-header text-center mb-4">
+            <div className="cp-logo-badge d-inline-flex align-items-center justify-content-center mb-3">
+              <Lock size={26} strokeWidth={2.2} />
             </div>
 
-            <h1 className="cp-title">
+            <h1 className="cp-title mb-2">
               {user.mustChangePassword ? "Set New Password" : "Change Password"}
             </h1>
-            
-            <p className="cp-subtitle">
+
+            <p className="cp-subtitle mb-3">
               {user.mustChangePassword
                 ? "You are required to set a new password before accessing your portal."
                 : "Update your account password to maintain security."}
             </p>
 
             {/* USER IDENTITY CHIP */}
-            <div className="cp-user-chip">
-              <span className="cp-user-chip-avatar">{userInitial}</span>
-              <span>{user.email}</span>
-              <span className="cp-user-chip-role">({user.role})</span>
+            <div className="cp-user-chip d-inline-flex align-items-center gap-2">
+              <span className="cp-user-chip-avatar d-flex align-items-center justify-content-center">
+                {userInitial}
+              </span>
+              <span className="text-truncate">{user.email}</span>
+              <span className="cp-user-chip-role text-capitalize">({user.role})</span>
             </div>
           </div>
 
           {/* ERROR ALERT */}
           {error && (
-            <div className="cp-alert error" role="alert">
-              <svg
-                className="cp-alert-icon"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
+            <div className="cp-alert cp-alert-error d-flex align-items-center gap-2 mb-3" role="alert">
+              <AlertCircle size={18} className="flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           {/* SUCCESS ALERT */}
           {success && (
-            <div className="cp-alert success" role="status">
-              <svg
-                className="cp-alert-icon"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                <polyline points="22 4 12 14.01 9 11.01" />
-              </svg>
+            <div className="cp-alert cp-alert-success d-flex align-items-center gap-2 mb-3" role="status">
+              <CheckCircle2 size={18} className="flex-shrink-0" />
               <span>{success}</span>
             </div>
           )}
 
           {/* FORM */}
-          <form onSubmit={handleSubmit} className="cp-form">
-            
+          <form onSubmit={handleSubmit} className="cp-form d-flex flex-column gap-3">
+
             {/* CURRENT PASSWORD */}
             <div className="cp-field">
-              <label htmlFor="currentPassword" className="cp-label">
+              <label htmlFor="currentPassword" className="cp-label d-flex justify-content-between mb-1">
                 <span>Current Password</span>
               </label>
 
-              <div className="cp-input-wrapper">
+              <div className="cp-input-wrapper position-relative">
                 <input
                   id="currentPassword"
                   type={showCurrentPassword ? "text" : "password"}
@@ -222,57 +195,33 @@ const ChangePassword = () => {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="Enter your current password"
                   autoComplete="current-password"
-                  className="cp-input"
+                  className="cp-input w-100"
                   disabled={loading}
                 />
-                <span className="cp-input-icon">
-                  <svg
-                    width="17"
-                    height="17"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                  </svg>
+                <span className="cp-input-icon position-absolute d-flex align-items-center">
+                  <Lock size={17} />
                 </span>
 
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="cp-toggle-password"
+                  className="cp-toggle-password position-absolute d-flex align-items-center justify-content-center p-0 border-0 bg-transparent"
                   aria-label={showCurrentPassword ? "Hide password" : "Show password"}
                   tabIndex={-1}
                 >
-                  {showCurrentPassword ? (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                      <line x1="2" y1="2" x2="22" y2="22" />
-                    </svg>
-                  ) : (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
+                  {showCurrentPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
             </div>
 
             {/* NEW PASSWORD */}
             <div className="cp-field">
-              <label htmlFor="newPassword" className="cp-label">
+              <label htmlFor="newPassword" className="cp-label d-flex justify-content-between align-items-center mb-1">
                 <span>New Password</span>
                 <span className="cp-label-hint">Min. 8 characters</span>
               </label>
 
-              <div className="cp-input-wrapper">
+              <div className="cp-input-wrapper position-relative">
                 <input
                   id="newPassword"
                   type={showNewPassword ? "text" : "password"}
@@ -280,92 +229,69 @@ const ChangePassword = () => {
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter your new password"
                   autoComplete="new-password"
-                  className="cp-input"
+                  className="cp-input w-100"
                   disabled={loading}
                 />
-                <span className="cp-input-icon">
-                  <svg
-                    width="17"
-                    height="17"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m21 2-2 2m-1.5 1.5L14 9a5 5 0 1 0-2 2l3.5 3.5 1.5-1.5 2 2 4-4-1.5-1.5 2.5-2.5a1 1 0 0 0 0-1.41l-2.09-2.09a1 1 0 0 0-1.41 0Z" />
-                  </svg>
+                <span className="cp-input-icon position-absolute d-flex align-items-center">
+                  <KeyRound size={17} />
                 </span>
 
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="cp-toggle-password"
+                  className="cp-toggle-password position-absolute d-flex align-items-center justify-content-center p-0 border-0 bg-transparent"
                   aria-label={showNewPassword ? "Hide password" : "Show password"}
                   tabIndex={-1}
                 >
-                  {showNewPassword ? (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                      <line x1="2" y1="2" x2="22" y2="22" />
-                    </svg>
-                  ) : (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
+                  {showNewPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
 
               {/* REAL-TIME STRENGTH METER */}
               {newPassword && (
-                <div className="cp-strength-container">
-                  <div className="cp-strength-header">
+                <div className="cp-strength-container mt-2">
+                  <div className="cp-strength-header d-flex justify-content-between align-items-center mb-1">
                     <span className="cp-strength-text">Password Strength</span>
                     <span className={`cp-strength-value ${strength.level}`}>
                       {strength.label}
                     </span>
                   </div>
-                  <div className="cp-strength-bars">
-                    <div className={`cp-strength-bar ${strength.score >= 1 ? `active ${strength.level}` : ""}`} />
-                    <div className={`cp-strength-bar ${strength.score >= 2 ? `active ${strength.level}` : ""}`} />
-                    <div className={`cp-strength-bar ${strength.score >= 3 ? `active ${strength.level}` : ""}`} />
-                    <div className={`cp-strength-bar ${strength.score >= 4 ? `active ${strength.level}` : ""}`} />
+                  <div className="cp-strength-bars d-flex gap-1">
+                    <div className={`cp-strength-bar flex-grow-1 ${strength.score >= 1 ? `active ${strength.level}` : ""}`} />
+                    <div className={`cp-strength-bar flex-grow-1 ${strength.score >= 2 ? `active ${strength.level}` : ""}`} />
+                    <div className={`cp-strength-bar flex-grow-1 ${strength.score >= 3 ? `active ${strength.level}` : ""}`} />
+                    <div className={`cp-strength-bar flex-grow-1 ${strength.score >= 4 ? `active ${strength.level}` : ""}`} />
                   </div>
                 </div>
               )}
 
               {/* RULES CHECKLIST */}
               {newPassword && (
-                <div className="cp-rules-list">
-                  <div className={`cp-rule-item ${hasMinLength ? "valid" : ""}`}>
-                    <span className="cp-rule-icon">
-                      {hasMinLength ? "✓" : "•"}
+                <div className="cp-rules-list mt-2">
+                  <div className={`cp-rule-item d-flex align-items-center gap-1 ${hasMinLength ? "valid" : ""}`}>
+                    <span className="cp-rule-icon d-flex align-items-center justify-content-center">
+                      {hasMinLength ? <Check size={13} strokeWidth={2.6} /> : <Dot size={18} />}
                     </span>
                     <span>8+ characters</span>
                   </div>
 
-                  <div className={`cp-rule-item ${hasUpperLower ? "valid" : ""}`}>
-                    <span className="cp-rule-icon">
-                      {hasUpperLower ? "✓" : "•"}
+                  <div className={`cp-rule-item d-flex align-items-center gap-1 ${hasUpperLower ? "valid" : ""}`}>
+                    <span className="cp-rule-icon d-flex align-items-center justify-content-center">
+                      {hasUpperLower ? <Check size={13} strokeWidth={2.6} /> : <Dot size={18} />}
                     </span>
                     <span>Upper & lowercase</span>
                   </div>
 
-                  <div className={`cp-rule-item ${hasNumberOrSymbol ? "valid" : ""}`}>
-                    <span className="cp-rule-icon">
-                      {hasNumberOrSymbol ? "✓" : "•"}
+                  <div className={`cp-rule-item d-flex align-items-center gap-1 ${hasNumberOrSymbol ? "valid" : ""}`}>
+                    <span className="cp-rule-icon d-flex align-items-center justify-content-center">
+                      {hasNumberOrSymbol ? <Check size={13} strokeWidth={2.6} /> : <Dot size={18} />}
                     </span>
                     <span>Number or symbol</span>
                   </div>
 
-                  <div className={`cp-rule-item ${currentPassword && isDifferentFromCurrent ? "valid" : ""}`}>
-                    <span className="cp-rule-icon">
-                      {currentPassword && isDifferentFromCurrent ? "✓" : "•"}
+                  <div className={`cp-rule-item d-flex align-items-center gap-1 ${currentPassword && isDifferentFromCurrent ? "valid" : ""}`}>
+                    <span className="cp-rule-icon d-flex align-items-center justify-content-center">
+                      {currentPassword && isDifferentFromCurrent ? <Check size={13} strokeWidth={2.6} /> : <Dot size={18} />}
                     </span>
                     <span>Different from current</span>
                   </div>
@@ -375,16 +301,16 @@ const ChangePassword = () => {
 
             {/* CONFIRM NEW PASSWORD */}
             <div className="cp-field">
-              <label htmlFor="confirmPassword" className="cp-label">
+              <label htmlFor="confirmPassword" className="cp-label d-flex justify-content-between align-items-center mb-1">
                 <span>Confirm New Password</span>
                 {confirmPassword && (
-                  <span className="cp-label-hint" style={{ color: isMatch ? "#4ade80" : "#f87171" }}>
+                  <span className={`cp-label-hint ${isMatch ? "text-success-custom" : "text-danger-custom"}`}>
                     {isMatch ? "✓ Passwords match" : "Does not match"}
                   </span>
                 )}
               </label>
 
-              <div className="cp-input-wrapper">
+              <div className="cp-input-wrapper position-relative">
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
@@ -392,89 +318,41 @@ const ChangePassword = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter your new password"
                   autoComplete="new-password"
-                  className="cp-input"
+                  className="cp-input w-100"
                   disabled={loading}
                 />
-                <span className="cp-input-icon">
-                  <svg
-                    width="17"
-                    height="17"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-                    <path d="m9 12 2 2 4-4" />
-                  </svg>
+                <span className="cp-input-icon position-absolute d-flex align-items-center">
+                  <ShieldCheck size={17} />
                 </span>
 
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="cp-toggle-password"
+                  className="cp-toggle-password position-absolute d-flex align-items-center justify-content-center p-0 border-0 bg-transparent"
                   aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                   tabIndex={-1}
                 >
-                  {showConfirmPassword ? (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                      <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                      <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                      <line x1="2" y1="2" x2="22" y2="22" />
-                    </svg>
-                  ) : (
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                  )}
+                  {showConfirmPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
             </div>
 
             {/* ACTIONS */}
-            <div className="cp-actions">
+            <div className="cp-actions d-flex flex-column gap-2 mt-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="cp-submit-btn"
+                className="cp-submit-btn d-flex align-items-center justify-content-center gap-2 w-100"
               >
                 {loading ? (
                   <>
-                    <svg
-                      className="cp-spinner"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                    </svg>
+                    <Loader2 size={18} className="cp-spinner flex-shrink-0" />
                     <span>Updating Password...</span>
                   </>
                 ) : (
                   <>
                     <span>Update Password</span>
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M5 12h14" />
-                      <path d="m12 5 7 7-7 7" />
-                    </svg>
+                    <ArrowRight size={18} className="flex-shrink-0" />
                   </>
                 )}
               </button>
@@ -484,21 +362,10 @@ const ChangePassword = () => {
                 <button
                   type="button"
                   onClick={handleBackToDashboard}
-                  className="cp-cancel-btn"
+                  className="cp-cancel-btn d-flex align-items-center justify-content-center gap-2 w-100"
                   disabled={loading}
                 >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m15 18-6-6 6-6" />
-                  </svg>
+                  <ArrowLeft size={16} className="flex-shrink-0" />
                   <span>Return to Dashboard</span>
                 </button>
               )}
@@ -507,20 +374,8 @@ const ChangePassword = () => {
           </form>
 
           {/* FOOTER NOTICE */}
-          <div className="cp-footer-notice">
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
+          <div className="cp-footer-notice d-flex align-items-center justify-content-center gap-2 text-center mt-3 pt-3">
+            <Lock size={14} className="flex-shrink-0" />
             <span>256-bit encrypted authentication</span>
           </div>
 

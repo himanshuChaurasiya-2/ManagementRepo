@@ -4,11 +4,7 @@ import crypto from "crypto";
 import User from "../models/User.js";
 import { sendUserInvitationEmail } from "../services/emailService.js";
 
-const CLIENT_URL = process.env.FRONTEND_URL || process.env.CLIENT_URL || "http://localhost:5173";
-
-const generateTemporaryPassword = (): string => {
-  return `Temp@${crypto.randomBytes(6).toString("hex")}`;
-};
+const CLIENT_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
 export const createUser = async (
   req: Request,

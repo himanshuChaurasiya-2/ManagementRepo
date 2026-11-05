@@ -1,5 +1,5 @@
 import React, { useEffect, useState,useRef } from "react";
-import { AlertCircle, Check, Clock } from "lucide-react";
+import { AlertCircle, Building2, Check, Clock, Edit3, Plus, Trash2, Upload } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 
@@ -503,47 +503,40 @@ const handleExcelImport = async (
         </div>
 
         {isAdmin && (
-  <div
-    style={{
-      display: "flex",
-      gap: "10px",
-      alignItems: "center",
-    }}
-  >
-    {/* IMPORT EXCEL */}
+          <div className="company-calendar-header-actions">
+            {/* IMPORT EXCEL */}
+            <button
+              type="button"
+              className="company-calendar-add-btn"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importingExcel}
+              title="Import calendar events from Excel (.xlsx, .xls)"
+            >
+              <Upload size={14} />
+              <span>{importingExcel ? "Importing..." : "Import Excel"}</span>
+            </button>
 
-    <button
-      className="company-calendar-add-btn"
-      onClick={() => fileInputRef.current?.click()}
-      disabled={importingExcel}
-    >
-      <span>↓</span>
-      {importingExcel
-        ? "Importing..."
-        : "Import Excel"}
-    </button>
+            {/* HIDDEN FILE INPUT */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={handleExcelImport}
+              style={{ display: "none" }}
+            />
 
-    {/* HIDDEN FILE INPUT */}
-
-    <input
-      ref={fileInputRef}
-      type="file"
-      accept=".xlsx,.xls"
-      onChange={handleExcelImport}
-      style={{ display: "none" }}
-    />
-
-    {/* ADD REMINDER */}
-
-    <button
-      className="company-calendar-add-btn"
-      onClick={openAddModal}
-    >
-      <span>+</span>
-      Add Reminder
-    </button>
-  </div>
-)}
+            {/* ADD REMINDER */}
+            <button
+              type="button"
+              className="company-calendar-add-btn"
+              onClick={openAddModal}
+              title="Create a new company reminder"
+            >
+              <Plus size={15} />
+              <span>Add Reminder</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* CALENDAR */}
@@ -608,28 +601,23 @@ const handleExcelImport = async (
               <div className="reminder-view-hero">
                 {viewingReminder.companyName && (
                   <div className="reminder-view-company-badge">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
-                      <path d="M9 22v-4h6v4" />
-                      <path d="M8 6h.01" />
-                      <path d="M16 6h.01" />
-                      <path d="M8 10h.01" />
-                      <path d="M16 10h.01" />
-                    </svg>
+                    <Building2 size={13} />
                     <span>{viewingReminder.companyName}</span>
                   </div>
                 )}
                 <h3 className="reminder-view-title">{viewingReminder.title}</h3>
                 <div className="reminder-view-badges">
-                  <span className={`badge-priority badge-priority-${viewingReminder.priority}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                    <AlertCircle size={12} />
-                    <span>
-                      {viewingReminder.priority === "high" && "High Priority"}
-                      {viewingReminder.priority === "medium" && "Medium Priority"}
-                      {viewingReminder.priority === "low" && "Low Priority"}
+                  {viewingReminder.priority && (
+                    <span className={`badge-priority badge-priority-${viewingReminder.priority}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <AlertCircle size={12} />
+                      <span>
+                        {viewingReminder.priority === "high" && "High Priority"}
+                        {viewingReminder.priority === "medium" && "Medium Priority"}
+                        {viewingReminder.priority === "low" && "Low Priority"}
+                      </span>
                     </span>
-                  </span>
-                  <span className={`badge-status badge-status-${viewingReminder.status}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                  )}
+                  <span className={`badge-status badge-status-${viewingReminder.status || "pending"}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
                     {viewingReminder.status === "completed" ? (
                       <>
                         <Check size={12} />
@@ -685,6 +673,23 @@ const handleExcelImport = async (
                   </div>
                 </div>
 
+                {/* Priority */}
+                <div className="reminder-view-card">
+                  <div className="reminder-view-card-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                    </svg>
+                  </div>
+                  <div className="reminder-view-card-content">
+                    <span className="reminder-view-card-label">Priority</span>
+                    <span className="reminder-view-card-value">
+                      {viewingReminder.priority
+                        ? viewingReminder.priority.charAt(0).toUpperCase() + viewingReminder.priority.slice(1) + " Priority"
+                        : "Normal Priority"}
+                    </span>
+                  </div>
+                </div>
+
                 {/* Date */}
                 <div className="reminder-view-card">
                   <div className="reminder-view-card-icon">
@@ -721,22 +726,6 @@ const handleExcelImport = async (
                   </div>
                 </div>
 
-                {/* Priority */}
-                <div className="reminder-view-card">
-                  <div className="reminder-view-card-icon">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
-                  </div>
-                  <div className="reminder-view-card-content">
-                    <span className="reminder-view-card-label">Priority</span>
-                    <span className="reminder-view-card-value">
-                      {viewingReminder.priority
-                        ? viewingReminder.priority.charAt(0).toUpperCase() + viewingReminder.priority.slice(1) + " Priority"
-                        : "Normal Priority"}
-                    </span>
-                  </div>
-                </div>
 
                 {/* Remind Before */}
                 <div className="reminder-view-card">
@@ -793,35 +782,22 @@ const handleExcelImport = async (
               </div>
             </Modal.Body>
 
-            <Modal.Footer className="reminder-view-modal-footer">
-              {isAdmin ? (
-                <>
-                  <div className="reminder-view-footer-left">
-                    <Button variant="danger" className="btn-danger-custom" onClick={handleDeleteFromView}>
-                      Delete
-                    </Button>
-                  </div>
-                  <div className="reminder-view-footer-right">
-                    <Button variant="light" className="btn-light-custom" onClick={() => setShowViewModal(false)}>
-                      Close
-                    </Button>
-                    <Button className="reminder-btn-edit" onClick={handleEditFromView}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 20h9" />
-                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                      </svg>
-                      Edit Reminder
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <div className="reminder-view-footer-right" style={{ width: "100%", justifyContent: "flex-end" }}>
-                  <Button variant="light" className="btn-light-custom" onClick={() => setShowViewModal(false)}>
-                    Close
+            {isAdmin && (
+              <Modal.Footer className="reminder-view-modal-footer">
+                <div className="reminder-view-footer-left">
+                  <Button variant="danger" className="btn-danger-custom" onClick={handleDeleteFromView}>
+                    <Trash2 size={14} style={{ marginRight: 6 }} />
+                    Delete
                   </Button>
                 </div>
-              )}
-            </Modal.Footer>
+                <div className="reminder-view-footer-right">
+                  <Button className="reminder-btn-edit" onClick={handleEditFromView}>
+                    <Edit3 size={14} style={{ marginRight: 6 }} />
+                    Edit
+                  </Button>
+                </div>
+              </Modal.Footer>
+            )}
           </>
         )}
       </Modal>
@@ -933,15 +909,15 @@ const handleExcelImport = async (
                     disabled={!isAdmin}
                   >
                     <option value="low">
-                      Low Priority
+                      Low
                     </option>
 
                     <option value="medium">
-                      Medium Priority
+                      Medium
                     </option>
 
                     <option value="high">
-                      High Priority
+                      High
                     </option>
                   </Form.Select>
                 </div>
@@ -1050,38 +1026,33 @@ const handleExcelImport = async (
 
           </Modal.Body>
 
-          <Modal.Footer>
+          <Modal.Footer className="company-reminder-modal-footer">
+            <div className="company-reminder-footer-left">
+              {isAdmin && selectedReminder && (
+                <Button
+                  variant="danger"
+                  className="btn-danger-custom"
+                  onClick={handleDelete}
+                >
+                  <Trash2 size={14} style={{ marginRight: 6 }} />
+                  Delete
+                </Button>
+              )}
+            </div>
 
-            {isAdmin && selectedReminder && (
-              <Button
-                variant="danger"
-                className="btn-danger-custom"
-                onClick={handleDelete}
-              >
-                Delete
-              </Button>
-            )}
-
-            <Button
-              variant="light"
-              className="btn-light-custom"
-              onClick={() => setShowModal(false)}
-            >
-              Close
-            </Button>
-
-            {isAdmin && (
-              <Button
-                variant="primary"
-                className="btn-primary-custom"
-                type="submit"
-              >
-                {selectedReminder
-                  ? "Save Changes"
-                  : "Create Reminder"}
-              </Button>
-            )}
-
+            <div className="company-reminder-footer-right">
+              {isAdmin && (
+                <Button
+                  variant="primary"
+                  className="btn-primary-custom"
+                  type="submit"
+                >
+                  {selectedReminder
+                    ? "Save Changes"
+                    : "Create Reminder"}
+                </Button>
+              )}
+            </div>
           </Modal.Footer>
 
         </Form>

@@ -5,22 +5,35 @@ import crypto from "crypto";
 import User from "../models/User.js";
 import { sendPasswordResetEmail } from "../services/emailService.js";
 
-const generateToken = (userId: string): string => {
-  const secret = process.env.JWT_SECRET;
+const getSecrets = () => {
+  const secret = process.env.JWT_SECRET || "default_jwt_secret";
+  const refreshSecret =
+    process.env.JWT_REFRESH_SECRET || `${secret}_refresh_secure_key`;
+  return { secret, refreshSecret };
+};
 
-  if (!secret) {
-    throw new Error("JWT_SECRET is not defined in .env");
-  }
+export const generateTokens = (
+  userId: string
+): { accessToken: string; refreshToken: string } => {
+  const { secret, refreshSecret } = getSecrets();
 
-  return jwt.sign(
-    {
-      userId,
-    },
+  const accessToken = jwt.sign(
+    { userId },
     secret,
-    {
-      expiresIn: "1d",
-    }
+    { expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN || "15m") as any }
   );
+
+  const refreshToken = jwt.sign(
+    { userId },
+    refreshSecret,
+    { expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || "7d") as any }
+  );
+
+  return { accessToken, refreshToken };
+};
+
+export const generateToken = (userId: string): string => {
+  return generateTokens(userId).accessToken;
 };
 
 // ===============================
@@ -75,12 +88,25 @@ export const login = async (
       return;
     }
 
-    const token = generateToken(user._id.toString());
+    const { accessToken, refreshToken } = generateTokens(
+      user._id.toString()
+    );
+
+    // Persist hashed refresh token for token rotation & theft detection
+    const hashedRefreshToken = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    user.refreshToken = hashedRefreshToken;
+    await user.save();
 
     res.status(200).json({
       success: true,
       message: "Login successful",
-      token,
+      token: accessToken,
+      accessToken,
+      refreshToken,
       user: {
         id: user._id,
         name: user.name,
@@ -96,6 +122,148 @@ export const login = async (
     res.status(500).json({
       success: false,
       message: "Server error during login",
+    });
+  }
+};
+
+// ===============================
+// REFRESH SESSION (SILENT TOKEN ROTATION)
+// ===============================
+
+export const refreshSession = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      res.status(401).json({
+        success: false,
+        code: "REFRESH_TOKEN_REQUIRED",
+        message: "Refresh token is required",
+      });
+      return;
+    }
+
+    const { refreshSecret } = getSecrets();
+
+    let decoded: { userId: string };
+    try {
+      decoded = jwt.verify(refreshToken, refreshSecret) as { userId: string };
+    } catch {
+      res.status(401).json({
+        success: false,
+        code: "INVALID_REFRESH_TOKEN",
+        message: "Refresh token expired or invalid. Please sign in again.",
+      });
+      return;
+    }
+
+    if (!decoded.userId) {
+      res.status(401).json({
+        success: false,
+        code: "INVALID_REFRESH_TOKEN",
+        message: "Invalid refresh token payload",
+      });
+      return;
+    }
+
+    const user = await User.findById(decoded.userId);
+
+    if (!user || user.status !== "active") {
+      res.status(401).json({
+        success: false,
+        code: "USER_INACTIVE",
+        message: "User account inactive or not found",
+      });
+      return;
+    }
+
+    // Verify token hash matches DB
+    const incomingHashed = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    if (user.refreshToken && user.refreshToken !== incomingHashed) {
+      // Possible token theft / reuse detected: revoke session
+      console.warn(`[Security] Refresh token reuse detected for user ${user._id}`);
+      user.refreshToken = undefined;
+      await user.save();
+
+      res.status(401).json({
+        success: false,
+        code: "REVOKED_TOKEN",
+        message: "Session revoked due to token reuse detection",
+      });
+      return;
+    }
+
+    // Issue rotated token pair
+    const newTokens = generateTokens(user._id.toString());
+    const newHashed = crypto
+      .createHash("sha256")
+      .update(newTokens.refreshToken)
+      .digest("hex");
+
+    user.refreshToken = newHashed;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Token refreshed successfully",
+      token: newTokens.accessToken,
+      accessToken: newTokens.accessToken,
+      refreshToken: newTokens.refreshToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        jobPosition: user.jobPosition,
+      },
+    });
+  } catch (error) {
+    console.error("Refresh token error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while refreshing session",
+    });
+  }
+};
+
+// ===============================
+// LOGOUT
+// ===============================
+
+export const logout = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (refreshToken) {
+      const { refreshSecret } = getSecrets();
+      try {
+        const decoded = jwt.verify(refreshToken, refreshSecret) as { userId: string };
+        if (decoded.userId) {
+          await User.findByIdAndUpdate(decoded.userId, { refreshToken: null });
+        }
+      } catch {
+        // Silently continue if already expired
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  } catch {
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
     });
   }
 };

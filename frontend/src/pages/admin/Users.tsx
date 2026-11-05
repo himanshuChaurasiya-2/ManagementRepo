@@ -1322,11 +1322,11 @@ const Users = () => {
 
                 {/* INFO */}
 
-                <div className="user-info-box">
+                {/* <div className="user-info-box">
                   A temporary password will
                   automatically be generated for
                   this sales user.
-                </div>
+                </div> */}
 
               </div>
 

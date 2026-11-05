@@ -567,6 +567,15 @@ export const deleteTask = async (
       return;
     }
 
+    // Only completed tasks can be deleted by admin
+    if (task.status !== "completed") {
+      res.status(400).json({
+        success: false,
+        message: "Only completed tasks can be deleted",
+      });
+      return;
+    }
+
     await Task.findByIdAndDelete(id);
 
     res.status(200).json({

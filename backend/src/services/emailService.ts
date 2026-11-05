@@ -29,10 +29,7 @@ const createTransporter = () => {
   if (process.env.EMAIL_SERVICE && user && pass) {
     return nodemailer.createTransport({
       service: process.env.EMAIL_SERVICE,
-      auth: {
-        user,
-        pass,
-      },
+      auth: { user, pass },
     });
   }
 

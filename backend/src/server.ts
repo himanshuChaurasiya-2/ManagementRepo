@@ -37,28 +37,26 @@ export const io = new Server(httpServer, {
 
 // SOCKET CONNECTION
 io.on("connection", (socket) => {
-  console.log("🟢 User connected:", socket.id);
+  console.log("User connected:", socket.id);
 
   socket.on("join_user_room", (userId: string) => {
     if (!userId) {
-      console.warn("⚠️ No user ID provided");
+      console.warn("No user ID provided");
       return;
     }
 
     socket.join(userId);
 
-    console.log(
-      `👤 User ${userId} joined notification room`
-    );
+    console.log(`User ${userId} joined notification room`);
   });
 
   socket.on("join_admin_room", () => {
     socket.join("admin_room");
-    console.log(`🛡️ Admin socket ${socket.id} joined admin_room`);
+    console.log(`Admin socket ${socket.id} joined admin_room`);
   });
 
   socket.on("disconnect", () => {
-    console.log("🔴 User disconnected:", socket.id);
+    console.log("User disconnected:", socket.id);
   });
 });
 
@@ -81,16 +79,13 @@ app.use("/api/meta", metaAdsRoutes);
 
 // TEST ROUTE
 app.get("/", (_req, res) => {
-  res.json({
-    success: true,
-    message: "Sales Dashboard API is running 🚀",
-  });
+  res.json({ success: true, message: "Sales Dashboard API is running"});
 });
 
 // START SERVER
 const PORT = process.env.PORT || 5000;
 
 httpServer.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`🔌 Socket.IO running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Socket.IO running on port ${PORT}`);
 });

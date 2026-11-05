@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { AlertCircle, Check, Clock } from "lucide-react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { Modal, Button } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
+import "../companyCalendar.css";
 import "../pages.css";
 
 interface CompanyReminder {
@@ -149,8 +149,8 @@ const CompanyCalendarView: React.FC = () => {
   });
 
   return (
-    <div className="page-container">
-      <div className="page-header">
+    <div className="company-calendar-page page-container">
+      <div className="company-calendar-header page-header">
         <div>
           <h1>Company Calendar</h1>
           <p>
@@ -159,9 +159,9 @@ const CompanyCalendarView: React.FC = () => {
         </div>
       </div>
 
-      <div className="calendar-card">
+      <div className="company-calendar-card calendar-card">
         {loading ? (
-          <div className="calendar-loading">
+          <div className="company-calendar-loading calendar-loading">
             Loading company reminders...
           </div>
         ) : (
@@ -220,21 +220,14 @@ const CompanyCalendarView: React.FC = () => {
             <Modal.Body>
               {/* Hero Section */}
               <div className="reminder-view-hero">
-                {selectedReminder.companyName && (
+                {/* {selectedReminder.companyName && (
                   <div className="reminder-view-company-badge">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
-                      <path d="M9 22v-4h6v4" />
-                      <path d="M8 6h.01" />
-                      <path d="M16 6h.01" />
-                      <path d="M8 10h.01" />
-                      <path d="M16 10h.01" />
-                    </svg>
+                    <Building2 size={13} />
                     <span>{selectedReminder.companyName}</span>
                   </div>
-                )}
+                )} */}
                 <h3 className="reminder-view-title">{selectedReminder.title}</h3>
-                <div className="reminder-view-badges">
+                {/* <div className="reminder-view-badges">
                   {selectedReminder.priority && (
                     <span className={`badge-priority badge-priority-${selectedReminder.priority}`} style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
                       <AlertCircle size={12} />
@@ -258,7 +251,7 @@ const CompanyCalendarView: React.FC = () => {
                       </>
                     )}
                   </span>
-                </div>
+                </div> */}
               </div>
 
               {/* Detail Grid */}
@@ -408,14 +401,6 @@ const CompanyCalendarView: React.FC = () => {
                 )}
               </div>
             </Modal.Body>
-
-            <Modal.Footer className="reminder-view-modal-footer">
-              <div className="reminder-view-footer-right" style={{ width: "100%", justifyContent: "flex-end" }}>
-                <Button variant="light" className="btn-light-custom" onClick={() => setShowViewModal(false)}>
-                  Close
-                </Button>
-              </div>
-            </Modal.Footer>
           </>
         )}
       </Modal>

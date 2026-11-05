@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import dotenv from "dotenv";
+import { escapeHtml } from "../middleware/security.js";
 
 dotenv.config();
 
@@ -89,7 +90,7 @@ const renderEmailHtml = (options: EmailTemplateOptions) => {
             D2C <span style="color: #818cf8;">CRM</span>
           </h2>
           <div style="display: inline-block; margin-top: 6px; padding: 3px 10px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 20px; color: #c7d2fe; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">
-            ${options.badgeText}
+            ${escapeHtml(options.badgeText)}
           </div>
         </td>
       </tr>
@@ -99,11 +100,11 @@ const renderEmailHtml = (options: EmailTemplateOptions) => {
         <td class="content-cell" style="padding: 38px 38px 30px 38px; background-color: #ffffff;">
           
           <h1 style="margin: 0 0 16px 0; font-size: 23px; font-weight: 800; color: #0f172a; line-height: 1.3; letter-spacing: -0.01em;">
-            ${options.title}
+            ${escapeHtml(options.title)}
           </h1>
 
           <p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.6; color: #334155;">
-            Hello <strong style="color: #0f172a;">${options.name}</strong>,
+            Hello <strong style="color: #0f172a;">${escapeHtml(options.name)}</strong>,
           </p>
 
           ${options.bodyParagraphs

@@ -1280,6 +1280,7 @@ const Users = () => {
                     onChange={(e) =>
                       setName(e.target.value)
                     }
+                    maxLength={100}
                     required
                   />
 
@@ -1301,6 +1302,7 @@ const Users = () => {
                     onChange={(e) =>
                       setEmail(e.target.value)
                     }
+                    maxLength={254}
                     required
                   />
 
@@ -1322,6 +1324,7 @@ const Users = () => {
                     onChange={(e) =>
                       setJobPosition(e.target.value)
                     }
+                    maxLength={100}
                   />
 
                 </div>

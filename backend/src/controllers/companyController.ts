@@ -1,6 +1,12 @@
 import { Request, Response } from "express";
 import Company from "../models/Company.js";
 import { AuthRequest } from "../middleware/authMiddleware.js";
+import {
+  isValidEmail,
+  isValidObjectId,
+  sanitizeString,
+  sanitizeUrl,
+} from "../middleware/security.js";
 
 // =====================================
 // CREATE COMPANY
@@ -42,22 +48,29 @@ export const createCompany = async (
       return;
     }
 
+    if (!isValidEmail(email)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid email format",
+      });
+      return;
+    }
+
     const normalizedEmail = email
       .toLowerCase()
       .trim();
 
     const companyData: any = {
-      companyName: companyName.trim(),
-      contactPerson: contactPerson.trim(),
+      companyName: sanitizeString(companyName, 150),
+      contactPerson: sanitizeString(contactPerson, 100),
       email: normalizedEmail,
-      phone: phone.trim(),
-      alternatePhone:
-        alternatePhone?.trim() || "",
-      industry: industry.trim(),
-      website: website?.trim() || "",
-      address: address?.trim() || "",
-      status: status || "active",
-      notes: notes?.trim() || "",
+      phone: sanitizeString(phone, 30),
+      alternatePhone: sanitizeString(alternatePhone, 30),
+      industry: sanitizeString(industry, 100),
+      website: sanitizeUrl(website),
+      address: sanitizeString(address, 300),
+      status: status === "inactive" ? "inactive" : "active",
+      notes: sanitizeString(notes, 2000),
     };
 
     if (metaAdsConfig?.adAccountId) {
@@ -135,6 +148,14 @@ export const getCompanyById = async (
   try {
     const { id } = req.params;
 
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid company ID format",
+      });
+      return;
+    }
+
     const company = await Company.findById(id);
 
     if (!company) {
@@ -175,6 +196,14 @@ export const updateCompany = async (
   try {
     const { id } = req.params;
 
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid company ID format",
+      });
+      return;
+    }
+
     const {
       companyName,
       contactPerson,
@@ -190,16 +219,25 @@ export const updateCompany = async (
     } = req.body;
 
     const updatePayload: any = {};
-    if (companyName !== undefined) updatePayload.companyName = companyName?.trim();
-    if (contactPerson !== undefined) updatePayload.contactPerson = contactPerson?.trim();
-    if (email !== undefined) updatePayload.email = email ? email.toLowerCase().trim() : undefined;
-    if (phone !== undefined) updatePayload.phone = phone?.trim();
-    if (alternatePhone !== undefined) updatePayload.alternatePhone = alternatePhone?.trim() || "";
-    if (industry !== undefined) updatePayload.industry = industry?.trim();
-    if (website !== undefined) updatePayload.website = website?.trim() || "";
-    if (address !== undefined) updatePayload.address = address?.trim() || "";
-    if (status !== undefined) updatePayload.status = status;
-    if (notes !== undefined) updatePayload.notes = notes?.trim() || "";
+    if (companyName !== undefined) updatePayload.companyName = sanitizeString(companyName, 150);
+    if (contactPerson !== undefined) updatePayload.contactPerson = sanitizeString(contactPerson, 100);
+    if (email !== undefined) {
+      if (email && !isValidEmail(email)) {
+        res.status(400).json({
+          success: false,
+          message: "Invalid email format",
+        });
+        return;
+      }
+      updatePayload.email = email ? email.toLowerCase().trim() : undefined;
+    }
+    if (phone !== undefined) updatePayload.phone = sanitizeString(phone, 30);
+    if (alternatePhone !== undefined) updatePayload.alternatePhone = sanitizeString(alternatePhone, 30);
+    if (industry !== undefined) updatePayload.industry = sanitizeString(industry, 100);
+    if (website !== undefined) updatePayload.website = sanitizeUrl(website);
+    if (address !== undefined) updatePayload.address = sanitizeString(address, 300);
+    if (status !== undefined) updatePayload.status = status === "inactive" ? "inactive" : "active";
+    if (notes !== undefined) updatePayload.notes = sanitizeString(notes, 2000);
 
     if (metaAdsConfig !== undefined) {
       if (metaAdsConfig?.adAccountId) {
@@ -267,13 +305,23 @@ export const addCompanyNote = async (
     const { id } = req.params;
     const { note } = req.body;
 
-    if (!note || !note.trim()) {
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid company ID format",
+      });
+      return;
+    }
+
+    if (!note || typeof note !== "string" || !note.trim()) {
       res.status(400).json({
         success: false,
         message: "Note content is required",
       });
       return;
     }
+
+    const cleanNote = sanitizeString(note, 2000);
 
     const company = await Company.findById(id);
     if (!company) {
@@ -293,7 +341,7 @@ export const addCompanyNote = async (
       minute: "2-digit",
       hour12: true,
     });
-    const entry = `[${dateStr} • ${author}]: ${note.trim()}`;
+    const entry = `[${dateStr} • ${author}]: ${cleanNote}`;
     const updatedNotes = company.notes ? `${company.notes}\n\n${entry}` : entry;
 
     company.notes = updatedNotes;
@@ -324,6 +372,14 @@ export const updateCompanyStatus = async (
   try {
     const { id } = req.params;
     const { status } = req.body;
+
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid company ID format",
+      });
+      return;
+    }
 
     if (
       !["active", "inactive"].includes(status)
@@ -389,6 +445,14 @@ export const deleteCompany = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid company ID format",
+      });
+      return;
+    }
 
     const company =
       await Company.findByIdAndDelete(id);

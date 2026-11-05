@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import User from "../models/User.js";
 import { sendUserInvitationEmail } from "../services/emailService.js";
+import { isValidEmail, isValidObjectId, sanitizeString } from "../middleware/security.js";
 
 const CLIENT_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
@@ -31,10 +32,29 @@ export const createUser = async (
     const { name, email, jobPosition, role = "sales" } = req.body;
 
     // Validate required fields
-    if (!name || !email) {
+    if (!name || !email || typeof name !== "string" || typeof email !== "string") {
       res.status(400).json({
         success: false,
-        message: "Name and email are required",
+        message: "Valid name and email are required",
+      });
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid email format",
+      });
+      return;
+    }
+
+    const cleanName = sanitizeString(name, 100);
+    const cleanPosition = sanitizeString(jobPosition, 100, "Sales Representative");
+
+    if (cleanName.length < 2) {
+      res.status(400).json({
+        success: false,
+        message: "Name must be at least 2 characters long",
       });
       return;
     }
@@ -76,9 +96,9 @@ export const createUser = async (
 
     // Create user
     const user = await User.create({
-      name: name.trim(),
+      name: cleanName,
       email: normalizedEmail,
-      jobPosition: jobPosition?.trim() || "Sales Representative",
+      jobPosition: cleanPosition,
       password: hashedPassword,
       role: "sales",
       status: "active",
@@ -202,6 +222,14 @@ export const updateUserStatus = async (
     const { id } = req.params;
     const { status } = req.body;
 
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid user ID format",
+      });
+      return;
+    }
+
     if (!["active", "inactive"].includes(status)) {
       res.status(400).json({
         success: false,
@@ -265,6 +293,14 @@ export const resetUserPassword = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid user ID format",
+      });
+      return;
+    }
 
     const user = await User.findById(id);
 
@@ -406,6 +442,14 @@ export const resendInvitation = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid user ID format",
+      });
+      return;
+    }
 
     const user = await User.findById(id);
 

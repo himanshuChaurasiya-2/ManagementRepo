@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import CompanyReminder from "../models/CompanyReminder.js";
 import XLSX from "xlsx";
+import { isValidObjectId, sanitizeString } from "../middleware/security.js";
 
 interface AuthRequest extends Request {
   userId?: string;
@@ -79,14 +80,14 @@ export const createCompanyReminder = async (
     }
 
     const reminder = await CompanyReminder.create({
-      title,
-      companyName: companyName || "",
-      description,
+      title: sanitizeString(title, 200),
+      companyName: sanitizeString(companyName, 150),
+      description: sanitizeString(description, 2000),
       date,
       startTime,
       endTime,
       priority: priority || "medium",
-      remindBefore: remindBefore ?? 10,
+      remindBefore: typeof remindBefore === "number" ? Math.max(0, remindBefore) : 10,
       repeat: repeat || "none",
       createdBy,
     });
@@ -115,6 +116,13 @@ export const updateCompanyReminder = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        message: "Invalid company reminder ID format",
+      });
+      return;
+    }
 
     const reminder = await CompanyReminder.findByIdAndUpdate(
       id,
@@ -158,6 +166,13 @@ export const deleteCompanyReminder = async (
   try {
     const { id } = req.params;
 
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        message: "Invalid company reminder ID format",
+      });
+      return;
+    }
+
     const reminder = await CompanyReminder.findByIdAndDelete(id);
 
     if (!reminder) {
@@ -191,6 +206,13 @@ export const updateCompanyReminderStatus = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        message: "Invalid company reminder ID format",
+      });
+      return;
+    }
     const { status } = req.body;
 
     if (!["pending", "completed"].includes(status)) {

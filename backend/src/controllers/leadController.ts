@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import XLSX from "xlsx";
 import Lead from "../models/Lead.js";
+import { isValidObjectId, sanitizeString } from "../middleware/security.js";
 import User from "../models/User.js";
 import LeadDeletionLog, {
   IDeletedLeadSnapshot,
@@ -340,6 +341,11 @@ export const updateLeadStatus = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      res.status(400).json({ message: "Invalid lead ID format" });
+      return;
+    }
     const { status, subStatus } = req.body;
 
     // -------------------------------------------------
@@ -544,7 +550,10 @@ export const batchDeleteLeads = async (
       return;
     }
 
-    if (!Array.isArray(leadIds) || leadIds.length === 0) {
+    const validLeadIds = Array.isArray(leadIds)
+      ? leadIds.filter((lid: any) => typeof lid === "string" && isValidObjectId(lid))
+      : [];
+    if (validLeadIds.length === 0) {
       res.status(400).json({
         message: "Please provide an array of lead IDs to delete",
       });
@@ -561,7 +570,7 @@ export const batchDeleteLeads = async (
       userRole === "administrator";
 
     // Query: Admins can delete any requested leads; non-admins only their own uploaded leads
-    const query: any = { _id: { $in: leadIds } };
+    const query: any = { _id: { $in: validLeadIds } };
     if (!isAdmin) {
       query.uploadedBy = userId;
     }
@@ -670,6 +679,11 @@ export const deleteSingleLead = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      res.status(400).json({ message: "Invalid lead ID format" });
+      return;
+    }
     req.body.leadIds = [id];
     return batchDeleteLeads(req, res);
   } catch (error) {
@@ -743,6 +757,11 @@ export const updateLeadNotes = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      res.status(400).json({ message: "Invalid lead ID format" });
+      return;
+    }
     const { notes, note } = req.body;
 
     // -------------------------------------------------
@@ -816,10 +835,10 @@ export const updateLeadNotes = async (
         minute: "2-digit",
         hour12: true,
       });
-      const entry = `[${timestamp} • ${author}]: ${note.trim()}`;
+      const entry = `[${timestamp} • ${author}]: ${sanitizeString(note, 2000)}`;
       lead.notes = lead.notes ? `${lead.notes}\n\n${entry}` : entry;
     } else if (typeof notes === "string") {
-      lead.notes = notes;
+      lead.notes = sanitizeString(notes, 5000);
     }
 
     await lead.save();
@@ -847,6 +866,11 @@ export const reassignLead = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      res.status(400).json({ message: "Invalid lead ID format" });
+      return;
+    }
     const { userId } = req.body;
 
     if (!userId) {

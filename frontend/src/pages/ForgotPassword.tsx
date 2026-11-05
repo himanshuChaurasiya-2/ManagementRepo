@@ -165,6 +165,7 @@ const ForgotPassword = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="name@company.com"
                       autoComplete="email"
+                      maxLength={254}
                       className="auth-input"
                       disabled={loading}
                       autoFocus

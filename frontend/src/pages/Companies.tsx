@@ -1227,6 +1227,7 @@ const Company = () => {
                     }
                     onChange={handleChange}
                     required
+                    maxLength={150}
                     placeholder="Enter company name"
                   />
                 </div>
@@ -1243,6 +1244,7 @@ const Company = () => {
                     }
                     onChange={handleChange}
                     required
+                    maxLength={100}
                     placeholder="Enter contact person"
                   />
                 </div>
@@ -1258,6 +1260,7 @@ const Company = () => {
                     value={form.email}
                     onChange={handleChange}
                     required
+                    maxLength={254}
                     placeholder="company@email.com"
                   />
                 </div>
@@ -1272,6 +1275,7 @@ const Company = () => {
                     value={form.phone}
                     onChange={handleChange}
                     required
+                    maxLength={30}
                     placeholder="Enter phone number"
                   />
                 </div>
@@ -1287,6 +1291,7 @@ const Company = () => {
                       form.alternatePhone
                     }
                     onChange={handleChange}
+                    maxLength={30}
                     placeholder="Optional"
                   />
                 </div>
@@ -1301,6 +1306,7 @@ const Company = () => {
                     value={form.industry}
                     onChange={handleChange}
                     required
+                    maxLength={100}
                     placeholder="e.g. IT Services"
                   />
                 </div>
@@ -1314,6 +1320,7 @@ const Company = () => {
                     name="website"
                     value={form.website}
                     onChange={handleChange}
+                    maxLength={250}
                     placeholder="https://example.com"
                   />
                 </div>
@@ -1328,6 +1335,7 @@ const Company = () => {
                     value={form.address}
                     onChange={handleChange}
                     placeholder="Enter complete address"
+                    maxLength={500}
                     rows={3}
                   />
                 </div>
@@ -1496,6 +1504,7 @@ const Company = () => {
                     value={form.notes}
                     onChange={handleChange}
                     placeholder="Add notes about this client..."
+                    maxLength={2000}
                     rows={4}
                   />
                 </div>

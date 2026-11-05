@@ -195,6 +195,7 @@ const ChangePassword = () => {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="Enter your current password"
                   autoComplete="current-password"
+                  maxLength={128}
                   className="cp-input w-100"
                   disabled={loading}
                 />
@@ -229,6 +230,7 @@ const ChangePassword = () => {
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter your new password"
                   autoComplete="new-password"
+                  maxLength={128}
                   className="cp-input w-100"
                   disabled={loading}
                 />
@@ -318,6 +320,7 @@ const ChangePassword = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter your new password"
                   autoComplete="new-password"
+                  maxLength={128}
                   className="cp-input w-100"
                   disabled={loading}
                 />

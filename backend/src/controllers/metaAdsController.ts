@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { AuthRequest } from "../middleware/authMiddleware.js";
 import Company from "../models/Company.js";
+import { isValidObjectId, sanitizeString } from "../middleware/security.js";
 import {
   fetchAccessibleAdAccounts,
   fetchAdAccountRealtimeInsights,
@@ -44,8 +45,8 @@ export const linkMetaAccountToCompany = async (req: AuthRequest, res: Response):
     const { companyId } = req.params;
     const { adAccountId, adAccountName, currency, accountStatus } = req.body;
 
-    if (!companyId) {
-      res.status(400).json({ success: false, message: "Company ID is required" });
+    if (!companyId || !isValidObjectId(companyId)) {
+      res.status(400).json({ success: false, message: "Valid company ID is required" });
       return;
     }
 
@@ -89,6 +90,11 @@ export const unlinkMetaAccountFromCompany = async (req: AuthRequest, res: Respon
   try {
     const { companyId } = req.params;
 
+    if (!companyId || !isValidObjectId(companyId)) {
+      res.status(400).json({ success: false, message: "Valid company ID is required" });
+      return;
+    }
+
     const company = await Company.findById(companyId);
     if (!company) {
       res.status(404).json({ success: false, message: "Company not found" });
@@ -116,6 +122,12 @@ export const unlinkMetaAccountFromCompany = async (req: AuthRequest, res: Respon
 export const getCompanyRealtimeInsights = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { companyId } = req.params;
+
+    if (!companyId || !isValidObjectId(companyId)) {
+      res.status(400).json({ success: false, message: "Valid company ID is required" });
+      return;
+    }
+
     const { datePreset = "this_month" } = req.query;
 
     const company = await Company.findById(companyId);

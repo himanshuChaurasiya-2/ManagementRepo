@@ -3,6 +3,7 @@ import Task from "../models/Task.js";
 import User from "../models/User.js";
 import Company from "../models/Company.js";
 import { io } from "../server.js";
+import { isValidObjectId, sanitizeString } from "../middleware/security.js";
 
 // ===============================
 // CREATE TASK
@@ -32,6 +33,22 @@ export const createTask = async (
         success: false,
         message:
           "Title, company and assigned user are required",
+      });
+      return;
+    }
+
+    if (!isValidObjectId(company)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid company ID format",
+      });
+      return;
+    }
+
+    if (!isValidObjectId(assignedTo)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid assigned user ID format",
       });
       return;
     }
@@ -93,9 +110,9 @@ export const createTask = async (
     // ==========================================
 
     const task = await Task.create({
-      title: title.trim(),
+      title: sanitizeString(title, 200),
       company: companyExists._id,
-      description: description?.trim(),
+      description: sanitizeString(description, 3000),
       assignedTo: user._id,
       assignedBy: req.userId,
       priority,
@@ -237,6 +254,14 @@ export const updateTaskStatus = async (
     const { id } = req.params;
     const { status } = req.body;
 
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid task ID format",
+      });
+      return;
+    }
+
     if (!req.userId) {
       res.status(401).json({
         success: false,
@@ -362,6 +387,14 @@ export const updateTask = async (
   try {
     const { id } = req.params;
 
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid task ID format",
+      });
+      return;
+    }
+
     const {
       title,
       company,
@@ -371,6 +404,22 @@ export const updateTask = async (
       dueDate,
       status,
     } = req.body;
+
+    if (company && !isValidObjectId(company)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid company ID format",
+      });
+      return;
+    }
+
+    if (assignedTo && !isValidObjectId(assignedTo)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid assigned user ID format",
+      });
+      return;
+    }
 
     const task = await Task.findById(id);
 
@@ -556,6 +605,14 @@ export const deleteTask = async (
 ): Promise<void> => {
   try {
     const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid task ID format",
+      });
+      return;
+    }
 
     const task = await Task.findById(id);
 

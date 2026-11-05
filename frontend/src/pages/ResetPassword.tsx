@@ -241,6 +241,7 @@ const ResetPassword = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter new password"
                       autoComplete="new-password"
+                      maxLength={128}
                       className="auth-input has-toggle"
                       disabled={submitting}
                       autoFocus
@@ -273,6 +274,7 @@ const ResetPassword = () => {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm new password"
                       autoComplete="new-password"
+                      maxLength={128}
                       className="auth-input has-toggle"
                       disabled={submitting}
                     />

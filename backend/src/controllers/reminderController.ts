@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Reminder from "../models/Reminder.js";
 import XLSX from "xlsx";
+import { isValidObjectId, sanitizeString } from "../middleware/security.js";
 
 // CREATE REMINDER
 export const createReminder = async (
@@ -12,6 +13,11 @@ export const createReminder = async (
 
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    if (!isValidObjectId(req.params.id)) {
+      res.status(400).json({ message: "Invalid reminder ID format" });
       return;
     }
 
@@ -36,14 +42,14 @@ export const createReminder = async (
 
     const reminder = await Reminder.create({
       userId,
-      title,
-      companyName: companyName || "",
-      description,
+      title: sanitizeString(title, 200),
+      companyName: sanitizeString(companyName, 150),
+      description: sanitizeString(description, 2000),
       date,
       startTime,
       endTime,
       priority: priority || "medium",
-      reminderMinutes: reminderMinutes ?? 10,
+      reminderMinutes: typeof reminderMinutes === "number" ? Math.max(0, reminderMinutes) : 10,
       repeat: repeat || "none",
     });
 
@@ -71,6 +77,11 @@ export const getMyReminders = async (
 
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    if (!isValidObjectId(req.params.id)) {
+      res.status(400).json({ message: "Invalid reminder ID format" });
       return;
     }
 
@@ -102,6 +113,11 @@ export const updateReminder = async (
 
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    if (!isValidObjectId(req.params.id)) {
+      res.status(400).json({ message: "Invalid reminder ID format" });
       return;
     }
 
@@ -151,6 +167,11 @@ export const deleteReminder = async (
       return;
     }
 
+    if (!isValidObjectId(req.params.id)) {
+      res.status(400).json({ message: "Invalid reminder ID format" });
+      return;
+    }
+
     const reminder = await Reminder.findOneAndDelete({
       _id: req.params.id,
       userId,
@@ -186,6 +207,11 @@ export const completeReminder = async (
 
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+
+    if (!isValidObjectId(req.params.id)) {
+      res.status(400).json({ message: "Invalid reminder ID format" });
       return;
     }
 

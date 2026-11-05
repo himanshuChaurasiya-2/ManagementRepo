@@ -60,7 +60,7 @@ const Login = () => {
 
     try {
       setLoading(true);
-      const loggedInUser = await login(email, password);
+      const loggedInUser = await login(email.trim(), password);
 
       if (loggedInUser.mustChangePassword) {
         navigate("/change-password", { replace: true });
@@ -133,6 +133,7 @@ const Login = () => {
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="name@company.com"
                   autoComplete="email"
+                  maxLength={254}
                   className="login-input w-100"
                   disabled={loading}
                 />
@@ -161,6 +162,7 @@ const Login = () => {
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Enter your password"
                   autoComplete="current-password"
+                  maxLength={128}
                   className="login-input login-input-password w-100"
                   disabled={loading}
                 />

@@ -5,6 +5,7 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 
 import connectDB from "./config/db.js";
+import { sanitizeInputs, securityHeaders } from "./middleware/security.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -22,18 +23,35 @@ const app = express();
 // HTTP SERVER
 const httpServer = createServer(app);
 
-// SOCKET.IO
+// CORS & SOCKET.IO CONFIGURATION
 const clientOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
-export const io = new Server(httpServer, {
-  cors: {
-    origin: [
-      clientOrigin,
-      "http://localhost:5173",
-      "http://localhost:3000"
-    ],
-    methods: ["GET", "POST", "PATCH", "DELETE"],
-    credentials: true,
+const allowedOrigins = [
+  clientOrigin,
+  clientOrigin.replace(/\/+$/, ""),
+  "http://localhost:5173",
+  "http://localhost:3000",
+].filter(Boolean);
+
+const corsOptions: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (
+      allowedOrigins.includes(origin) ||
+      allowedOrigins.includes(origin.replace(/\/+$/, "")) ||
+      origin.includes("localhost") ||
+      origin.includes("127.0.0.1") ||
+      process.env.NODE_ENV !== "production"
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, true);
   },
+  credentials: true,
+  methods: ["GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"],
+};
+
+export const io = new Server(httpServer, {
+  cors: corsOptions,
 });
 
 // SOCKET CONNECTION
@@ -61,11 +79,12 @@ io.on("connection", (socket) => {
   });
 });
 
-// MIDDLEWARE
-// app.use(cors());
-app.use(cors({ origin: [clientOrigin, "http://localhost:5173", "http://localhost:3000"], credentials: true }));
-
-app.use(express.json());
+// SECURITY & GLOBAL MIDDLEWARE
+app.use(securityHeaders);
+app.use(cors(corsOptions));
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+app.use(sanitizeInputs);
 
 // DATABASE
 connectDB();

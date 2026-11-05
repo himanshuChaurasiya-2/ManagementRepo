@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import User from "../models/User.js";
 import { sendPasswordResetEmail } from "../services/emailService.js";
+import { isValidEmail } from "../middleware/security.js";
 
 const getSecrets = () => {
   const secret = process.env.JWT_SECRET || "default_jwt_secret";
@@ -47,10 +48,18 @@ export const login = async (
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
+    if (!email || !password || typeof email !== "string" || typeof password !== "string") {
       res.status(400).json({
         success: false,
-        message: "Email and password are required",
+        message: "Email and password are required and must be valid strings",
+      });
+      return;
+    }
+
+    if (password.length > 128) {
+      res.status(400).json({
+        success: false,
+        message: "Password exceeds maximum allowable length",
       });
       return;
     }
@@ -371,10 +380,10 @@ export const forgotPassword = async (
   try {
     const { email } = req.body;
 
-    if (!email || !email.trim()) {
+    if (!email || typeof email !== "string" || !isValidEmail(email)) {
       res.status(400).json({
         success: false,
-        message: "Email address is required",
+        message: "A valid email address is required",
       });
       return;
     }
@@ -506,10 +515,18 @@ export const resetPassword = async (
       return;
     }
 
-    if (!password || password.length < 8) {
+    if (!password || typeof password !== "string" || password.length < 8) {
       res.status(400).json({
         success: false,
         message: "Password must be at least 8 characters long",
+      });
+      return;
+    }
+
+    if (password.length > 128) {
+      res.status(400).json({
+        success: false,
+        message: "Password exceeds maximum allowable length",
       });
       return;
     }
@@ -627,10 +644,18 @@ export const setPassword = async (
       return;
     }
 
-    if (!password || password.length < 8) {
+    if (!password || typeof password !== "string" || password.length < 8) {
       res.status(400).json({
         success: false,
         message: "Password must be at least 8 characters long",
+      });
+      return;
+    }
+
+    if (password.length > 128) {
+      res.status(400).json({
+        success: false,
+        message: "Password exceeds maximum allowable length",
       });
       return;
     }

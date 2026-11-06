@@ -513,6 +513,7 @@
   font-weight: 800 !important;
   color: #ffffff !important;
   line-height: 1 !important;
+  pointer-events: none !important;
 }
 
 .company-reminder-modal .modal-header .btn-close:hover {
@@ -716,6 +717,94 @@
   color: #ffffff !important;
 }
 
+/* Custom Modal Close Button (Cross in Header) */
+.calendar-modal-close-btn {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+}
+
+.calendar-modal-close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+  transform: rotate(90deg);
+}
+
+.calendar-modal-close-btn:active {
+  transform: rotate(90deg) scale(0.95);
+}
+
+/* Custom Cancel / Close Button (Footer) */
+.btn-cancel-custom {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+  padding: 10px 20px !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+}
+
+.btn-cancel-custom:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-cancel-custom:active {
+  transform: translateY(0) !important;
+}
+
+/* Light Theme Overrides for Calendar Modal Elements */
+[data-theme="light"] .calendar-modal-close-btn,
+body.light-mode .calendar-modal-close-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #1e293b;
+}
+
+[data-theme="light"] .calendar-modal-close-btn:hover,
+body.light-mode .calendar-modal-close-btn:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #dc2626;
+}
+
+[data-theme="light"] .btn-cancel-custom,
+body.light-mode .btn-cancel-custom {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .btn-cancel-custom:hover,
+body.light-mode .btn-cancel-custom:hover {
+  background: #e2e8f0 !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}
+
 .btn-danger-custom {
   background: rgba(239, 68, 68, 0.16) !important;
   color: #f87171 !important;
@@ -885,6 +974,7 @@
   font-weight: 700 !important;
   color: #ffffff !important;
   line-height: 1 !important;
+  pointer-events: none !important;
 }
 
 .reminder-view-modal .btn-close:hover,

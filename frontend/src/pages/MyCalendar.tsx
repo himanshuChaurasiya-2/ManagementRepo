@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { AlertCircle, Check, CheckCircle2, Clock, Edit3, Trash2 } from "lucide-react";
+import { AlertCircle, Check, CheckCircle2, Clock, Edit3, Trash2, X } from "lucide-react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -27,7 +27,7 @@ interface Reminder {
   repeat: "none" | "daily" | "weekly" | "monthly";
 }
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const getAuthConfig = () => ({
   headers: {
@@ -413,7 +413,7 @@ useEffect(() => {
       >
         {viewingReminder && (
           <>
-            <Modal.Header closeButton>
+            <Modal.Header className="position-relative">
               <div className="reminder-view-header-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <rect width="18" height="18" x="3" y="4" rx="2" />
@@ -423,6 +423,14 @@ useEffect(() => {
                 </svg>
                 <h4>Reminder Details</h4>
               </div>
+              <button
+                type="button"
+                className="calendar-modal-close-btn"
+                onClick={() => setShowViewModal(false)}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
             </Modal.Header>
 
             <Modal.Body>
@@ -561,7 +569,10 @@ useEffect(() => {
                 </Button>
               </div>
 
-              <div className="reminder-view-footer-right">
+              <div className="reminder-view-footer-right" style={{ display: "flex", gap: "8px" }}>
+                <Button variant="secondary" className="btn-cancel-custom" type="button" onClick={() => setShowViewModal(false)}>
+                  Close
+                </Button>
                 <Button className="reminder-btn-edit" onClick={handleEditFromView}>
                   <Edit3 size={14} style={{ marginRight: 6 }} />
                   Edit Reminder
@@ -581,10 +592,18 @@ useEffect(() => {
   className="reminder-modal"
 >
   <Form onSubmit={handleSubmit}>
-    <Modal.Header closeButton>
+    <Modal.Header className="position-relative">
       <Modal.Title>
         {editingReminder ? "Edit Reminder" : "Add Reminder"}
       </Modal.Title>
+      <button
+        type="button"
+        className="calendar-modal-close-btn"
+        onClick={() => setShowModal(false)}
+        aria-label="Close"
+      >
+        <X size={18} />
+      </button>
     </Modal.Header>
 
     <Modal.Body>
@@ -778,7 +797,15 @@ useEffect(() => {
         )}
       </div>
 
-      <div className="reminder-footer-right">
+      <div className="reminder-footer-right" style={{ display: "flex", gap: "8px" }}>
+        <Button
+          variant="secondary"
+          className="btn-cancel-custom"
+          type="button"
+          onClick={() => setShowModal(false)}
+        >
+          Cancel
+        </Button>
         <Button
           variant="primary"
           className="btn-primary-custom"

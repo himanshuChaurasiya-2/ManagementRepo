@@ -4,7 +4,8 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { Modal } from "react-bootstrap";
+import { Modal, Button } from "react-bootstrap";
+import { X } from "lucide-react";
 import "../companyCalendar.css";
 import "../pages.css";
 
@@ -24,7 +25,7 @@ interface CompanyReminder {
   status?: "pending" | "completed";
 }
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const formatTimeDisplay = (timeStr?: string) => {
   if (!timeStr) return "";
@@ -205,7 +206,7 @@ const CompanyCalendarView: React.FC = () => {
       >
         {selectedReminder && (
           <>
-            <Modal.Header closeButton className="reminder-header">
+            <Modal.Header className="reminder-header position-relative">
               <div className="reminder-view-header-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <rect width="18" height="18" x="3" y="4" rx="2" />
@@ -215,6 +216,14 @@ const CompanyCalendarView: React.FC = () => {
                 </svg>
                 <h4>Company Reminder Details</h4>
               </div>
+              <button
+                type="button"
+                className="calendar-modal-close-btn"
+                onClick={() => setShowViewModal(false)}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
             </Modal.Header>
 
             <Modal.Body>
@@ -401,6 +410,15 @@ const CompanyCalendarView: React.FC = () => {
                 )}
               </div>
             </Modal.Body>
+
+            <Modal.Footer className="reminder-view-modal-footer">
+              <div className="reminder-view-footer-left"></div>
+              <div className="reminder-view-footer-right">
+                <Button variant="secondary" className="btn-cancel-custom" type="button" onClick={() => setShowViewModal(false)}>
+                  Close
+                </Button>
+              </div>
+            </Modal.Footer>
           </>
         )}
       </Modal>

@@ -498,3 +498,56 @@ export const resendInvitation = async (
     });
   }
 };
+
+// ===============================
+// DELETE USER
+// ===============================
+
+export const deleteUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid user ID format",
+      });
+      return;
+    }
+
+    // Prevent deleting oneself
+    const requestingUserId =
+      (req as any).user?._id?.toString() || (req as any).user?.id?.toString();
+    if (requestingUserId && requestingUserId === id) {
+      res.status(400).json({
+        success: false,
+        message: "You cannot delete your own account",
+      });
+      return;
+    }
+
+    const user = await User.findByIdAndDelete(id);
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete user error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while deleting user",
+    });
+  }
+};

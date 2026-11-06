@@ -1,8 +1,7 @@
-import React, { useEffect, useState,useRef } from "react";
-import { AlertCircle, Building2, Check, Clock, Edit3, Plus, Trash2, Upload } from "lucide-react";
+import React, { useEffect, useState, useRef } from "react";
+import { AlertCircle, Building2, Check, Clock, Edit3, Plus, Trash2, Upload, X } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
-
 
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -34,7 +33,7 @@ interface CompanyReminder {
   status: "pending" | "completed";
 }
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const formatTimeDisplay = (timeStr?: string) => {
   if (!timeStr) return "";
@@ -112,25 +111,26 @@ const CompanyCalendar: React.FC = () => {
     repeat: "none",
   });
 
-  const token = localStorage.getItem("token");
-
-  const authConfig = {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+  const getAuthConfig = () => {
+    const token = localStorage.getItem("token") || localStorage.getItem("accessToken");
+    return {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    };
   };
 
   // =====================================================
   // LOAD REMINDERS
   // =====================================================
 
-  const loadReminders = async () => {
+  const loadReminders = async (showSpinner = false) => {
     try {
-      setLoading(true);
+      if (showSpinner) setLoading(true);
 
       const response = await axios.get(
         `${API_URL}/company-reminders`,
-        authConfig
+        getAuthConfig()
       );
 
       setReminders(response.data);
@@ -140,12 +140,12 @@ const CompanyCalendar: React.FC = () => {
         error
       );
     } finally {
-      setLoading(false);
+      if (showSpinner) setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadReminders();
+    loadReminders(true);
   }, []);
 
   // =====================================================
@@ -238,19 +238,19 @@ const CompanyCalendar: React.FC = () => {
         await axios.patch(
           `${API_URL}/company-reminders/${selectedReminder._id}`,
           payload,
-          authConfig
+          getAuthConfig()
         );
       } else {
         await axios.post(
           `${API_URL}/company-reminders`,
           payload,
-          authConfig
+          getAuthConfig()
         );
       }
 
       setShowModal(false);
 
-      await loadReminders();
+      await loadReminders(false);
     } catch (error) {
       console.error(
         "Failed to save company reminder:",
@@ -277,12 +277,12 @@ const CompanyCalendar: React.FC = () => {
     try {
       await axios.delete(
         `${API_URL}/company-reminders/${selectedReminder._id}`,
-        authConfig
+        getAuthConfig()
       );
 
       setShowModal(false);
 
-      await loadReminders();
+      await loadReminders(false);
     } catch (error) {
       console.error(
         "Failed to delete reminder:",
@@ -366,13 +366,13 @@ const CompanyCalendar: React.FC = () => {
     try {
       await axios.delete(
         `${API_URL}/company-reminders/${viewingReminder._id}`,
-        authConfig
+        getAuthConfig()
       );
 
       setShowViewModal(false);
       setViewingReminder(null);
 
-      await loadReminders();
+      await loadReminders(false);
     } catch (error) {
       console.error(
         "Failed to delete reminder:",
@@ -445,7 +445,7 @@ const handleExcelImport = async (
       formData,
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          ...getAuthConfig().headers,
           "Content-Type": "multipart/form-data",
         },
       }
@@ -468,7 +468,7 @@ const handleExcelImport = async (
     }
 
     // Refresh calendar
-    await loadReminders();
+    await loadReminders(false);
 
   } catch (error: any) {
     console.error(
@@ -584,7 +584,7 @@ const handleExcelImport = async (
       >
         {viewingReminder && (
           <>
-            <Modal.Header closeButton className="reminder-header">
+            <Modal.Header className="reminder-header position-relative">
               <div className="reminder-view-header-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                   <rect width="18" height="18" x="3" y="4" rx="2" />
@@ -594,6 +594,14 @@ const handleExcelImport = async (
                 </svg>
                 <h4>Company Reminder Details</h4>
               </div>
+              <button
+                type="button"
+                className="calendar-modal-close-btn"
+                onClick={() => setShowViewModal(false)}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
             </Modal.Header>
 
             <Modal.Body>
@@ -782,22 +790,27 @@ const handleExcelImport = async (
               </div>
             </Modal.Body>
 
-            {isAdmin && (
-              <Modal.Footer className="reminder-view-modal-footer">
-                <div className="reminder-view-footer-left">
+            <Modal.Footer className="reminder-view-modal-footer">
+              <div className="reminder-view-footer-left">
+                {isAdmin && (
                   <Button variant="danger" className="btn-danger-custom" onClick={handleDeleteFromView}>
                     <Trash2 size={14} style={{ marginRight: 6 }} />
                     Delete
                   </Button>
-                </div>
-                <div className="reminder-view-footer-right">
+                )}
+              </div>
+              <div className="reminder-view-footer-right" style={{ display: "flex", gap: "8px" }}>
+                <Button variant="secondary" className="btn-cancel-custom" type="button" onClick={() => setShowViewModal(false)}>
+                  Close
+                </Button>
+                {isAdmin && (
                   <Button className="reminder-btn-edit" onClick={handleEditFromView}>
                     <Edit3 size={14} style={{ marginRight: 6 }} />
                     Edit
                   </Button>
-                </div>
-              </Modal.Footer>
-            )}
+                )}
+              </div>
+            </Modal.Footer>
           </>
         )}
       </Modal>
@@ -813,7 +826,7 @@ const handleExcelImport = async (
       >
         <Form onSubmit={handleSubmit}>
 
-          <Modal.Header closeButton className="reminder-header">
+          <Modal.Header className="reminder-header position-relative">
             <div>
               <Modal.Title>
                 {isAdmin
@@ -829,6 +842,14 @@ const handleExcelImport = async (
                 </small>
               )}
             </div>
+            <button
+              type="button"
+              className="calendar-modal-close-btn"
+              onClick={() => setShowModal(false)}
+              aria-label="Close"
+            >
+              <X size={18} />
+            </button>
           </Modal.Header>
 
           <Modal.Body>
@@ -1040,7 +1061,15 @@ const handleExcelImport = async (
               )}
             </div>
 
-            <div className="company-reminder-footer-right">
+            <div className="company-reminder-footer-right" style={{ display: "flex", gap: "8px" }}>
+              <Button
+                variant="secondary"
+                className="btn-cancel-custom"
+                type="button"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </Button>
               {isAdmin && (
                 <Button
                   variant="primary"

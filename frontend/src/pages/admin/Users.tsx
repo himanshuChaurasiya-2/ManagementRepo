@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import {
-  AlertTriangle,
   Check,
   Copy,
   ExternalLink,
@@ -9,6 +8,7 @@ import {
   Mail,
   Search,
   Send,
+  Trash2,
   User as UserIcon,
   Users as UsersIcon,
   X,
@@ -313,6 +313,45 @@ const Users = () => {
   };
 
   // ===============================
+  // DELETE USER
+  // ===============================
+
+  const handleDeleteUser = async (user: User) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to permanently delete user "${user.name}" (${user.email})? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setActionLoading(user._id);
+
+      const response = await axios.delete(
+        `${API_URL}/users/${user._id}`,
+        getAuthConfig()
+      );
+
+      if (response.data.success) {
+        if (selectedUserId === user._id) {
+          setSelectedUserId(null);
+        }
+        if (mobileDrawerOpen) {
+          setMobileDrawerOpen(false);
+        }
+        await loadUsers();
+      }
+    } catch (error: any) {
+      console.error("Delete user error:", error);
+      alert(
+        error.response?.data?.message ||
+        "Unable to delete user"
+      );
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // ===============================
   // COPY INVITATION URL
   // ===============================
 
@@ -532,6 +571,25 @@ const Users = () => {
                 )}
               </button>
             )}
+
+            <button
+              className="user-action-btn delete-user-btn"
+              disabled={actionLoading === user._id}
+              onClick={() => handleDeleteUser(user)}
+              title={`Permanently delete ${user.name}`}
+            >
+              {actionLoading === user._id ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-1" role="status" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 size={14} className="me-1" />
+                  Delete User
+                </>
+              )}
+            </button>
           </div>
         </div>
 
@@ -591,31 +649,16 @@ const Users = () => {
             </div>
           </div>
 
-          {/* Card 2: Security & Credentials */}
+          {/* Card 2: Account Details */}
           <div className="user-detail-card">
             <div className="user-detail-card-header">
               <span className="card-header-icon" style={{ display: "inline-flex", alignItems: "center" }}>
                 <Lock size={15} />
               </span>
-              <h5>Security & Credentials</h5>
+              <h5>Account Details</h5>
             </div>
 
             <div className="user-detail-card-content">
-              <div className="detail-field">
-                <span className="detail-field-label">Password Status</span>
-                <div>
-                  {user.mustChangePassword ? (
-                    <span className="password-status-badge password-required" style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                      <AlertTriangle size={13} /> Temporary Password
-                    </span>
-                  ) : (
-                    <span className="password-status-badge password-set">
-                      Password Secured
-                    </span>
-                  )}
-                </div>
-              </div>
-
               <div className="detail-field">
                 <span className="detail-field-label">Account Created</span>
                 <span className="detail-field-value">
@@ -627,12 +670,19 @@ const Users = () => {
                 </span>
               </div>
 
-              {/* <div className="detail-field">
-                <span className="detail-field-label">User ID</span>
-                <span className="detail-field-value user-mono-id">
-                  {user._id}
-                </span>
-              </div> */}
+              <div className="detail-field">
+                <span className="detail-field-label">Account Status</span>
+                <div>
+                  <span
+                    className={`user-status-badge ${
+                      user.status === "active" ? "status-active" : "status-inactive"
+                    }`}
+                  >
+                    <span className="badge-dot" />
+                    {user.status === "active" ? "Active" : "Inactive"}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 

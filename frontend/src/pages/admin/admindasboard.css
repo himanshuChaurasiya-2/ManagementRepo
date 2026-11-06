@@ -3209,6 +3209,35 @@
   transform: translateY(-1px);
 }
 
+.delete-user-btn {
+  background: rgba(239, 68, 68, 0.14);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+}
+
+.delete-user-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.28);
+  color: #ffffff;
+  border-color: rgba(239, 68, 68, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+.delete-user-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .reset-btn {
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.85);
@@ -3353,9 +3382,17 @@
 }
 
 .is-mobile-sheet .user-profile-actions-bar .user-action-btn {
-  flex: 1 1 calc(50% - 6px);
+  flex: 1 1 calc(33.333% - 8px);
+  min-width: 110px;
   justify-content: center;
   min-height: 42px;
+}
+
+@media (max-width: 480px) {
+  .is-mobile-sheet .user-profile-actions-bar .user-action-btn {
+    flex: 1 1 100%;
+    width: 100%;
+  }
 }
 
 /* Empty State */
@@ -4899,6 +4936,21 @@ body.light-mode .resend-invite-btn:hover:not(:disabled) {
   color: #3730a3;
   border-color: rgba(99, 102, 241, 0.5);
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+[data-theme="light"] .delete-user-btn,
+body.light-mode .delete-user-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+[data-theme="light"] .delete-user-btn:hover:not(:disabled),
+body.light-mode .delete-user-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  color: #991b1b;
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
 }
 
 /* ==========================================================================

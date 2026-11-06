@@ -7,6 +7,7 @@ import {
   updateUserStatus,
   resetUserPassword,
   resendInvitation,
+  deleteUser,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 import { adminOnly } from "../middleware/adminMiddleware.js";
@@ -36,5 +37,8 @@ router.patch("/:id/reset-password", resetUserPassword);
 
 // Resend invitation email
 router.post("/:id/resend-invitation", resendInvitation);
+
+// Delete user
+router.delete("/:id", deleteUser);
 
 export default router;

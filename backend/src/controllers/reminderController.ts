@@ -16,11 +16,6 @@ export const createReminder = async (
       return;
     }
 
-    if (!isValidObjectId(req.params.id)) {
-      res.status(400).json({ message: "Invalid reminder ID format" });
-      return;
-    }
-
     const {
   companyName,
   title,
@@ -77,11 +72,6 @@ export const getMyReminders = async (
 
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
-      return;
-    }
-
-    if (!isValidObjectId(req.params.id)) {
-      res.status(400).json({ message: "Invalid reminder ID format" });
       return;
     }
 

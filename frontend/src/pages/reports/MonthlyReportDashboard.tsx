@@ -44,7 +44,7 @@ const DATE_PRESETS = [
   { value: "maximum", label: "Lifetime (All Time)" },
 ];
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 // Focus functionality removed per user specification
 

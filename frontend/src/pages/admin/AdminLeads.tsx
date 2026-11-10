@@ -126,7 +126,7 @@ interface UserLeadCard {
 // CONSTANTS & HELPERS
 // =====================================================
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const statuses: LeadStatus[] = [
   "Interested",
